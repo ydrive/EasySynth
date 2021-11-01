@@ -1,15 +1,15 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Ydrive 2021
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Styling/SlateStyle.h"
 
+
 /**  */
 class FSimpleSynthStyle
 {
 public:
-
 	static void Initialize();
 
 	static void Shutdown();
@@ -23,10 +23,8 @@ public:
 	static FName GetStyleSetName();
 
 private:
-
 	static TSharedRef< class FSlateStyleSet > Create();
 
 private:
-
 	static TSharedPtr< class FSlateStyleSet > StyleInstance;
 };

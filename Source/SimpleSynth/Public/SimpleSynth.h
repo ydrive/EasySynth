@@ -1,30 +1,35 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Ydrive 2021
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
+#include "WidgetManager.h"
+
 class FToolBarBuilder;
 class FMenuBuilder;
+
 
 class FSimpleSynthModule : public IModuleInterface
 {
 public:
+	/** IModuleInterface startup implementation */
+	void StartupModule() override;
 
-	/** IModuleInterface implementation */
-	virtual void StartupModule() override;
-	virtual void ShutdownModule() override;
-	
+	/** IModuleInterface shutdown implementation */
+	void ShutdownModule() override;
+
 	/** This function will be bound to Command (by default it will bring up plugin window) */
 	void PluginButtonClicked();
-	
+
 private:
-
+	/** Adds the plugin to editor menus */
 	void RegisterMenus();
-
-	TSharedRef<class SDockTab> OnSpawnPluginTab(const class FSpawnTabArgs& SpawnTabArgs);
 
 private:
 	TSharedPtr<class FUICommandList> PluginCommands;
+
+	/** Utility that manages editor tab UI */
+	FWidgetManager WidgetManager;
 };

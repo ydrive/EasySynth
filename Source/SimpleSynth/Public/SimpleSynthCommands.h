@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Ydrive 2021
 
 #pragma once
 
@@ -6,17 +6,19 @@
 #include "Framework/Commands/Commands.h"
 #include "SimpleSynthStyle.h"
 
+
 class FSimpleSynthCommands : public TCommands<FSimpleSynthCommands>
 {
 public:
-
 	FSimpleSynthCommands()
-		: TCommands<FSimpleSynthCommands>(TEXT("SimpleSynth"), NSLOCTEXT("Contexts", "SimpleSynth", "SimpleSynth Plugin"), NAME_None, FSimpleSynthStyle::GetStyleSetName())
-	{
-	}
+		: TCommands<FSimpleSynthCommands>(
+			TEXT("SimpleSynth"),
+			NSLOCTEXT("Contexts", "SimpleSynth", "SimpleSynth Plugin"),
+			NAME_None,
+			FSimpleSynthStyle::GetStyleSetName()) {}
 
 	// TCommands<> interface
-	virtual void RegisterCommands() override;
+	void RegisterCommands() override;
 
 public:
 	TSharedPtr< FUICommandInfo > OpenPluginWindow;

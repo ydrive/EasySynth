@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Ydrive 2021
 
 #include "SimpleSynthStyle.h"
 #include "Styling/SlateStyleRegistry.h"
