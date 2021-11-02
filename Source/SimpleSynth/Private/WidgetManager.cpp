@@ -9,7 +9,7 @@
 #include "Widgets/Text/STextBlock.h"
 
 
-TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
+TSharedRef<SDockTab> UWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
     return SNew(SDockTab)
 		.TabRole(ETabRole::NomadTab)
@@ -23,9 +23,9 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			+SScrollBox::Slot()
 			[
 				SNew(SObjectPropertyEntryBox)
-				.AllowedClass(ULevelSequence::StaticClass())
-				// .ObjectPath_UObject(this, &UAssetPickerWidget::GetPath)
-				// .OnObjectChanged_UObject(this, &UAssetPickerWidget::OnStaticMeshSelected)
+				.AllowedClass(UObject::StaticClass())
+				.ObjectPath_Raw(this, &UWidgetManager::GetSequencerPath)
+				.OnObjectChanged_Raw(this, &UWidgetManager::OnSequencerSelected)
 				.AllowClear(true)
 				.DisplayUseSelected(true)
 				.DisplayBrowse(true)
@@ -33,7 +33,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			+SScrollBox::Slot()
 			[
 				SNew(SButton)
-				// .OnClicked( InKismet2.ToSharedRef(), &FKismet::Compile_OnClicked )
+				.OnClicked_Raw(this, &UWidgetManager::OnRenderImagesClicked)
 				.Content()
 				[
 					SNew(STextBlock)
@@ -41,4 +41,24 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				]
 			]
 		];
+}
+
+void UWidgetManager::OnSequencerSelected(const FAssetData& AssetData)
+{
+	LevelSequenceAssetData = AssetData;
+}
+
+FString UWidgetManager::GetSequencerPath() const
+{
+	if (LevelSequenceAssetData.IsValid())
+	{
+		return LevelSequenceAssetData.ObjectPath.ToString();
+	}
+	return "";
+}
+
+FReply UWidgetManager::OnRenderImagesClicked()
+{
+	UE_LOG(LogSimpleSynth, Log, TEXT("%s"), *FString(__FUNCTION__))
+	return FReply::Handled();
 }

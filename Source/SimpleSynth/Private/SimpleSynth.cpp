@@ -29,7 +29,7 @@ void FSimpleSynthModule::StartupModule()
 
 	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FSimpleSynthModule::RegisterMenus));
 
-	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(SimpleSynthTabName, FOnSpawnTab::CreateRaw(&WidgetManager, &FWidgetManager::OnSpawnPluginTab))
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(SimpleSynthTabName, FOnSpawnTab::CreateRaw(&WidgetManager, &UWidgetManager::OnSpawnPluginTab))
 		.SetDisplayName(LOCTEXT("FSimpleSynthTabTitle", "SimpleSynth"))
 		.SetMenuType(ETabSpawnerMenuType::Hidden);
 }
@@ -83,3 +83,6 @@ void FSimpleSynthModule::RegisterMenus()
 #undef LOCTEXT_NAMESPACE
 
 IMPLEMENT_MODULE(FSimpleSynthModule, SimpleSynth)
+
+// Define SimpleSynth log category
+DEFINE_LOG_CATEGORY(LogSimpleSynth);

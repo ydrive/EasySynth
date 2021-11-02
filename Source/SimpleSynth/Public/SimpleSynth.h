@@ -11,6 +11,10 @@ class FToolBarBuilder;
 class FMenuBuilder;
 
 
+// Declare SimpleSynth log category
+DECLARE_LOG_CATEGORY_EXTERN(LogSimpleSynth, Log, All);
+
+
 class FSimpleSynthModule : public IModuleInterface
 {
 public:
@@ -31,5 +35,5 @@ private:
 	TSharedPtr<class FUICommandList> PluginCommands;
 
 	/** Utility that manages editor tab UI */
-	FWidgetManager WidgetManager;
+	UWidgetManager WidgetManager;
 };
