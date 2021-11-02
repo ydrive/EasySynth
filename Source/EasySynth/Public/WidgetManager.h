@@ -31,6 +31,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Content")
 	FAssetData LevelSequenceAssetData;
 
+	/** Error message box title for failed rendering start */
+	static const FText StartRenderingErrorMessageBoxTitle;
+
 	/** Module that runs sequence rendering */
 	FSequenceRenderer SequenceRenderer;
 };

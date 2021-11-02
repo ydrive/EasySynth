@@ -9,6 +9,8 @@
 #include "Widgets/Text/STextBlock.h"
 
 
+const FText FWidgetManager::StartRenderingErrorMessageBoxTitle = FText::FromString(TEXT("Could not start rendering"));
+
 TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
 	return SNew(SDockTab)
@@ -61,6 +63,12 @@ FReply FWidgetManager::OnRenderImagesClicked()
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
 	ULevelSequence* LevelSequence = Cast<ULevelSequence>(LevelSequenceAssetData.GetAsset());
-	SequenceRenderer.RenderSequence(LevelSequence);
+	if (!SequenceRenderer.RenderSequence(LevelSequence))
+	{
+		FMessageDialog::Open(
+			EAppMsgType::Ok,
+			FText::FromString(*SequenceRenderer.GetErrorMessage()),
+			&StartRenderingErrorMessageBoxTitle);
+	}
 	return FReply::Handled();
 }
