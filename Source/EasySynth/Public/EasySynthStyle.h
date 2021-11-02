@@ -6,7 +6,7 @@
 #include "Styling/SlateStyle.h"
 
 
-/**  */
+/** Plugin style class */
 class FEasySynthStyle
 {
 public:
