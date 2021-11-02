@@ -13,9 +13,9 @@ class ULevelSequence;
 class UWidgetManager
 {
 public:
-    TSharedRef<SDockTab> OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs);
+	TSharedRef<SDockTab> OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs);
 
-    /** Callback funcion handling the update of the selected sequencer */
+	/** Callback funcion handling the update of the selected sequencer */
 	void OnSequencerSelected(const FAssetData& AssetData);
 
 	/** Callback funcion providing the path to the selected sequencer asset */
@@ -25,7 +25,7 @@ public:
 	FReply OnRenderImagesClicked();
 
 private:
-    /** Currently selected sequencer asset data */
+	/** Currently selected sequencer asset data */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Content")
 	FAssetData LevelSequenceAssetData;
 };
