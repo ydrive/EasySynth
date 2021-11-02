@@ -1,14 +1,14 @@
 // Copyright Ydrive 2021
 
-#include "SimpleSynthStyle.h"
+#include "EasySynthStyle.h"
 #include "Styling/SlateStyleRegistry.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Slate/SlateGameResources.h"
 #include "Interfaces/IPluginManager.h"
 
-TSharedPtr< FSlateStyleSet > FSimpleSynthStyle::StyleInstance = NULL;
+TSharedPtr< FSlateStyleSet > FEasySynthStyle::StyleInstance = NULL;
 
-void FSimpleSynthStyle::Initialize()
+void FEasySynthStyle::Initialize()
 {
 	if (!StyleInstance.IsValid())
 	{
@@ -17,16 +17,16 @@ void FSimpleSynthStyle::Initialize()
 	}
 }
 
-void FSimpleSynthStyle::Shutdown()
+void FEasySynthStyle::Shutdown()
 {
 	FSlateStyleRegistry::UnRegisterSlateStyle(*StyleInstance);
 	ensure(StyleInstance.IsUnique());
 	StyleInstance.Reset();
 }
 
-FName FSimpleSynthStyle::GetStyleSetName()
+FName FEasySynthStyle::GetStyleSetName()
 {
-	static FName StyleSetName(TEXT("SimpleSynthStyle"));
+	static FName StyleSetName(TEXT("EasySynthStyle"));
 	return StyleSetName;
 }
 
@@ -40,12 +40,12 @@ const FVector2D Icon16x16(16.0f, 16.0f);
 const FVector2D Icon20x20(20.0f, 20.0f);
 const FVector2D Icon40x40(40.0f, 40.0f);
 
-TSharedRef< FSlateStyleSet > FSimpleSynthStyle::Create()
+TSharedRef< FSlateStyleSet > FEasySynthStyle::Create()
 {
-	TSharedRef< FSlateStyleSet > Style = MakeShareable(new FSlateStyleSet("SimpleSynthStyle"));
-	Style->SetContentRoot(IPluginManager::Get().FindPlugin("SimpleSynth")->GetBaseDir() / TEXT("Resources"));
+	TSharedRef< FSlateStyleSet > Style = MakeShareable(new FSlateStyleSet("EasySynthStyle"));
+	Style->SetContentRoot(IPluginManager::Get().FindPlugin("EasySynth")->GetBaseDir() / TEXT("Resources"));
 
-	Style->Set("SimpleSynth.OpenPluginWindow", new IMAGE_BRUSH(TEXT("ButtonIcon_40x"), Icon40x40));
+	Style->Set("EasySynth.OpenPluginWindow", new IMAGE_BRUSH(TEXT("ButtonIcon_40x"), Icon40x40));
 
 	return Style;
 }
@@ -56,7 +56,7 @@ TSharedRef< FSlateStyleSet > FSimpleSynthStyle::Create()
 #undef TTF_FONT
 #undef OTF_FONT
 
-void FSimpleSynthStyle::ReloadTextures()
+void FEasySynthStyle::ReloadTextures()
 {
 	if (FSlateApplication::IsInitialized())
 	{
@@ -64,7 +64,7 @@ void FSimpleSynthStyle::ReloadTextures()
 	}
 }
 
-const ISlateStyle& FSimpleSynthStyle::Get()
+const ISlateStyle& FEasySynthStyle::Get()
 {
 	return *StyleInstance;
 }

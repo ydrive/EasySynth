@@ -59,6 +59,6 @@ FString UWidgetManager::GetSequencerPath() const
 
 FReply UWidgetManager::OnRenderImagesClicked()
 {
-	UE_LOG(LogSimpleSynth, Log, TEXT("%s"), *FString(__FUNCTION__))
+	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
 	return FReply::Handled();
 }

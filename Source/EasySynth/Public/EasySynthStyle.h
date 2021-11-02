@@ -7,7 +7,7 @@
 
 
 /**  */
-class FSimpleSynthStyle
+class FEasySynthStyle
 {
 public:
 	static void Initialize();

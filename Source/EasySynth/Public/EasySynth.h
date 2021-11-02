@@ -11,11 +11,11 @@ class FToolBarBuilder;
 class FMenuBuilder;
 
 
-// Declare SimpleSynth log category
-DECLARE_LOG_CATEGORY_EXTERN(LogSimpleSynth, Log, All);
+// Declare EasySynth log category
+DECLARE_LOG_CATEGORY_EXTERN(LogEasySynth, Log, All);
 
 
-class FSimpleSynthModule : public IModuleInterface
+class FEasySynthModule : public IModuleInterface
 {
 public:
 	/** IModuleInterface startup implementation */

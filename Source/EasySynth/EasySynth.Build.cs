@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class SimpleSynth : ModuleRules
+public class EasySynth : ModuleRules
 {
-	public SimpleSynth(ReadOnlyTargetRules Target) : base(Target)
+	public EasySynth(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
