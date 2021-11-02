@@ -11,7 +11,7 @@
 
 TSharedRef<SDockTab> UWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
-    return SNew(SDockTab)
+	return SNew(SDockTab)
 		.TabRole(ETabRole::NomadTab)
 		[
 			SNew(SScrollBox)
