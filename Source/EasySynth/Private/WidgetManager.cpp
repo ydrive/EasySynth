@@ -23,7 +23,7 @@ TSharedRef<SDockTab> UWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			+SScrollBox::Slot()
 			[
 				SNew(SObjectPropertyEntryBox)
-				.AllowedClass(UObject::StaticClass())
+				.AllowedClass(ULevelSequence::StaticClass())
 				.ObjectPath_Raw(this, &UWidgetManager::GetSequencerPath)
 				.OnObjectChanged_Raw(this, &UWidgetManager::OnSequencerSelected)
 				.AllowClear(true)
