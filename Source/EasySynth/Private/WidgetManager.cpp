@@ -60,5 +60,7 @@ FString FWidgetManager::GetSequencerPath() const
 FReply FWidgetManager::OnRenderImagesClicked()
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
+	ULevelSequence* LevelSequence = Cast<ULevelSequence>(LevelSequenceAssetData.GetAsset());
+	SequenceRenderer.RenderSequence(LevelSequence);
 	return FReply::Handled();
 }

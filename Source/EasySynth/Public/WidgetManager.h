@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 
+#include "SequenceRenderer.h"
+
 class ULevelSequence;
 
 
@@ -28,4 +30,7 @@ private:
 	/** Currently selected sequencer asset data */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Content")
 	FAssetData LevelSequenceAssetData;
+
+	/** Module that runs sequence rendering */
+	FSequenceRenderer SequenceRenderer;
 };
