@@ -35,5 +35,5 @@ private:
 	TSharedPtr<class FUICommandList> PluginCommands;
 
 	/** Utility that manages editor tab UI */
-	UWidgetManager WidgetManager;
+	FWidgetManager WidgetManager;
 };

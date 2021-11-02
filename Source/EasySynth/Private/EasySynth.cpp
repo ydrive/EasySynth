@@ -29,7 +29,7 @@ void FEasySynthModule::StartupModule()
 
 	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FEasySynthModule::RegisterMenus));
 
-	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(EasySynthTabName, FOnSpawnTab::CreateRaw(&WidgetManager, &UWidgetManager::OnSpawnPluginTab))
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(EasySynthTabName, FOnSpawnTab::CreateRaw(&WidgetManager, &FWidgetManager::OnSpawnPluginTab))
 		.SetDisplayName(LOCTEXT("FEasySynthTabTitle", "EasySynth"))
 		.SetMenuType(ETabSpawnerMenuType::Hidden);
 }

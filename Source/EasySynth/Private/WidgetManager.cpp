@@ -9,7 +9,7 @@
 #include "Widgets/Text/STextBlock.h"
 
 
-TSharedRef<SDockTab> UWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
+TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
 	return SNew(SDockTab)
 		.TabRole(ETabRole::NomadTab)
@@ -24,8 +24,8 @@ TSharedRef<SDockTab> UWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			[
 				SNew(SObjectPropertyEntryBox)
 				.AllowedClass(ULevelSequence::StaticClass())
-				.ObjectPath_Raw(this, &UWidgetManager::GetSequencerPath)
-				.OnObjectChanged_Raw(this, &UWidgetManager::OnSequencerSelected)
+				.ObjectPath_Raw(this, &FWidgetManager::GetSequencerPath)
+				.OnObjectChanged_Raw(this, &FWidgetManager::OnSequencerSelected)
 				.AllowClear(true)
 				.DisplayUseSelected(true)
 				.DisplayBrowse(true)
@@ -33,7 +33,7 @@ TSharedRef<SDockTab> UWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			+SScrollBox::Slot()
 			[
 				SNew(SButton)
-				.OnClicked_Raw(this, &UWidgetManager::OnRenderImagesClicked)
+				.OnClicked_Raw(this, &FWidgetManager::OnRenderImagesClicked)
 				.Content()
 				[
 					SNew(STextBlock)
@@ -43,12 +43,12 @@ TSharedRef<SDockTab> UWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 		];
 }
 
-void UWidgetManager::OnSequencerSelected(const FAssetData& AssetData)
+void FWidgetManager::OnSequencerSelected(const FAssetData& AssetData)
 {
 	LevelSequenceAssetData = AssetData;
 }
 
-FString UWidgetManager::GetSequencerPath() const
+FString FWidgetManager::GetSequencerPath() const
 {
 	if (LevelSequenceAssetData.IsValid())
 	{
@@ -57,7 +57,7 @@ FString UWidgetManager::GetSequencerPath() const
 	return "";
 }
 
-FReply UWidgetManager::OnRenderImagesClicked()
+FReply FWidgetManager::OnRenderImagesClicked()
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
 	return FReply::Handled();

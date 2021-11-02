@@ -10,7 +10,7 @@ class ULevelSequence;
 /**
  * Class that manages UI widget interatcion
 */
-class UWidgetManager
+class FWidgetManager
 {
 public:
 	TSharedRef<SDockTab> OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs);
