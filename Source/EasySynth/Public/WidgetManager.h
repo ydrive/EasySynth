@@ -17,6 +17,7 @@ class FWidgetManager
 public:
 	TSharedRef<SDockTab> OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs);
 
+private:
 	/** Callback funcion handling the update of the selected sequencer */
 	void OnSequencerSelected(const FAssetData& AssetData);
 
@@ -26,7 +27,6 @@ public:
 	/** Handles render images button click */
 	FReply OnRenderImagesClicked();
 
-private:
 	/** Currently selected sequencer asset data */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Content")
 	FAssetData LevelSequenceAssetData;

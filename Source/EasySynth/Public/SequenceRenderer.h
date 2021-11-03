@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 
 class ULevelSequence;
+class UMoviePipelineExecutorBase;
 
 
 /**
@@ -23,6 +24,9 @@ public:
 	const FString& GetErrorMessage() const { return ErrorMessage; }
 
 private:
+	/** Movie rendering finished handle */
+	void OnExecutorFinished(UMoviePipelineExecutorBase* InPipelineExecutor, bool bSuccess);
+
 	/** Marks if rendering is currently in process */
 	bool bCurrentlyRendering;
 

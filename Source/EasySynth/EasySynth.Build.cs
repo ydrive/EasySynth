@@ -45,6 +45,8 @@ public class EasySynth : ModuleRules
 				"SlateCore",
 				// Sequencer module
 				"LevelSequence",
+				"MovieRenderPipelineCore",
+				"MovieRenderPipelineEditor",
 				// Editor tab functionality
 				"PropertyEditor",
 				// ... add private dependencies that you statically link with here ...
