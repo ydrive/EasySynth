@@ -32,4 +32,7 @@ private:
 
 	/** Stores the latest error message */
 	FString ErrorMessage;
+
+	/** Movie pipeline configuration asset path */
+	static const FString EasySynthMoviePipelineConfigPath;
 };

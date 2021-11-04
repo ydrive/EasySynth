@@ -6,6 +6,8 @@
 #include "MovieRenderPipelineSettings.h"
 
 
+const FString FSequenceRenderer::EasySynthMoviePipelineConfigPath("/EasySynth/EasySynthMoviePipelineConfig");
+
 FSequenceRenderer::FSequenceRenderer() :
 	bCurrentlyRendering(false),
 	ErrorMessage("")
@@ -32,12 +34,52 @@ bool FSequenceRenderer::RenderSequence(ULevelSequence* LevelSequence)
 	// }
 
 	// Get the movie rendering editor subsystem
-	UMoviePipelineQueueSubsystem* Subsystem = GEditor->GetEditorSubsystem<UMoviePipelineQueueSubsystem>();
-	if (Subsystem == nullptr)
+	UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem =
+		GEditor->GetEditorSubsystem<UMoviePipelineQueueSubsystem>();
+	if (MoviePipelineQueueSubsystem == nullptr)
 	{
 		ErrorMessage = "Could not get the UMoviePipelineQueueSubsystem";
 		UE_LOG(LogEasySynth, Log, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 		return false;
+	}
+
+	// Get the queue of sequences to be renderer
+	UMoviePipelineQueue* MoviePipelineQueue = MoviePipelineQueueSubsystem->GetQueue();
+	if (MoviePipelineQueue == nullptr)
+	{
+		ErrorMessage = "Could not get the UMoviePipelineQueue";
+		UE_LOG(LogEasySynth, Log, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		return false;
+	}
+
+	// Load the asset representing needed movie pipeline configuration
+	UMoviePipelineMasterConfig* EasySynthMoviePipelineConfig =
+		LoadObject<UMoviePipelineMasterConfig>(nullptr, *EasySynthMoviePipelineConfigPath);
+	if (EasySynthMoviePipelineConfig == nullptr)
+	{
+		ErrorMessage = "Could not load the EasySynthMoviePipelineConfig";
+		UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		return false;
+	}
+
+	// Iterate the queue
+	for (UMoviePipelineExecutorJob* MoviePipelineExecutorJob : MoviePipelineQueue->GetJobs())
+	{
+		// Get job configuration
+		if (MoviePipelineExecutorJob == nullptr)
+		{
+			ErrorMessage = "A job inside the queue is null";
+			UE_LOG(LogEasySynth, Log, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+			return false;
+		}
+
+		UMoviePipelineMasterConfig* MoviePipelineMasterConfig = MoviePipelineExecutorJob->GetConfiguration();
+		UE_LOG(LogEasySynth, Log, TEXT("%s: Old configuration %d"), *FString(__FUNCTION__), MoviePipelineMasterConfig)
+
+		MoviePipelineExecutorJob->SetConfiguration(EasySynthMoviePipelineConfig);
+
+		MoviePipelineMasterConfig = MoviePipelineExecutorJob->GetConfiguration();
+		UE_LOG(LogEasySynth, Log, TEXT("%s: New configuration %d"), *FString(__FUNCTION__), MoviePipelineMasterConfig)
 	}
 
 	// Get the default movie rendering settings
@@ -51,7 +93,7 @@ bool FSequenceRenderer::RenderSequence(ULevelSequence* LevelSequence)
 
 	// Run the rendering
 	UMoviePipelineExecutorBase* ActiveExecutor =
-		Subsystem->RenderQueueWithExecutor(ProjectSettings->DefaultLocalExecutor);
+		MoviePipelineQueueSubsystem->RenderQueueWithExecutor(ProjectSettings->DefaultLocalExecutor);
 	if (ActiveExecutor == nullptr)
 	{
 		ErrorMessage = "Could not start the rendering";
