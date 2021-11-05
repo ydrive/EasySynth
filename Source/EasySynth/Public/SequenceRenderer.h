@@ -14,17 +14,29 @@ class UMoviePipelineExecutorBase;
 struct FSequenceRendererTargets
 {
 	FSequenceRendererTargets() :
-		bColorImages(false)
+		bColorImages(false),
+		bDepthImages(false),
+		bNormalImages(false),
+		bSemanticImages(false)
 	{}
 
 	/** Checks if any of the available options is selected */
 	bool AnyOptionSelected() const
 	{
-		return bColorImages;
+		return bColorImages || bDepthImages || bNormalImages || bSemanticImages;
 	}
 
 	/** Is the default color image rendering requested */
 	bool bColorImages;
+
+	/** Is the depth image rendering requested */
+	bool bDepthImages;
+
+	/** Is the normal image rendering requested */
+	bool bNormalImages;
+
+	/** Is the semantic image rendering requested */
+	bool bSemanticImages;
 };
 
 

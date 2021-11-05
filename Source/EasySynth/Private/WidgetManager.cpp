@@ -48,6 +48,33 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			]
 			+SScrollBox::Slot()
 			[
+				SNew(SCheckBox)
+				.OnCheckStateChanged_Raw(this, &FWidgetManager::OnRenderDepthImagesChanged)
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString("Depth images"))
+				]
+			]
+			+SScrollBox::Slot()
+			[
+				SNew(SCheckBox)
+				.OnCheckStateChanged_Raw(this, &FWidgetManager::OnRenderNormalImagesChanged)
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString("Normal images"))
+				]
+			]
+			+SScrollBox::Slot()
+			[
+				SNew(SCheckBox)
+				.OnCheckStateChanged_Raw(this, &FWidgetManager::OnRenderSemanticImagesChanged)
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString("Semantic images"))
+				]
+			]
+			+SScrollBox::Slot()
+			[
 				SNew(SButton)
 				.OnClicked_Raw(this, &FWidgetManager::OnRenderImagesClicked)
 				.Content()
@@ -76,6 +103,21 @@ FString FWidgetManager::GetSequencerPath() const
 void FWidgetManager::OnRenderColorImagesChanged(ECheckBoxState NewState)
 {
 	SequenceRendererTargets.bColorImages = (NewState == ECheckBoxState::Checked);
+}
+
+void FWidgetManager::OnRenderDepthImagesChanged(ECheckBoxState NewState)
+{
+	SequenceRendererTargets.bDepthImages = (NewState == ECheckBoxState::Checked);
+}
+
+void FWidgetManager::OnRenderNormalImagesChanged(ECheckBoxState NewState)
+{
+	SequenceRendererTargets.bNormalImages = (NewState == ECheckBoxState::Checked);
+}
+
+void FWidgetManager::OnRenderSemanticImagesChanged(ECheckBoxState NewState)
+{
+	SequenceRendererTargets.bSemanticImages = (NewState == ECheckBoxState::Checked);
 }
 
 FReply FWidgetManager::OnRenderImagesClicked()

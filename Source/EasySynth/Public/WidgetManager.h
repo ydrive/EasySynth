@@ -35,6 +35,15 @@ private:
 	/** Color images checkbox changed handle */
 	void OnRenderColorImagesChanged(ECheckBoxState NewState);
 
+	/** Depth images checkbox changed handle */
+	void OnRenderDepthImagesChanged(ECheckBoxState NewState);
+
+	/** Normal images checkbox changed handle */
+	void OnRenderNormalImagesChanged(ECheckBoxState NewState);
+
+	/** Semantic images checkbox changed handle */
+	void OnRenderSemanticImagesChanged(ECheckBoxState NewState);
+
 	/** Handles render images button click */
 	FReply OnRenderImagesClicked();
 
