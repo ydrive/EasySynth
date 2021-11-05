@@ -34,6 +34,20 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			]
 			+SScrollBox::Slot()
 			[
+				SNew(STextBlock)
+				.Text(FText::FromString("Chose targets to be rendered"))
+			]
+			+SScrollBox::Slot()
+			[
+				SNew(SCheckBox)
+				.OnCheckStateChanged_Raw(this, &FWidgetManager::OnRenderColorImagesChanged)
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString("Color images"))
+				]
+			]
+			+SScrollBox::Slot()
+			[
 				SNew(SButton)
 				.OnClicked_Raw(this, &FWidgetManager::OnRenderImagesClicked)
 				.Content()
@@ -59,11 +73,17 @@ FString FWidgetManager::GetSequencerPath() const
 	return "";
 }
 
+void FWidgetManager::OnRenderColorImagesChanged(ECheckBoxState NewState)
+{
+	SequenceRendererTargets.bColorImages = (NewState == ECheckBoxState::Checked);
+}
+
 FReply FWidgetManager::OnRenderImagesClicked()
 {
-	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
 	ULevelSequence* LevelSequence = Cast<ULevelSequence>(LevelSequenceAssetData.GetAsset());
-	if (!SequenceRenderer.RenderSequence(LevelSequence))
+	// Make a copy of the SequenceRendererTargets to avoid
+	// them being changed through the UI during rendering
+	if (!SequenceRenderer.RenderSequence(LevelSequence, SequenceRendererTargets))
 	{
 		FMessageDialog::Open(
 			EAppMsgType::Ok,

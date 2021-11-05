@@ -9,6 +9,26 @@ class UMoviePipelineExecutorBase;
 
 
 /**
+ * Class Tracking which renderer targets are requested to be rendered
+*/
+struct FSequenceRendererTargets
+{
+	FSequenceRendererTargets() :
+		bColorImages(false)
+	{}
+
+	/** Checks if any of the available options is selected */
+	bool AnyOptionSelected() const
+	{
+		return bColorImages;
+	}
+
+	/** Is the default color image rendering requested */
+	bool bColorImages;
+};
+
+
+/**
  * Class that runs sequence rendering
 */
 class FSequenceRenderer
@@ -18,7 +38,7 @@ public:
 	FSequenceRenderer();
 
 	/** Runs sequence rendering, returns false if rendering could not start */
-	bool RenderSequence(ULevelSequence* LevelSequence);
+	bool RenderSequence(ULevelSequence* LevelSequence, FSequenceRendererTargets RenderingTargets);
 
 	/** Returns the latest error message */
 	const FString& GetErrorMessage() const { return ErrorMessage; }

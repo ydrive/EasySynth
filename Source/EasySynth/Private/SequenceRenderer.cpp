@@ -13,7 +13,7 @@ FSequenceRenderer::FSequenceRenderer() :
 	ErrorMessage("")
 {}
 
-bool FSequenceRenderer::RenderSequence(ULevelSequence* LevelSequence)
+bool FSequenceRenderer::RenderSequence(ULevelSequence* LevelSequence, FSequenceRendererTargets RenderingTargets)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
 
@@ -39,6 +39,14 @@ bool FSequenceRenderer::RenderSequence(ULevelSequence* LevelSequence)
 	if (LevelSequence == nullptr)
 	{
 		ErrorMessage = "Provided level sequence is null";
+		UE_LOG(LogEasySynth, Log, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		return false;
+	}
+
+	// Check if any rendering target is selected
+	if (!RenderingTargets.AnyOptionSelected())
+	{
+		ErrorMessage = "No rendering targets selected";
 		UE_LOG(LogEasySynth, Log, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 		return false;
 	}
