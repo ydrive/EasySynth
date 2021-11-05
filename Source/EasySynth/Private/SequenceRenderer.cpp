@@ -36,12 +36,12 @@ bool FSequenceRenderer::RenderSequence(ULevelSequence* LevelSequence)
 	}
 
 	// Check if LevelSequence is valid
-	// if (LevelSequence == nullptr)
-	// {
-	// 	ErrorMessage = "Provided level sequence is null";
-	// 	UE_LOG(LogEasySynth, Log, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
-	// 	return false;
-	// }
+	if (LevelSequence == nullptr)
+	{
+		ErrorMessage = "Provided level sequence is null";
+		UE_LOG(LogEasySynth, Log, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		return false;
+	}
 
 	// Get the movie rendering editor subsystem
 	UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem =
@@ -61,26 +61,35 @@ bool FSequenceRenderer::RenderSequence(ULevelSequence* LevelSequence)
 		UE_LOG(LogEasySynth, Log, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 		return false;
 	}
+	MoviePipelineQueue->Modify();
 
-	// Iterate the queue
-	for (UMoviePipelineExecutorJob* MoviePipelineExecutorJob : MoviePipelineQueue->GetJobs())
+	// Clear the current queue
+	TArray<UMoviePipelineExecutorJob*> ExistingJobs = MoviePipelineQueue->GetJobs();
+	for (UMoviePipelineExecutorJob* MoviePipelineExecutorJob : ExistingJobs)
 	{
-		// Get job configuration
-		if (MoviePipelineExecutorJob == nullptr)
-		{
-			ErrorMessage = "A job inside the queue is null";
-			UE_LOG(LogEasySynth, Log, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
-			return false;
-		}
-
-		UMoviePipelineMasterConfig* MoviePipelineMasterConfig = MoviePipelineExecutorJob->GetConfiguration();
-		UE_LOG(LogEasySynth, Log, TEXT("%s: Old configuration %d"), *FString(__FUNCTION__), MoviePipelineMasterConfig)
-
-		MoviePipelineExecutorJob->SetConfiguration(EasySynthMoviePipelineConfig);
-
-		MoviePipelineMasterConfig = MoviePipelineExecutorJob->GetConfiguration();
-		UE_LOG(LogEasySynth, Log, TEXT("%s: New configuration %d"), *FString(__FUNCTION__), MoviePipelineMasterConfig)
+		MoviePipelineQueue->DeleteJob(MoviePipelineExecutorJob);
 	}
+	if (MoviePipelineQueue->GetJobs().Num() > 0)
+	{
+		ErrorMessage = "Job queue not properly cleared";
+		UE_LOG(LogEasySynth, Log, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		return false;
+	}
+
+	// Add received level sequence to the queue as a new job
+	UMoviePipelineExecutorJob* NewJob = MoviePipelineQueue->AllocateNewJob(UMoviePipelineExecutorJob::StaticClass());
+	if (NewJob == nullptr)
+	{
+		ErrorMessage = "Failed to create new rendering job";
+		UE_LOG(LogEasySynth, Log, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		return false;
+	}
+	NewJob->Modify();
+	NewJob->Map = FSoftObjectPath(GEditor->GetEditorWorldContext().World());
+	NewJob->Author = FPlatformProcess::UserName(false);
+	NewJob->SetSequence(LevelSequence);
+	NewJob->JobName = NewJob->Sequence.GetAssetName();
+	NewJob->SetConfiguration(EasySynthMoviePipelineConfig);
 
 	// Get the default movie rendering settings
 	const UMovieRenderPipelineProjectSettings* ProjectSettings = GetDefault<UMovieRenderPipelineProjectSettings>();
