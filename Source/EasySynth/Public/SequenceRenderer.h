@@ -11,32 +11,36 @@ class UMoviePipelineExecutorBase;
 /**
  * Class Tracking which renderer targets are requested to be rendered
 */
-struct FSequenceRendererTargets
+class FSequenceRendererTargets
 {
-	FSequenceRendererTargets() :
-		bColorImages(false),
-		bDepthImages(false),
-		bNormalImages(false),
-		bSemanticImages(false)
-	{}
+public:
+	/** The enum containing all supported rendering targets */
+	enum TargetType { COLOR_IMAGE, DEPTH_IMAGE, NORMAL_IMAGE, SEMANTIC_IMAGE, COUNT };
+
+	FSequenceRendererTargets() { SelectedTargets.Init(false, TargetType::COUNT); }
+
+	/** Select a rendering target */
+	void SetSelectedTarget(TargetType Target, bool Selected) { SelectedTargets[Target] = Selected; }
+
+	/** Check if a rendering target is selected */
+	bool TargetSelected(TargetType Target) { return SelectedTargets[Target]; }
 
 	/** Checks if any of the available options is selected */
 	bool AnyOptionSelected() const
 	{
-		return bColorImages || bDepthImages || bNormalImages || bSemanticImages;
+		for (bool TargetSelected : SelectedTargets)
+		{
+			if (TargetSelected)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
+private:
 	/** Is the default color image rendering requested */
-	bool bColorImages;
-
-	/** Is the depth image rendering requested */
-	bool bDepthImages;
-
-	/** Is the normal image rendering requested */
-	bool bNormalImages;
-
-	/** Is the semantic image rendering requested */
-	bool bSemanticImages;
+	TArray<bool> SelectedTargets;
 };
 
 

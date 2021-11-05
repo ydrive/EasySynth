@@ -40,7 +40,8 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			+SScrollBox::Slot()
 			[
 				SNew(SCheckBox)
-				.OnCheckStateChanged_Raw(this, &FWidgetManager::OnRenderColorImagesChanged)
+				.OnCheckStateChanged_Raw(
+					this, &FWidgetManager::OnRenderTargetsChanged, FSequenceRendererTargets::COLOR_IMAGE)
 				[
 					SNew(STextBlock)
 					.Text(FText::FromString("Color images"))
@@ -49,7 +50,8 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			+SScrollBox::Slot()
 			[
 				SNew(SCheckBox)
-				.OnCheckStateChanged_Raw(this, &FWidgetManager::OnRenderDepthImagesChanged)
+				.OnCheckStateChanged_Raw(
+					this, &FWidgetManager::OnRenderTargetsChanged, FSequenceRendererTargets::DEPTH_IMAGE)
 				[
 					SNew(STextBlock)
 					.Text(FText::FromString("Depth images"))
@@ -58,7 +60,8 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			+SScrollBox::Slot()
 			[
 				SNew(SCheckBox)
-				.OnCheckStateChanged_Raw(this, &FWidgetManager::OnRenderNormalImagesChanged)
+				.OnCheckStateChanged_Raw(
+					this, &FWidgetManager::OnRenderTargetsChanged, FSequenceRendererTargets::NORMAL_IMAGE)
 				[
 					SNew(STextBlock)
 					.Text(FText::FromString("Normal images"))
@@ -67,7 +70,8 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			+SScrollBox::Slot()
 			[
 				SNew(SCheckBox)
-				.OnCheckStateChanged_Raw(this, &FWidgetManager::OnRenderSemanticImagesChanged)
+				.OnCheckStateChanged_Raw(
+					this, &FWidgetManager::OnRenderTargetsChanged, FSequenceRendererTargets::SEMANTIC_IMAGE)
 				[
 					SNew(STextBlock)
 					.Text(FText::FromString("Semantic images"))
@@ -100,24 +104,9 @@ FString FWidgetManager::GetSequencerPath() const
 	return "";
 }
 
-void FWidgetManager::OnRenderColorImagesChanged(ECheckBoxState NewState)
+void FWidgetManager::OnRenderTargetsChanged(ECheckBoxState NewState, FSequenceRendererTargets::TargetType TargetType)
 {
-	SequenceRendererTargets.bColorImages = (NewState == ECheckBoxState::Checked);
-}
-
-void FWidgetManager::OnRenderDepthImagesChanged(ECheckBoxState NewState)
-{
-	SequenceRendererTargets.bDepthImages = (NewState == ECheckBoxState::Checked);
-}
-
-void FWidgetManager::OnRenderNormalImagesChanged(ECheckBoxState NewState)
-{
-	SequenceRendererTargets.bNormalImages = (NewState == ECheckBoxState::Checked);
-}
-
-void FWidgetManager::OnRenderSemanticImagesChanged(ECheckBoxState NewState)
-{
-	SequenceRendererTargets.bSemanticImages = (NewState == ECheckBoxState::Checked);
+	SequenceRendererTargets.SetSelectedTarget(TargetType, (NewState == ECheckBoxState::Checked));
 }
 
 FReply FWidgetManager::OnRenderImagesClicked()

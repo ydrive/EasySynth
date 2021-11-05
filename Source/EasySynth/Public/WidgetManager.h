@@ -18,31 +18,14 @@ public:
 	TSharedRef<SDockTab> OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs);
 
 private:
-	/**
-	 * Sequence selection
-	*/
-
 	/** Callback funcion handling the update of the selected sequencer */
 	void OnSequencerSelected(const FAssetData& AssetData);
 
 	/** Callback funcion providing the path to the selected sequencer asset */
 	FString GetSequencerPath() const;
 
-	/**
-	 * Target render images checkbox handling
-	*/
-
-	/** Color images checkbox changed handle */
-	void OnRenderColorImagesChanged(ECheckBoxState NewState);
-
-	/** Depth images checkbox changed handle */
-	void OnRenderDepthImagesChanged(ECheckBoxState NewState);
-
-	/** Normal images checkbox changed handle */
-	void OnRenderNormalImagesChanged(ECheckBoxState NewState);
-
-	/** Semantic images checkbox changed handle */
-	void OnRenderSemanticImagesChanged(ECheckBoxState NewState);
+	/** Target render images checkbox handling */
+	void OnRenderTargetsChanged(ECheckBoxState NewState, FSequenceRendererTargets::TargetType TargetType);
 
 	/** Handles render images button click */
 	FReply OnRenderImagesClicked();
@@ -51,7 +34,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Content")
 	FAssetData LevelSequenceAssetData;
 
-	/** Widget's copy of the renderer targets structure */
+	/** Widget's copy of the chosen renderer targets set */
 	FSequenceRendererTargets SequenceRendererTargets;
 
 	/** Error message box title for failed rendering start */
