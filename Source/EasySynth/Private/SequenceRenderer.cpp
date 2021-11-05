@@ -17,6 +17,16 @@ bool FSequenceRenderer::RenderSequence(ULevelSequence* LevelSequence)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
 
+	// Load the asset representing needed movie pipeline configuration
+	UMoviePipelineMasterConfig* EasySynthMoviePipelineConfig =
+		LoadObject<UMoviePipelineMasterConfig>(nullptr, *EasySynthMoviePipelineConfigPath);
+	if (EasySynthMoviePipelineConfig == nullptr)
+	{
+		ErrorMessage = "Could not load the EasySynthMoviePipelineConfig";
+		UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		return false;
+	}
+
 	// Check if rendering is already in progress
 	if (bCurrentlyRendering)
 	{
@@ -49,16 +59,6 @@ bool FSequenceRenderer::RenderSequence(ULevelSequence* LevelSequence)
 	{
 		ErrorMessage = "Could not get the UMoviePipelineQueue";
 		UE_LOG(LogEasySynth, Log, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
-		return false;
-	}
-
-	// Load the asset representing needed movie pipeline configuration
-	UMoviePipelineMasterConfig* EasySynthMoviePipelineConfig =
-		LoadObject<UMoviePipelineMasterConfig>(nullptr, *EasySynthMoviePipelineConfigPath);
-	if (EasySynthMoviePipelineConfig == nullptr)
-	{
-		ErrorMessage = "Could not load the EasySynthMoviePipelineConfig";
-		UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 		return false;
 	}
 
