@@ -44,7 +44,8 @@ bool FSequenceRenderer::RenderSequence(ULevelSequence* LevelSequence, FSequenceR
 	}
 
 	// Check if any rendering target is selected
-	if (!RenderingTargets.AnyOptionSelected())
+	RequestedSequenceRendererTargets = RenderingTargets;
+	if (!RequestedSequenceRendererTargets.AnyOptionSelected())
 	{
 		ErrorMessage = "No rendering targets selected";
 		UE_LOG(LogEasySynth, Log, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
@@ -52,8 +53,7 @@ bool FSequenceRenderer::RenderSequence(ULevelSequence* LevelSequence, FSequenceR
 	}
 
 	// Get the movie rendering editor subsystem
-	UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem =
-		GEditor->GetEditorSubsystem<UMoviePipelineQueueSubsystem>();
+	MoviePipelineQueueSubsystem = GEditor->GetEditorSubsystem<UMoviePipelineQueueSubsystem>();
 	if (MoviePipelineQueueSubsystem == nullptr)
 	{
 		ErrorMessage = "Could not get the UMoviePipelineQueueSubsystem";
@@ -99,6 +99,56 @@ bool FSequenceRenderer::RenderSequence(ULevelSequence* LevelSequence, FSequenceR
 	NewJob->JobName = NewJob->Sequence.GetAssetName();
 	NewJob->SetConfiguration(EasySynthMoviePipelineConfig);
 
+	// Starting the next target rendering will increase the CurrentTarget from -1 to 0
+	CurrentTarget = -1;
+
+	if (!StartRenderingNextTarget())
+	{
+		// Propagate the error set inside the StartRenderingNextTarget
+		return false;
+	}
+
+	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering..."), *FString(__FUNCTION__))
+	bCurrentlyRendering = true;
+
+	return true;
+}
+
+void FSequenceRenderer::OnExecutorFinished(UMoviePipelineExecutorBase* InPipelineExecutor, bool bSuccess)
+{
+	if (!bSuccess)
+	{
+		ErrorMessage = FString::Printf(
+			TEXT("Failed while rendering the %s target"),
+			*FSequenceRendererTargets::TargetName(CurrentTarget));
+		UE_LOG(LogEasySynth, Log, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		bCurrentlyRendering = false;
+		// TODO: Notify widget of the unsuccessful rendering
+		return;
+	}
+
+	// This will handle all checks related to starting the next rendering job
+	StartRenderingNextTarget();
+}
+
+bool FSequenceRenderer::StartRenderingNextTarget()
+{
+	// Find the next requested target
+	while (++CurrentTarget != FSequenceRendererTargets::COUNT &&
+		!RequestedSequenceRendererTargets.TargetSelected(CurrentTarget)) {}
+
+	// Check if the end is reached
+	if (CurrentTarget == FSequenceRendererTargets::COUNT)
+	{
+		bCurrentlyRendering = false;
+		// TODO: Notify widget of the successful rendering
+		return true;
+	}
+
+	// TODO: Setup specifics of the current rendering target
+	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering the %s target"),
+		*FString(__FUNCTION__), *FSequenceRendererTargets::TargetName(CurrentTarget))
+
 	// Get the default movie rendering settings
 	const UMovieRenderPipelineProjectSettings* ProjectSettings = GetDefault<UMovieRenderPipelineProjectSettings>();
 	if (ProjectSettings->DefaultLocalExecutor == nullptr)
@@ -115,20 +165,13 @@ bool FSequenceRenderer::RenderSequence(ULevelSequence* LevelSequence, FSequenceR
 	{
 		ErrorMessage = "Could not start the rendering";
 		UE_LOG(LogEasySynth, Log, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		bCurrentlyRendering = false;
+		// TODO: Notify widget of the unsuccessful rendering
 		return false;
 	}
 
 	// Assign rendering finished callback
 	ActiveExecutor->OnExecutorFinished().AddRaw(this, &FSequenceRenderer::OnExecutorFinished);
 
-	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering..."), *FString(__FUNCTION__))
-	bCurrentlyRendering = true;
-
 	return true;
-}
-
-void FSequenceRenderer::OnExecutorFinished(UMoviePipelineExecutorBase* InPipelineExecutor, bool bSuccess)
-{
-	UE_LOG(LogEasySynth, Log, TEXT("%s: Success: %d"), *FString(__FUNCTION__), bSuccess)
-	bCurrentlyRendering = false;
 }
