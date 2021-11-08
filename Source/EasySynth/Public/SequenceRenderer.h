@@ -8,6 +8,7 @@
 
 class ULevelSequence;
 class UMoviePipelineExecutorBase;
+class UMoviePipelineMasterConfig;
 class UMoviePipelineQueueSubsystem;
 
 
@@ -98,13 +99,13 @@ private:
 	/** Rendering finished event dispatcher */
 	FDelegateRenderingFinished DelegateRenderingFinished;
 
+	/** Default movie pipeline config file provided with the plugin content */
+	UPROPERTY()
+	UMoviePipelineMasterConfig* EasySynthMoviePipelineConfig;
+
 	/** Points to the user-created level sequence */
 	UPROPERTY()
-	ULevelSequence* Sequence;
-
-	/** Keeps a pointer to the UMoviePipelineQueueSubsystem */
-	UPROPERTY()
-	UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem;
+	ULevelSequence* RenderingSequence;
 
 	/** Marks if rendering is currently in process */
 	bool bCurrentlyRendering;

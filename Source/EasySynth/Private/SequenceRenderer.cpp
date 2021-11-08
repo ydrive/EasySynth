@@ -9,9 +9,18 @@
 const FString USequenceRenderer::EasySynthMoviePipelineConfigPath("/EasySynth/EasySynthMoviePipelineConfig");
 
 USequenceRenderer::USequenceRenderer() :
+	EasySynthMoviePipelineConfig(LoadObject<UMoviePipelineMasterConfig>(nullptr, *EasySynthMoviePipelineConfigPath)),
 	bCurrentlyRendering(false),
 	ErrorMessage("")
-{}
+{
+	// Check if the config asset is loaded correctly
+	if (EasySynthMoviePipelineConfig == nullptr)
+	{
+		ErrorMessage = "Could not load the EasySynthMoviePipelineConfig";
+		UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		check(EasySynthMoviePipelineConfig)
+	}
+}
 
 bool USequenceRenderer::RenderSequence(ULevelSequence* LevelSequence, USequenceRendererTargets RenderingTargets)
 {
@@ -26,8 +35,8 @@ bool USequenceRenderer::RenderSequence(ULevelSequence* LevelSequence, USequenceR
 	}
 
 	// Check if LevelSequence is valid
-	Sequence = LevelSequence;
-	if (Sequence == nullptr)
+	RenderingSequence = LevelSequence;
+	if (RenderingSequence == nullptr)
 	{
 		ErrorMessage = "Provided level sequence is null";
 		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
@@ -99,23 +108,15 @@ void USequenceRenderer::FindNextTarget()
 void USequenceRenderer::StartRendering()
 {
 	// Make sure the sequence is still sound
-	if (Sequence == nullptr)
+	if (RenderingSequence == nullptr)
 	{
 		ErrorMessage = "Provided level sequence is null";
 		return BroadcastRenderingFinished(false);
 	}
 
-	// Load the asset representing needed movie pipeline configuration
-	UMoviePipelineMasterConfig* EasySynthMoviePipelineConfig =
-		LoadObject<UMoviePipelineMasterConfig>(nullptr, *EasySynthMoviePipelineConfigPath);
-	if (EasySynthMoviePipelineConfig == nullptr)
-	{
-		ErrorMessage = "Could not load the EasySynthMoviePipelineConfig";
-		return BroadcastRenderingFinished(false);
-	}
-
 	// Get the movie rendering editor subsystem
-	MoviePipelineQueueSubsystem = GEditor->GetEditorSubsystem<UMoviePipelineQueueSubsystem>();
+	UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem =
+		GEditor->GetEditorSubsystem<UMoviePipelineQueueSubsystem>();
 	if (MoviePipelineQueueSubsystem == nullptr)
 	{
 		ErrorMessage = "Could not get the UMoviePipelineQueueSubsystem";
@@ -153,8 +154,9 @@ void USequenceRenderer::StartRendering()
 	NewJob->Modify();
 	NewJob->Map = FSoftObjectPath(GEditor->GetEditorWorldContext().World());
 	NewJob->Author = FPlatformProcess::UserName(false);
-	NewJob->SetSequence(Sequence);
+	NewJob->SetSequence(RenderingSequence);
 	NewJob->JobName = NewJob->Sequence.GetAssetName();
+	// The SetConfiguration method creates and assigns the copy of the provided config
 	NewJob->SetConfiguration(EasySynthMoviePipelineConfig);
 
 	// Get the default movie rendering settings
