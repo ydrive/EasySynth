@@ -18,6 +18,7 @@ public:
 	FWidgetManager();
 	~FWidgetManager();
 
+	/** Handles the UI tab creation when requested */
 	TSharedRef<SDockTab> OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs);
 
 private:

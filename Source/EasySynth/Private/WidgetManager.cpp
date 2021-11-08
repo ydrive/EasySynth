@@ -15,6 +15,7 @@ FWidgetManager::FWidgetManager()
 {
 	// Create the sequence renderer and add it to the root to avoid garbage collection
 	SequenceRenderer = NewObject<USequenceRenderer>();
+	check(SequenceRenderer)
 	SequenceRenderer->AddToRoot();
 }
 
