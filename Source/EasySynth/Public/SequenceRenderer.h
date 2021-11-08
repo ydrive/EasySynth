@@ -4,9 +4,24 @@
 
 #include "CoreMinimal.h"
 
+#include "SequenceRenderer.generated.h"
+
 class ULevelSequence;
 class UMoviePipelineExecutorBase;
 class UMoviePipelineQueueSubsystem;
+
+
+/** Delegate type used to broadcast the rendering finished event */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateRenderingFinished, bool, bSuccess);
+
+
+// TODO: Remove this enum and make Renderer an UObject
+/** Dummy UENUM used to force the build system to generate the .generated file */
+UENUM()
+enum class EDummyEnum
+{
+	DUMMY UMETA(DisplayName = "DUMMY"),
+};
 
 
 /**
@@ -77,8 +92,20 @@ private:
 	/** Movie rendering finished handle */
 	void OnExecutorFinished(UMoviePipelineExecutorBase* InPipelineExecutor, bool bSuccess);
 
-	/** Handles finding and running the next rendering target */
-	bool StartRenderingNextTarget();
+	/** Handles finding the next target to be rendered */
+	void FindNextTarget();
+
+	/** Runs the rendering of the currently selected target */
+	void StartRendering();
+
+	/** Finalizes rendering and broadcasts the event */
+	void BroadcastRenderingFinished(bool bSuccess);
+
+	/** Rendering finished event dispatcher */
+	FDelegateRenderingFinished DelegateRenderingFinished;
+
+	/** Points to the user-created level sequence */
+	ULevelSequence* Sequence;
 
 	/** Keeps a pointer to the UMoviePipelineQueueSubsystem */
 	UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem;
@@ -91,6 +118,9 @@ private:
 
 	/** FSequenceRendererTargets::TargetType */
 	int CurrentTarget;
+
+	/** Handle for a timer needed to make a brief pause between targets */
+	FTimerHandle RendererPauseTimerHandle;
 
 	/** Stores the latest error message */
 	FString ErrorMessage;
