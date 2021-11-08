@@ -19,13 +19,6 @@ FWidgetManager::FWidgetManager()
 	SequenceRenderer->AddToRoot();
 }
 
-FWidgetManager::~FWidgetManager()
-{
-	// Release the sequence renderer object
-	SequenceRenderer->RemoveFromRoot();
-	SequenceRenderer = nullptr;
-}
-
 TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
 	return SNew(SDockTab)
