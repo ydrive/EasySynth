@@ -6,14 +6,14 @@
 #include "MovieRenderPipelineSettings.h"
 
 
-const FString FSequenceRenderer::EasySynthMoviePipelineConfigPath("/EasySynth/EasySynthMoviePipelineConfig");
+const FString USequenceRenderer::EasySynthMoviePipelineConfigPath("/EasySynth/EasySynthMoviePipelineConfig");
 
-FSequenceRenderer::FSequenceRenderer() :
+USequenceRenderer::USequenceRenderer() :
 	bCurrentlyRendering(false),
 	ErrorMessage("")
 {}
 
-bool FSequenceRenderer::RenderSequence(ULevelSequence* LevelSequence, FSequenceRendererTargets RenderingTargets)
+bool USequenceRenderer::RenderSequence(ULevelSequence* LevelSequence, USequenceRendererTargets RenderingTargets)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
 
@@ -55,13 +55,13 @@ bool FSequenceRenderer::RenderSequence(ULevelSequence* LevelSequence, FSequenceR
 	return true;
 }
 
-void FSequenceRenderer::OnExecutorFinished(UMoviePipelineExecutorBase* InPipelineExecutor, bool bSuccess)
+void USequenceRenderer::OnExecutorFinished(UMoviePipelineExecutorBase* InPipelineExecutor, bool bSuccess)
 {
 	if (!bSuccess)
 	{
 		ErrorMessage = FString::Printf(
 			TEXT("Failed while rendering the %s target"),
-			*FSequenceRendererTargets::TargetName(CurrentTarget));
+			*USequenceRendererTargets::TargetName(CurrentTarget));
 		return BroadcastRenderingFinished(false);
 	}
 
@@ -69,33 +69,34 @@ void FSequenceRenderer::OnExecutorFinished(UMoviePipelineExecutorBase* InPipelin
 	FindNextTarget();
 }
 
-void FSequenceRenderer::FindNextTarget()
+void USequenceRenderer::FindNextTarget()
 {
 	// Find the next requested target
-	while (++CurrentTarget != FSequenceRendererTargets::COUNT &&
+	while (++CurrentTarget != USequenceRendererTargets::COUNT &&
 		!RequestedSequenceRendererTargets.TargetSelected(CurrentTarget)) {}
 
 	// Check if the end is reached
-	if (CurrentTarget == FSequenceRendererTargets::COUNT)
+	if (CurrentTarget == USequenceRendererTargets::COUNT)
 	{
 		return BroadcastRenderingFinished(true);
 	}
 
 	// TODO: Setup specifics of the current rendering target
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering the %s target"),
-		*FString(__FUNCTION__), *FSequenceRendererTargets::TargetName(CurrentTarget))
+		*FString(__FUNCTION__), *USequenceRendererTargets::TargetName(CurrentTarget))
 
 	// Start the rendering after a brief pause
 	const float DelaySeconds = 2.0f;
 	const bool bLoop = false;
 	GEditor->GetEditorWorldContext().World()->GetTimerManager().SetTimer(
 		RendererPauseTimerHandle,
-		FTimerDelegate::CreateRaw(this, &FSequenceRenderer::StartRendering),
+		this,
+		&USequenceRenderer::StartRendering,
 		DelaySeconds,
 		bLoop);
 }
 
-void FSequenceRenderer::StartRendering()
+void USequenceRenderer::StartRendering()
 {
 	// Make sure the sequence is still sound
 	if (Sequence == nullptr)
@@ -174,11 +175,11 @@ void FSequenceRenderer::StartRendering()
 	}
 
 	// Assign rendering finished callback
-	ActiveExecutor->OnExecutorFinished().AddRaw(this, &FSequenceRenderer::OnExecutorFinished);
+	ActiveExecutor->OnExecutorFinished().AddUObject(this, &USequenceRenderer::OnExecutorFinished);
 	// TODO: Bind other events, such as rendering canceled
 }
 
-void FSequenceRenderer::BroadcastRenderingFinished(bool bSuccess)
+void USequenceRenderer::BroadcastRenderingFinished(bool bSuccess)
 {
 	if (!bSuccess)
 	{

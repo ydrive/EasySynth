@@ -15,25 +15,16 @@ class UMoviePipelineQueueSubsystem;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateRenderingFinished, bool, bSuccess);
 
 
-// TODO: Remove this enum and make Renderer an UObject
-/** Dummy UENUM used to force the build system to generate the .generated file */
-UENUM()
-enum class EDummyEnum
-{
-	DUMMY UMETA(DisplayName = "DUMMY"),
-};
-
-
 /**
  * Class Tracking which renderer targets are requested to be rendered
 */
-class FSequenceRendererTargets
+class USequenceRendererTargets
 {
 public:
 	/** The enum containing all supported rendering targets */
 	enum TargetType { COLOR_IMAGE, DEPTH_IMAGE, NORMAL_IMAGE, SEMANTIC_IMAGE, COUNT };
 
-	FSequenceRendererTargets() { SelectedTargets.Init(false, TargetType::COUNT); }
+	USequenceRendererTargets() { SelectedTargets.Init(false, TargetType::COUNT); }
 
 	/** Select a rendering target */
 	void SetSelectedTarget(int TargetType, bool Selected) { SelectedTargets[TargetType] = Selected; }
@@ -76,14 +67,17 @@ private:
 /**
  * Class that runs sequence rendering
 */
-class FSequenceRenderer
+UCLASS()
+class USequenceRenderer : public UObject
 {
+	GENERATED_BODY()
+
 public:
 	/** Initialize the SequenceRenderer */
-	FSequenceRenderer();
+	USequenceRenderer();
 
 	/** Runs sequence rendering, returns false if rendering could not start */
-	bool RenderSequence(ULevelSequence* LevelSequence, FSequenceRendererTargets RenderingTargets);
+	bool RenderSequence(ULevelSequence* LevelSequence, USequenceRendererTargets RenderingTargets);
 
 	/** Returns the latest error message */
 	const FString& GetErrorMessage() const { return ErrorMessage; }
@@ -105,18 +99,20 @@ private:
 	FDelegateRenderingFinished DelegateRenderingFinished;
 
 	/** Points to the user-created level sequence */
+	UPROPERTY()
 	ULevelSequence* Sequence;
 
 	/** Keeps a pointer to the UMoviePipelineQueueSubsystem */
+	UPROPERTY()
 	UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem;
 
 	/** Marks if rendering is currently in process */
 	bool bCurrentlyRendering;
 
 	/** SequenceRenderer copy of the requested rendering targets */
-	FSequenceRendererTargets RequestedSequenceRendererTargets;
+	USequenceRendererTargets RequestedSequenceRendererTargets;
 
-	/** FSequenceRendererTargets::TargetType */
+	/** Indicates the current target as an index of the USequenceRendererTargets::TargetType enum */
 	int CurrentTarget;
 
 	/** Handle for a timer needed to make a brief pause between targets */

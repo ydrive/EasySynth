@@ -11,6 +11,20 @@
 
 const FText FWidgetManager::StartRenderingErrorMessageBoxTitle = FText::FromString(TEXT("Could not start rendering"));
 
+FWidgetManager::FWidgetManager()
+{
+	// Create the sequence renderer and add it to the root to avoid garbage collection
+	SequenceRenderer = NewObject<USequenceRenderer>();
+	SequenceRenderer->AddToRoot();
+}
+
+FWidgetManager::~FWidgetManager()
+{
+	// Release the sequence renderer object
+	SequenceRenderer->RemoveFromRoot();
+	SequenceRenderer = nullptr;
+}
+
 TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
 	return SNew(SDockTab)
@@ -41,7 +55,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			[
 				SNew(SCheckBox)
 				.OnCheckStateChanged_Raw(
-					this, &FWidgetManager::OnRenderTargetsChanged, FSequenceRendererTargets::COLOR_IMAGE)
+					this, &FWidgetManager::OnRenderTargetsChanged, USequenceRendererTargets::COLOR_IMAGE)
 				[
 					SNew(STextBlock)
 					.Text(FText::FromString("Color images"))
@@ -51,7 +65,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			[
 				SNew(SCheckBox)
 				.OnCheckStateChanged_Raw(
-					this, &FWidgetManager::OnRenderTargetsChanged, FSequenceRendererTargets::DEPTH_IMAGE)
+					this, &FWidgetManager::OnRenderTargetsChanged, USequenceRendererTargets::DEPTH_IMAGE)
 				[
 					SNew(STextBlock)
 					.Text(FText::FromString("Depth images"))
@@ -61,7 +75,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			[
 				SNew(SCheckBox)
 				.OnCheckStateChanged_Raw(
-					this, &FWidgetManager::OnRenderTargetsChanged, FSequenceRendererTargets::NORMAL_IMAGE)
+					this, &FWidgetManager::OnRenderTargetsChanged, USequenceRendererTargets::NORMAL_IMAGE)
 				[
 					SNew(STextBlock)
 					.Text(FText::FromString("Normal images"))
@@ -71,7 +85,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			[
 				SNew(SCheckBox)
 				.OnCheckStateChanged_Raw(
-					this, &FWidgetManager::OnRenderTargetsChanged, FSequenceRendererTargets::SEMANTIC_IMAGE)
+					this, &FWidgetManager::OnRenderTargetsChanged, USequenceRendererTargets::SEMANTIC_IMAGE)
 				[
 					SNew(STextBlock)
 					.Text(FText::FromString("Semantic images"))
@@ -104,7 +118,7 @@ FString FWidgetManager::GetSequencerPath() const
 	return "";
 }
 
-void FWidgetManager::OnRenderTargetsChanged(ECheckBoxState NewState, FSequenceRendererTargets::TargetType TargetType)
+void FWidgetManager::OnRenderTargetsChanged(ECheckBoxState NewState, USequenceRendererTargets::TargetType TargetType)
 {
 	SequenceRendererTargets.SetSelectedTarget(TargetType, (NewState == ECheckBoxState::Checked));
 }
@@ -114,11 +128,11 @@ FReply FWidgetManager::OnRenderImagesClicked()
 	ULevelSequence* LevelSequence = Cast<ULevelSequence>(LevelSequenceAssetData.GetAsset());
 	// Make a copy of the SequenceRendererTargets to avoid
 	// them being changed through the UI during rendering
-	if (!SequenceRenderer.RenderSequence(LevelSequence, SequenceRendererTargets))
+	if (!SequenceRenderer->RenderSequence(LevelSequence, SequenceRendererTargets))
 	{
 		FMessageDialog::Open(
 			EAppMsgType::Ok,
-			FText::FromString(*SequenceRenderer.GetErrorMessage()),
+			FText::FromString(*SequenceRenderer->GetErrorMessage()),
 			&StartRenderingErrorMessageBoxTitle);
 	}
 	return FReply::Handled();

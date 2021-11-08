@@ -15,6 +15,9 @@ class ULevelSequence;
 class FWidgetManager
 {
 public:
+	FWidgetManager();
+	~FWidgetManager();
+
 	TSharedRef<SDockTab> OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs);
 
 private:
@@ -25,21 +28,23 @@ private:
 	FString GetSequencerPath() const;
 
 	/** Target render images checkbox handling */
-	void OnRenderTargetsChanged(ECheckBoxState NewState, FSequenceRendererTargets::TargetType TargetType);
+	void OnRenderTargetsChanged(ECheckBoxState NewState, USequenceRendererTargets::TargetType TargetType);
 
 	/** Handles render images button click */
 	FReply OnRenderImagesClicked();
 
 	/** Currently selected sequencer asset data */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Content")
 	FAssetData LevelSequenceAssetData;
 
 	/** Widget's copy of the chosen renderer targets set */
-	FSequenceRendererTargets SequenceRendererTargets;
+	USequenceRendererTargets SequenceRendererTargets;
 
 	/** Error message box title for failed rendering start */
 	static const FText StartRenderingErrorMessageBoxTitle;
 
-	/** Module that runs sequence rendering */
-	FSequenceRenderer SequenceRenderer;
+	/**
+	 * Module that runs sequence rendering,
+	 * must be added to the root to avoid garbage collection
+	*/
+	USequenceRenderer* SequenceRenderer;
 };
