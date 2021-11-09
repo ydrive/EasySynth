@@ -19,13 +19,13 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateRenderingFinished, bool, bS
 /**
  * Class Tracking which renderer targets are requested to be rendered
 */
-class FSequenceRendererTargets
+class FRendererTargetOptions
 {
 public:
 	/** The enum containing all supported rendering targets */
 	enum TargetType { COLOR_IMAGE, DEPTH_IMAGE, NORMAL_IMAGE, SEMANTIC_IMAGE, COUNT };
 
-	FSequenceRendererTargets() { SelectedTargets.Init(false, TargetType::COUNT); }
+	FRendererTargetOptions() { SelectedTargets.Init(false, TargetType::COUNT); }
 
 	/** Select a rendering target */
 	void SetSelectedTarget(int TargetType, bool Selected) { SelectedTargets[TargetType] = Selected; }
@@ -80,7 +80,7 @@ public:
 	/** Runs sequence rendering, returns false if rendering could not start */
 	bool RenderSequence(
 		ULevelSequence* LevelSequence,
-		FSequenceRendererTargets RenderingTargets,
+		FRendererTargetOptions RenderingTargets,
 		const FString& OutputDirectory);
 
 	/** Returns the latest error message */
@@ -111,7 +111,7 @@ private:
 	ULevelSequence* RenderingSequence;
 
 	/** SequenceRenderer copy of the requested rendering targets */
-	FSequenceRendererTargets RequestedSequenceRendererTargets;
+	FRendererTargetOptions RequestedSequenceRendererTargets;
 
 	/** Currently selected output directory */
 	FString RenderingDirectory;
@@ -119,7 +119,7 @@ private:
 	/** Marks if rendering is currently in process */
 	bool bCurrentlyRendering;
 
-	/** Indicates the current target as an index of the FSequenceRendererTargets::TargetType enum */
+	/** Indicates the current target as an index of the FRendererTargetOptions::TargetType enum */
 	int CurrentTarget;
 
 	/** Handle for a timer needed to make a brief pause between targets */

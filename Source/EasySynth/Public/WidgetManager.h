@@ -28,7 +28,7 @@ private:
 	FString GetSequencerPath() const;
 
 	/** Target render images checkbox handling */
-	void OnRenderTargetsChanged(ECheckBoxState NewState, FSequenceRendererTargets::TargetType TargetType);
+	void OnRenderTargetsChanged(ECheckBoxState NewState, FRendererTargetOptions::TargetType TargetType);
 
 	/** Callback function handling the update of the output directory */
 	void OnOutputDirectoryChanged(const FString& Directory);
@@ -40,7 +40,7 @@ private:
 	FAssetData LevelSequenceAssetData;
 
 	/** Widget's copy of the chosen renderer targets set */
-	FSequenceRendererTargets SequenceRendererTargets;
+	FRendererTargetOptions SequenceRendererTargets;
 
 	/** Currently selected output directory */
 	FString OutputDirectory;

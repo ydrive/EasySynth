@@ -25,7 +25,7 @@ USequenceRenderer::USequenceRenderer() :
 
 bool USequenceRenderer::RenderSequence(
 	ULevelSequence* LevelSequence,
-	FSequenceRendererTargets RenderingTargets,
+	FRendererTargetOptions RenderingTargets,
 	const FString& OutputDirectory)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
@@ -77,7 +77,7 @@ void USequenceRenderer::OnExecutorFinished(UMoviePipelineExecutorBase* InPipelin
 	{
 		ErrorMessage = FString::Printf(
 			TEXT("Failed while rendering the %s target"),
-			*FSequenceRendererTargets::TargetName(CurrentTarget));
+			*FRendererTargetOptions::TargetName(CurrentTarget));
 		return BroadcastRenderingFinished(false);
 	}
 
@@ -88,18 +88,18 @@ void USequenceRenderer::OnExecutorFinished(UMoviePipelineExecutorBase* InPipelin
 void USequenceRenderer::FindNextTarget()
 {
 	// Find the next requested target
-	while (++CurrentTarget != FSequenceRendererTargets::COUNT &&
+	while (++CurrentTarget != FRendererTargetOptions::COUNT &&
 		!RequestedSequenceRendererTargets.TargetSelected(CurrentTarget)) {}
 
 	// Check if the end is reached
-	if (CurrentTarget == FSequenceRendererTargets::COUNT)
+	if (CurrentTarget == FRendererTargetOptions::COUNT)
 	{
 		return BroadcastRenderingFinished(true);
 	}
 
 	// TODO: Setup specifics of the current rendering target
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering the %s target"),
-		*FString(__FUNCTION__), *FSequenceRendererTargets::TargetName(CurrentTarget))
+		*FString(__FUNCTION__), *FRendererTargetOptions::TargetName(CurrentTarget))
 
 	// Start the rendering after a brief pause
 	const float DelaySeconds = 2.0f;
@@ -131,7 +131,7 @@ void USequenceRenderer::StartRendering()
 	}
 	// Update the image output directory
 	OutputSetting->OutputDirectory.Path = FPaths::Combine(
-		RenderingDirectory, FSequenceRendererTargets::TargetName(CurrentTarget));
+		RenderingDirectory, FRendererTargetOptions::TargetName(CurrentTarget));
 
 	// Get the movie rendering editor subsystem
 	UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem =

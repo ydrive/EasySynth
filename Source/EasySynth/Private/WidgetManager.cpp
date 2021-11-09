@@ -54,7 +54,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			[
 				SNew(SCheckBox)
 				.OnCheckStateChanged_Raw(
-					this, &FWidgetManager::OnRenderTargetsChanged, FSequenceRendererTargets::COLOR_IMAGE)
+					this, &FWidgetManager::OnRenderTargetsChanged, FRendererTargetOptions::COLOR_IMAGE)
 				[
 					SNew(STextBlock)
 					.Text(FText::FromString("Color images"))
@@ -64,7 +64,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			[
 				SNew(SCheckBox)
 				.OnCheckStateChanged_Raw(
-					this, &FWidgetManager::OnRenderTargetsChanged, FSequenceRendererTargets::DEPTH_IMAGE)
+					this, &FWidgetManager::OnRenderTargetsChanged, FRendererTargetOptions::DEPTH_IMAGE)
 				[
 					SNew(STextBlock)
 					.Text(FText::FromString("Depth images"))
@@ -74,7 +74,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			[
 				SNew(SCheckBox)
 				.OnCheckStateChanged_Raw(
-					this, &FWidgetManager::OnRenderTargetsChanged, FSequenceRendererTargets::NORMAL_IMAGE)
+					this, &FWidgetManager::OnRenderTargetsChanged, FRendererTargetOptions::NORMAL_IMAGE)
 				[
 					SNew(STextBlock)
 					.Text(FText::FromString("Normal images"))
@@ -84,7 +84,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			[
 				SNew(SCheckBox)
 				.OnCheckStateChanged_Raw(
-					this, &FWidgetManager::OnRenderTargetsChanged, FSequenceRendererTargets::SEMANTIC_IMAGE)
+					this, &FWidgetManager::OnRenderTargetsChanged, FRendererTargetOptions::SEMANTIC_IMAGE)
 				[
 					SNew(STextBlock)
 					.Text(FText::FromString("Semantic images"))
@@ -129,7 +129,7 @@ FString FWidgetManager::GetSequencerPath() const
 	return "";
 }
 
-void FWidgetManager::OnRenderTargetsChanged(ECheckBoxState NewState, FSequenceRendererTargets::TargetType TargetType)
+void FWidgetManager::OnRenderTargetsChanged(ECheckBoxState NewState, FRendererTargetOptions::TargetType TargetType)
 {
 	SequenceRendererTargets.SetSelectedTarget(TargetType, (NewState == ECheckBoxState::Checked));
 }
