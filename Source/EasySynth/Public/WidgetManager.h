@@ -30,6 +30,9 @@ private:
 	/** Target render images checkbox handling */
 	void OnRenderTargetsChanged(ECheckBoxState NewState, USequenceRendererTargets::TargetType TargetType);
 
+	/** Callback function handling the update of the output directory */
+	void OnOutputDirectoryChanged(const FString& Directory);
+
 	/** Handles render images button click */
 	FReply OnRenderImagesClicked();
 
@@ -38,6 +41,9 @@ private:
 
 	/** Widget's copy of the chosen renderer targets set */
 	USequenceRendererTargets SequenceRendererTargets;
+
+	/** Currently selected output directory */
+	FString OutputDirectory;
 
 	/** Error message box title for failed rendering start */
 	static const FText StartRenderingErrorMessageBoxTitle;

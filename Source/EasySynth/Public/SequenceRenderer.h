@@ -51,10 +51,10 @@ public:
 	{
 		switch (TargetType)
 		{
-		case COLOR_IMAGE: return "color image"; break;
-		case DEPTH_IMAGE: return "depth image"; break;
-		case NORMAL_IMAGE: return "normal image"; break;
-		case SEMANTIC_IMAGE: return "semantic image"; break;
+		case COLOR_IMAGE: return TEXT("ColorImage"); break;
+		case DEPTH_IMAGE: return TEXT("DepthImage"); break;
+		case NORMAL_IMAGE: return TEXT("NormalImage"); break;
+		case SEMANTIC_IMAGE: return TEXT("SemanticImage"); break;
 		default: return "";
 		}
 	}
@@ -78,7 +78,10 @@ public:
 	USequenceRenderer();
 
 	/** Runs sequence rendering, returns false if rendering could not start */
-	bool RenderSequence(ULevelSequence* LevelSequence, USequenceRendererTargets RenderingTargets);
+	bool RenderSequence(
+		ULevelSequence* LevelSequence,
+		USequenceRendererTargets RenderingTargets,
+		const FString& OutputDirectory);
 
 	/** Returns the latest error message */
 	const FString& GetErrorMessage() const { return ErrorMessage; }
@@ -107,11 +110,14 @@ private:
 	UPROPERTY()
 	ULevelSequence* RenderingSequence;
 
-	/** Marks if rendering is currently in process */
-	bool bCurrentlyRendering;
-
 	/** SequenceRenderer copy of the requested rendering targets */
 	USequenceRendererTargets RequestedSequenceRendererTargets;
+
+	/** Currently selected output directory */
+	FString RenderingDirectory;
+
+	/** Marks if rendering is currently in process */
+	bool bCurrentlyRendering;
 
 	/** Indicates the current target as an index of the USequenceRendererTargets::TargetType enum */
 	int CurrentTarget;

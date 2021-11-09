@@ -48,6 +48,7 @@ public class EasySynth : ModuleRules
 				"MovieRenderPipelineCore",
 				"MovieRenderPipelineEditor",
 				// Editor tab functionality
+				"DesktopWidgets",
 				"PropertyEditor",
 				// ... add private dependencies that you statically link with here ...
 			}

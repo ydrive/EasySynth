@@ -2,6 +2,7 @@
 
 #include "SequenceRenderer.h"
 
+#include "MoviePipelineOutputSetting.h"
 #include "MoviePipelineQueueSubsystem.h"
 #include "MovieRenderPipelineSettings.h"
 
@@ -22,7 +23,10 @@ USequenceRenderer::USequenceRenderer() :
 	}
 }
 
-bool USequenceRenderer::RenderSequence(ULevelSequence* LevelSequence, USequenceRendererTargets RenderingTargets)
+bool USequenceRenderer::RenderSequence(
+	ULevelSequence* LevelSequence,
+	USequenceRendererTargets RenderingTargets,
+	const FString& OutputDirectory)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
 
@@ -51,6 +55,9 @@ bool USequenceRenderer::RenderSequence(ULevelSequence* LevelSequence, USequenceR
 		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 		return false;
 	}
+
+	// Store the output directory
+	RenderingDirectory = OutputDirectory;
 
 	// Starting the next target rendering will increase the CurrentTarget from -1 to 0
 	CurrentTarget = -1;
@@ -113,6 +120,18 @@ void USequenceRenderer::StartRendering()
 		ErrorMessage = "Provided level sequence is null";
 		return BroadcastRenderingFinished(false);
 	}
+
+	// Update pipeline output settings for the current target
+	UMoviePipelineOutputSetting* OutputSetting =
+		EasySynthMoviePipelineConfig->FindSetting<UMoviePipelineOutputSetting>();
+	if (OutputSetting == nullptr)
+	{
+		ErrorMessage = "Could not find the output setting inside the default config";
+		return BroadcastRenderingFinished(false);
+	}
+	// Update the image output directory
+	OutputSetting->OutputDirectory.Path = FPaths::Combine(
+		RenderingDirectory, USequenceRendererTargets::TargetName(CurrentTarget));
 
 	// Get the movie rendering editor subsystem
 	UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem =
@@ -187,6 +206,7 @@ void USequenceRenderer::BroadcastRenderingFinished(bool bSuccess)
 	{
 		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 	}
+	// TODO: Revert world state to the original one (remove semantic textures)
 	bCurrentlyRendering = false;
 	DelegateRenderingFinished.Broadcast(bSuccess);
 }

@@ -5,6 +5,7 @@
 #include "LevelSequence.h"
 #include "PropertyCustomizationHelpers.h"
 #include "Widgets/Docking/SDockTab.h"
+#include "Widgets/Input/SDirectoryPicker.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Text/STextBlock.h"
 
@@ -17,6 +18,10 @@ FWidgetManager::FWidgetManager()
 	SequenceRenderer = NewObject<USequenceRenderer>();
 	check(SequenceRenderer)
 	SequenceRenderer->AddToRoot();
+
+	// Define the default output directory
+	// TODO: remember the last one used
+	OutputDirectory = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("RenderingOutput"));
 }
 
 TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
@@ -87,7 +92,19 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			]
 			+SScrollBox::Slot()
 			[
+				SNew(STextBlock)
+				.Text(FText::FromString("Ouput directory"))
+			]
+			+SScrollBox::Slot()
+			[
+				SNew(SDirectoryPicker)
+				.Directory(OutputDirectory)
+				.OnDirectoryChanged_Raw(this, &FWidgetManager::OnOutputDirectoryChanged)
+			]
+			+SScrollBox::Slot()
+			[
 				SNew(SButton)
+				// TODO: Disable if settings are not valid
 				.OnClicked_Raw(this, &FWidgetManager::OnRenderImagesClicked)
 				.Content()
 				[
@@ -117,12 +134,17 @@ void FWidgetManager::OnRenderTargetsChanged(ECheckBoxState NewState, USequenceRe
 	SequenceRendererTargets.SetSelectedTarget(TargetType, (NewState == ECheckBoxState::Checked));
 }
 
+void FWidgetManager::OnOutputDirectoryChanged(const FString& Directory)
+{
+	OutputDirectory = Directory;
+}
+
 FReply FWidgetManager::OnRenderImagesClicked()
 {
 	ULevelSequence* LevelSequence = Cast<ULevelSequence>(LevelSequenceAssetData.GetAsset());
 	// Make a copy of the SequenceRendererTargets to avoid
 	// them being changed through the UI during rendering
-	if (!SequenceRenderer->RenderSequence(LevelSequence, SequenceRendererTargets))
+	if (!SequenceRenderer->RenderSequence(LevelSequence, SequenceRendererTargets, OutputDirectory))
 	{
 		FMessageDialog::Open(
 			EAppMsgType::Ok,
