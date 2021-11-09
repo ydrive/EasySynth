@@ -25,7 +25,7 @@ USequenceRenderer::USequenceRenderer() :
 
 bool USequenceRenderer::RenderSequence(
 	ULevelSequence* LevelSequence,
-	USequenceRendererTargets RenderingTargets,
+	FSequenceRendererTargets RenderingTargets,
 	const FString& OutputDirectory)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
@@ -77,7 +77,7 @@ void USequenceRenderer::OnExecutorFinished(UMoviePipelineExecutorBase* InPipelin
 	{
 		ErrorMessage = FString::Printf(
 			TEXT("Failed while rendering the %s target"),
-			*USequenceRendererTargets::TargetName(CurrentTarget));
+			*FSequenceRendererTargets::TargetName(CurrentTarget));
 		return BroadcastRenderingFinished(false);
 	}
 
@@ -88,18 +88,18 @@ void USequenceRenderer::OnExecutorFinished(UMoviePipelineExecutorBase* InPipelin
 void USequenceRenderer::FindNextTarget()
 {
 	// Find the next requested target
-	while (++CurrentTarget != USequenceRendererTargets::COUNT &&
+	while (++CurrentTarget != FSequenceRendererTargets::COUNT &&
 		!RequestedSequenceRendererTargets.TargetSelected(CurrentTarget)) {}
 
 	// Check if the end is reached
-	if (CurrentTarget == USequenceRendererTargets::COUNT)
+	if (CurrentTarget == FSequenceRendererTargets::COUNT)
 	{
 		return BroadcastRenderingFinished(true);
 	}
 
 	// TODO: Setup specifics of the current rendering target
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering the %s target"),
-		*FString(__FUNCTION__), *USequenceRendererTargets::TargetName(CurrentTarget))
+		*FString(__FUNCTION__), *FSequenceRendererTargets::TargetName(CurrentTarget))
 
 	// Start the rendering after a brief pause
 	const float DelaySeconds = 2.0f;
@@ -131,7 +131,7 @@ void USequenceRenderer::StartRendering()
 	}
 	// Update the image output directory
 	OutputSetting->OutputDirectory.Path = FPaths::Combine(
-		RenderingDirectory, USequenceRendererTargets::TargetName(CurrentTarget));
+		RenderingDirectory, FSequenceRendererTargets::TargetName(CurrentTarget));
 
 	// Get the movie rendering editor subsystem
 	UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem =
