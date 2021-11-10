@@ -40,31 +40,15 @@ public:
 	bool TargetSelected(int TargetType) const { return SelectedTargets[TargetType]; }
 
 	/** Checks if any of the available options is selected */
-	bool AnyOptionSelected() const
-	{
-		for (bool TargetSelected : SelectedTargets)
-		{
-			if (TargetSelected)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
+	bool AnyOptionSelected() const;
 
-	static TSharedPtr<FRendererTarget> RendererTarget(const int TargetType)
-	{
-		switch (TargetType)
-		{
-		case COLOR_IMAGE: return MakeShared<FColorImageTarget>(); break;
-		case DEPTH_IMAGE: return MakeShared<FDepthImageTarget>(); break;
-		case NORMAL_IMAGE: return MakeShared<FNormalImageTarget>(); break;
-		case SEMANTIC_IMAGE: return MakeShared<FSemanticImageTarget>(); break;
-		default: return nullptr;
-		}
-	}
+	/** Populate provided queue with selected renderer targets */
+	void GetSelectedTargets(TQueue<TSharedPtr<FRendererTarget>>& OutTargetsQueue) const;
 
 private:
+	/** Get the renderer target object from the target type id */
+	static TSharedPtr<FRendererTarget> RendererTarget(const int TargetType);
+
 	/** Is the default color image rendering requested */
 	TArray<bool> SelectedTargets;
 };
@@ -85,7 +69,7 @@ public:
 	/** Runs sequence rendering, returns false if rendering could not start */
 	bool RenderSequence(
 		ULevelSequence* LevelSequence,
-		FRendererTargetOptions RenderingTargets,
+		const FRendererTargetOptions RenderingTargets,
 		const FString& OutputDirectory);
 
 	/** Returns the latest error message */
@@ -102,7 +86,7 @@ private:
 	void StartRendering();
 
 	/** Finalizes rendering and broadcasts the event */
-	void BroadcastRenderingFinished(bool bSuccess);
+	void BroadcastRenderingFinished(const bool bSuccess);
 
 	/** Rendering finished event dispatcher */
 	FDelegateRenderingFinished DelegateRenderingFinished;
@@ -115,17 +99,17 @@ private:
 	UPROPERTY()
 	ULevelSequence* RenderingSequence;
 
-	/** SequenceRenderer copy of the requested rendering targets */
-	FRendererTargetOptions RequestedSequenceRendererTargets;
+	/** Queue of targets to be rendered */
+	TQueue<TSharedPtr<FRendererTarget>> TargetsQueue;
+
+	/** Target currently being rendered */
+	TSharedPtr<FRendererTarget> CurrentTarget;
 
 	/** Currently selected output directory */
 	FString RenderingDirectory;
 
 	/** Marks if rendering is currently in process */
 	bool bCurrentlyRendering;
-
-	/** Indicates the current target as an index of the FRendererTargetOptions::TargetType enum */
-	int CurrentTarget;
 
 	/** Handle for a timer needed to make a brief pause between targets */
 	FTimerHandle RendererPauseTimerHandle;

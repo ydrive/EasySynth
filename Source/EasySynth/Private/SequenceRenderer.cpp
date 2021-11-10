@@ -9,6 +9,54 @@
 #include "RendererTargets/RendererTarget.h"
 
 
+bool FRendererTargetOptions::AnyOptionSelected() const
+{
+	for (bool TargetSelected : SelectedTargets)
+	{
+		if (TargetSelected)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void FRendererTargetOptions::GetSelectedTargets(TQueue<TSharedPtr<FRendererTarget>>& OutTargetsQueue) const
+{
+	OutTargetsQueue.Empty();
+	for (int i = 0; i < TargetType::COUNT; i++)
+	{
+		if (SelectedTargets[i])
+		{
+			TSharedPtr<FRendererTarget> Target = RendererTarget(i);
+			if (Target != nullptr)
+			{
+				OutTargetsQueue.Enqueue(Target);
+			}
+			else
+			{
+				UE_LOG(LogEasySynth, Error, TEXT("%s: Target selection mapped to null renderer target"),
+					*FString(__FUNCTION__))
+				OutTargetsQueue.Empty();
+				return;
+			}
+		}
+	}
+}
+
+TSharedPtr<FRendererTarget> FRendererTargetOptions::RendererTarget(const int TargetType)
+{
+	switch (TargetType)
+	{
+	case COLOR_IMAGE: return MakeShared<FColorImageTarget>(); break;
+	case DEPTH_IMAGE: return MakeShared<FDepthImageTarget>(); break;
+	case NORMAL_IMAGE: return MakeShared<FNormalImageTarget>(); break;
+	case SEMANTIC_IMAGE: return MakeShared<FSemanticImageTarget>(); break;
+	default: return nullptr;
+	}
+}
+
+
 const FString USequenceRenderer::EasySynthMoviePipelineConfigPath("/EasySynth/EasySynthMoviePipelineConfig");
 
 USequenceRenderer::USequenceRenderer() :
@@ -27,7 +75,7 @@ USequenceRenderer::USequenceRenderer() :
 
 bool USequenceRenderer::RenderSequence(
 	ULevelSequence* LevelSequence,
-	FRendererTargetOptions RenderingTargets,
+	const FRendererTargetOptions RenderingTargets,
 	const FString& OutputDirectory)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
@@ -50,22 +98,22 @@ bool USequenceRenderer::RenderSequence(
 	}
 
 	// Check if any rendering target is selected
-	RequestedSequenceRendererTargets = RenderingTargets;
-	if (!RequestedSequenceRendererTargets.AnyOptionSelected())
+	if (!RenderingTargets.AnyOptionSelected())
 	{
 		ErrorMessage = "No rendering targets selected";
 		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 		return false;
 	}
 
+	// Prepare the targets queue
+	RenderingTargets.GetSelectedTargets(TargetsQueue);
+	CurrentTarget = nullptr;
+
 	// Store the output directory
 	RenderingDirectory = OutputDirectory;
 
-	// Starting the next target rendering will increase the CurrentTarget from -1 to 0
-	CurrentTarget = -1;
-	bCurrentlyRendering = true;
-
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering..."), *FString(__FUNCTION__))
+	bCurrentlyRendering = true;
 
 	// Find the next target and start rendering
 	FindNextTarget();
@@ -77,9 +125,7 @@ void USequenceRenderer::OnExecutorFinished(UMoviePipelineExecutorBase* InPipelin
 {
 	if (!bSuccess)
 	{
-		ErrorMessage = FString::Printf(
-			TEXT("Failed while rendering the %s target"),
-			*FRendererTargetOptions::RendererTarget(CurrentTarget)->Name());
+		ErrorMessage = FString::Printf(TEXT("Failed while rendering the %s target"), *CurrentTarget->Name());
 		return BroadcastRenderingFinished(false);
 	}
 
@@ -89,19 +135,17 @@ void USequenceRenderer::OnExecutorFinished(UMoviePipelineExecutorBase* InPipelin
 
 void USequenceRenderer::FindNextTarget()
 {
-	// Find the next requested target
-	while (++CurrentTarget != FRendererTargetOptions::COUNT &&
-		!RequestedSequenceRendererTargets.TargetSelected(CurrentTarget)) {}
-
 	// Check if the end is reached
-	if (CurrentTarget == FRendererTargetOptions::COUNT)
+	if (TargetsQueue.IsEmpty())
 	{
 		return BroadcastRenderingFinished(true);
 	}
 
+	// Select the next requested target
+	TargetsQueue.Dequeue(CurrentTarget);
+
 	// TODO: Setup specifics of the current rendering target
-	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering the %s target"),
-		*FString(__FUNCTION__), *FRendererTargetOptions::RendererTarget(CurrentTarget)->Name())
+	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering the %s target"), *FString(__FUNCTION__), *CurrentTarget->Name())
 
 	// Start the rendering after a brief pause
 	const float DelaySeconds = 2.0f;
@@ -119,7 +163,14 @@ void USequenceRenderer::StartRendering()
 	// Make sure the sequence is still sound
 	if (RenderingSequence == nullptr)
 	{
-		ErrorMessage = "Provided level sequence is null";
+		ErrorMessage = "Provided level sequence is null when starting the recording";
+		return BroadcastRenderingFinished(false);
+	}
+
+	// Make sure a renderer target is selected
+	if (!CurrentTarget.IsValid())
+	{
+		ErrorMessage = "Current renderer target null when starting the recording";
 		return BroadcastRenderingFinished(false);
 	}
 
@@ -132,8 +183,7 @@ void USequenceRenderer::StartRendering()
 		return BroadcastRenderingFinished(false);
 	}
 	// Update the image output directory
-	OutputSetting->OutputDirectory.Path = FPaths::Combine(
-		RenderingDirectory, *FRendererTargetOptions::RendererTarget(CurrentTarget)->Name());
+	OutputSetting->OutputDirectory.Path = FPaths::Combine(RenderingDirectory, CurrentTarget->Name());
 
 	// Get the movie rendering editor subsystem
 	UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem =
@@ -202,7 +252,7 @@ void USequenceRenderer::StartRendering()
 	// TODO: Bind other events, such as rendering canceled
 }
 
-void USequenceRenderer::BroadcastRenderingFinished(bool bSuccess)
+void USequenceRenderer::BroadcastRenderingFinished(const bool bSuccess)
 {
 	if (!bSuccess)
 	{
