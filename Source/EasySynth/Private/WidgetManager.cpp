@@ -11,6 +11,8 @@
 
 
 const FText FWidgetManager::StartRenderingErrorMessageBoxTitle = FText::FromString(TEXT("Could not start rendering"));
+const FText FWidgetManager::RenderingErrorMessageBoxTitle = FText::FromString(TEXT("Rendering failed"));
+const FText FWidgetManager::SuccessfulRenderingMessageBoxTitle = FText::FromString(TEXT("Successful rendering"));
 
 FWidgetManager::FWidgetManager()
 {
@@ -18,6 +20,8 @@ FWidgetManager::FWidgetManager()
 	SequenceRenderer = NewObject<USequenceRenderer>();
 	check(SequenceRenderer)
 	SequenceRenderer->AddToRoot();
+	// Register the rendering finished callback
+	SequenceRenderer->OnRenderingFinished().AddRaw(this, &FWidgetManager::OnRenderingFinished);
 
 	// Define the default output directory
 	// TODO: remember the last one used
@@ -152,4 +156,22 @@ FReply FWidgetManager::OnRenderImagesClicked()
 			&StartRenderingErrorMessageBoxTitle);
 	}
 	return FReply::Handled();
+}
+
+void FWidgetManager::OnRenderingFinished(bool bSuccess)
+{
+	if (bSuccess)
+	{
+		FMessageDialog::Open(
+			EAppMsgType::Ok,
+			FText::FromString(TEXT("Rendering finished successfully")),
+			&SuccessfulRenderingMessageBoxTitle);
+	}
+	else
+	{
+		FMessageDialog::Open(
+			EAppMsgType::Ok,
+			FText::FromString(*SequenceRenderer->GetErrorMessage()),
+			&RenderingErrorMessageBoxTitle);
+	}
 }

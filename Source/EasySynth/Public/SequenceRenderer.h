@@ -18,8 +18,6 @@ class UMoviePipelineMasterConfig;
 class UMoviePipelineQueueSubsystem;
 
 
-/** Delegate type used to broadcast the rendering finished event */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateRenderingFinished, bool, bSuccess);
 
 
 /**
@@ -75,6 +73,12 @@ public:
 	/** Returns the latest error message */
 	const FString& GetErrorMessage() const { return ErrorMessage; }
 
+	/** Delegate type used to broadcast the rendering finished event */
+	DECLARE_EVENT_OneParam(USequenceRenderer, FRenderingFinishedEvent, bool);
+
+	/** Returns a reference to the event for others to bind */
+	FRenderingFinishedEvent& OnRenderingFinished() { return RenderingFinishedEvent; }
+
 private:
 	/** Movie rendering finished handle */
 	void OnExecutorFinished(UMoviePipelineExecutorBase* InPipelineExecutor, bool bSuccess);
@@ -89,7 +93,7 @@ private:
 	void BroadcastRenderingFinished(const bool bSuccess);
 
 	/** Rendering finished event dispatcher */
-	FDelegateRenderingFinished DelegateRenderingFinished;
+	FRenderingFinishedEvent RenderingFinishedEvent;
 
 	/** Default movie pipeline config file provided with the plugin content */
 	UPROPERTY()

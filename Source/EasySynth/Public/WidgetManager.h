@@ -36,6 +36,9 @@ private:
 	/** Handles render images button click */
 	FReply OnRenderImagesClicked();
 
+	/** Handles the sequence renderer finished event */
+	void OnRenderingFinished(bool bSuccess);
+
 	/** Currently selected sequencer asset data */
 	FAssetData LevelSequenceAssetData;
 
@@ -47,6 +50,12 @@ private:
 
 	/** Error message box title for failed rendering start */
 	static const FText StartRenderingErrorMessageBoxTitle;
+
+	/** Error message box title for failure during the rendering */
+	static const FText RenderingErrorMessageBoxTitle;
+
+	/** Message box title for successful rendering */
+	static const FText SuccessfulRenderingMessageBoxTitle;
 
 	/**
 	 * Module that runs sequence rendering,

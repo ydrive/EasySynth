@@ -235,7 +235,7 @@ void USequenceRenderer::StartRendering()
 	if (ProjectSettings->DefaultLocalExecutor == nullptr)
 	{
 		ErrorMessage = "Could not get the UMovieRenderPipelineProjectSettings";
-		return BroadcastRenderingFinished(false);;
+		return BroadcastRenderingFinished(false);
 	}
 
 	// Run the rendering
@@ -244,7 +244,7 @@ void USequenceRenderer::StartRendering()
 	if (ActiveExecutor == nullptr)
 	{
 		ErrorMessage = "Could not start the rendering";
-		return BroadcastRenderingFinished(false);;
+		return BroadcastRenderingFinished(false);
 	}
 
 	// Assign rendering finished callback
@@ -260,5 +260,5 @@ void USequenceRenderer::BroadcastRenderingFinished(const bool bSuccess)
 	}
 	// TODO: Revert world state to the original one (remove semantic textures)
 	bCurrentlyRendering = false;
-	DelegateRenderingFinished.Broadcast(bSuccess);
+	RenderingFinishedEvent.Broadcast(bSuccess);
 }
