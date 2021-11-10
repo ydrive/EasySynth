@@ -6,6 +6,8 @@
 #include "MoviePipelineQueueSubsystem.h"
 #include "MovieRenderPipelineSettings.h"
 
+#include "RendererTargets/RendererTarget.h"
+
 
 const FString USequenceRenderer::EasySynthMoviePipelineConfigPath("/EasySynth/EasySynthMoviePipelineConfig");
 
@@ -77,7 +79,7 @@ void USequenceRenderer::OnExecutorFinished(UMoviePipelineExecutorBase* InPipelin
 	{
 		ErrorMessage = FString::Printf(
 			TEXT("Failed while rendering the %s target"),
-			*FRendererTargetOptions::TargetName(CurrentTarget));
+			*FRendererTargetOptions::RendererTarget(CurrentTarget)->Name());
 		return BroadcastRenderingFinished(false);
 	}
 
@@ -99,7 +101,7 @@ void USequenceRenderer::FindNextTarget()
 
 	// TODO: Setup specifics of the current rendering target
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering the %s target"),
-		*FString(__FUNCTION__), *FRendererTargetOptions::TargetName(CurrentTarget))
+		*FString(__FUNCTION__), *FRendererTargetOptions::RendererTarget(CurrentTarget)->Name())
 
 	// Start the rendering after a brief pause
 	const float DelaySeconds = 2.0f;
@@ -131,7 +133,7 @@ void USequenceRenderer::StartRendering()
 	}
 	// Update the image output directory
 	OutputSetting->OutputDirectory.Path = FPaths::Combine(
-		RenderingDirectory, FRendererTargetOptions::TargetName(CurrentTarget));
+		RenderingDirectory, *FRendererTargetOptions::RendererTarget(CurrentTarget)->Name());
 
 	// Get the movie rendering editor subsystem
 	UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem =

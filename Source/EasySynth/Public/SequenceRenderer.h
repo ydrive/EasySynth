@@ -4,6 +4,12 @@
 
 #include "CoreMinimal.h"
 
+#include "RendererTargets/RendererTarget.h"
+#include "RendererTargets/ColorImageTarget.h"
+#include "RendererTargets/DepthImageTarget.h"
+#include "RendererTargets/NormalImageTarget.h"
+#include "RendererTargets/SemanticImageTarget.h"
+
 #include "SequenceRenderer.generated.h"
 
 class ULevelSequence;
@@ -46,16 +52,15 @@ public:
 		return false;
 	}
 
-	/** Returns a readable name of a target type */
-	static FString TargetName(int TargetType)
+	static TSharedPtr<FRendererTarget> RendererTarget(const int TargetType)
 	{
 		switch (TargetType)
 		{
-		case COLOR_IMAGE: return TEXT("ColorImage"); break;
-		case DEPTH_IMAGE: return TEXT("DepthImage"); break;
-		case NORMAL_IMAGE: return TEXT("NormalImage"); break;
-		case SEMANTIC_IMAGE: return TEXT("SemanticImage"); break;
-		default: return "";
+		case COLOR_IMAGE: return MakeShared<FColorImageTarget>(); break;
+		case DEPTH_IMAGE: return MakeShared<FDepthImageTarget>(); break;
+		case NORMAL_IMAGE: return MakeShared<FNormalImageTarget>(); break;
+		case SEMANTIC_IMAGE: return MakeShared<FSemanticImageTarget>(); break;
+		default: return nullptr;
 		}
 	}
 
