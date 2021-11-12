@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 
+class UCameraComponent;
 class ULevelSequence;
 
 
@@ -23,4 +24,8 @@ public:
 
     /** Reverts changes made to the sequence by the PrepareSequence */
     virtual bool FinalizeSequence(ULevelSequence* LevelSequence) = 0;
+
+protected:
+    /** Extracts camera components used by the level sequence */
+    TArray<UCameraComponent*> GetCameras(ULevelSequence* LevelSequence);
 };

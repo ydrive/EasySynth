@@ -43,10 +43,16 @@ public class EasySynth : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				// Editor bindings
+				"UnrealEd",
 				// Sequencer module
 				"LevelSequence",
+				"LevelSequenceEditor",
 				"MovieRenderPipelineCore",
 				"MovieRenderPipelineEditor",
+				"MovieScene",
+				"MovieSceneTracks",
+				"Sequencer",
 				// Editor tab functionality
 				"DesktopWidgets",
 				"PropertyEditor",

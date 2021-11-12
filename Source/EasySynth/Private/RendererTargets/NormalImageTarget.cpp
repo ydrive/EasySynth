@@ -7,6 +7,8 @@
 
 bool FNormalImageTarget::PrepareSequence(ULevelSequence* LevelSequence)
 {
+    TArray<UCameraComponent*> Cameras = GetCameras(LevelSequence);
+    UE_LOG(LogEasySynth, Error, TEXT("%s: Cameras num %d"), *FString(__FUNCTION__), Cameras.Num());
     return true;
 }
 
