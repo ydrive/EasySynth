@@ -28,4 +28,11 @@ public:
 protected:
     /** Extracts camera components used by the level sequence */
     TArray<UCameraComponent*> GetCameras(ULevelSequence* LevelSequence);
+
+    /** Returns the path to the specific target post process material */
+    inline UMaterial* LoadPostProcessMatrial() const {
+        return LoadObject<UMaterial>(
+            nullptr,
+            *(FString::Printf(TEXT("/EasySynth/PostProcessMaterials/M_PP%s"), *Name())));
+    }
 };
