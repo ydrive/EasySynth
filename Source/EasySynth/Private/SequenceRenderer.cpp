@@ -130,8 +130,11 @@ bool USequenceRenderer::RenderSequence(
 void USequenceRenderer::OnExecutorFinished(UMoviePipelineExecutorBase* InPipelineExecutor, bool bSuccess)
 {
 	// Revert target specific modifications to the sequence
-	// TODO: Check if successful
-	CurrentTarget->FinalizeSequence(RenderingSequence);
+	if (!CurrentTarget->FinalizeSequence(RenderingSequence))
+	{
+		ErrorMessage = FString::Printf(TEXT("Failed while finalizing the rendering of the %s target"), *CurrentTarget->Name());
+		return BroadcastRenderingFinished(false);
+	}
 
 	if (!bSuccess)
 	{
@@ -154,10 +157,13 @@ void USequenceRenderer::FindNextTarget()
 	// Select the next requested target
 	TargetsQueue.Dequeue(CurrentTarget);
 
-	// TODO: Setup specifics of the current rendering target
+	// Setup specifics of the current rendering target
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering the %s target"), *FString(__FUNCTION__), *CurrentTarget->Name())
-	// TODO: Check if successful
-	CurrentTarget->PrepareSequence(RenderingSequence);
+	if (!CurrentTarget->PrepareSequence(RenderingSequence))
+	{
+		ErrorMessage = FString::Printf(TEXT("Failed while preparing the rendering of the %s target"), *CurrentTarget->Name());
+		return BroadcastRenderingFinished(false);
+	}
 
 	// Start the rendering after a brief pause
 	const float DelaySeconds = 2.0f;
