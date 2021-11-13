@@ -29,7 +29,7 @@ public:
 	/** The enum containing all supported rendering targets */
 	enum TargetType { COLOR_IMAGE, DEPTH_IMAGE, NORMAL_IMAGE, SEMANTIC_IMAGE, COUNT };
 
-	FRendererTargetOptions() { SelectedTargets.Init(false, TargetType::COUNT); }
+	FRendererTargetOptions();
 
 	/** Select a rendering target */
 	void SetSelectedTarget(int TargetType, bool Selected) { SelectedTargets[TargetType] = Selected; }
@@ -43,9 +43,12 @@ public:
 	/** Populate provided queue with selected renderer targets */
 	void GetSelectedTargets(TQueue<TSharedPtr<FRendererTarget>>& OutTargetsQueue) const;
 
+	/** The clipping range when rendering the depth target */
+	float DepthRangeMetersValue;
+
 private:
 	/** Get the renderer target object from the target type id */
-	static TSharedPtr<FRendererTarget> RendererTarget(const int TargetType);
+	TSharedPtr<FRendererTarget> RendererTarget(const int TargetType) const;
 
 	/** Is the default color image rendering requested */
 	TArray<bool> SelectedTargets;

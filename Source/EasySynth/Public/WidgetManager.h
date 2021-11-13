@@ -30,6 +30,12 @@ private:
 	/** Target render images checkbox handling */
 	void OnRenderTargetsChanged(ECheckBoxState NewState, FRendererTargetOptions::TargetType TargetType);
 
+	/** Get the currently selected depth range value */
+	float GetDepthRangeValue() const { return SequenceRendererTargets.DepthRangeMetersValue; }
+
+	/** Callback function handling the update of the depth range value */
+	void OnDepthRangeValueChanged(float NewValue) { SequenceRendererTargets.DepthRangeMetersValue = NewValue; }
+
 	/** Callback function handling the update of the output directory */
 	void OnOutputDirectoryChanged(const FString& Directory);
 

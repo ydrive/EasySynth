@@ -6,6 +6,7 @@
 #include "PropertyCustomizationHelpers.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "Widgets/Input/SDirectoryPicker.h"
+#include "Widgets/Input/SSpinBox.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Text/STextBlock.h"
 
@@ -93,6 +94,19 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 					SNew(STextBlock)
 					.Text(FText::FromString("Semantic images"))
 				]
+			]
+			+SScrollBox::Slot()
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString("Depth range [m]"))
+			]
+			+SScrollBox::Slot()
+			[
+				SNew(SSpinBox<float>)
+				.Value_Raw(this, &FWidgetManager::GetDepthRangeValue)
+				.OnValueChanged_Raw(this, &FWidgetManager::OnDepthRangeValueChanged)
+				.MinValue(0.01f)
+				.MaxValue(10000.0f)
 			]
 			+SScrollBox::Slot()
 			[

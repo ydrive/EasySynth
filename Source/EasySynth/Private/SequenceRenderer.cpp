@@ -9,6 +9,12 @@
 #include "RendererTargets/RendererTarget.h"
 
 
+FRendererTargetOptions::FRendererTargetOptions() :
+	DepthRangeMetersValue(100.0f)
+{
+	SelectedTargets.Init(false, TargetType::COUNT);
+}
+
 bool FRendererTargetOptions::AnyOptionSelected() const
 {
 	for (bool TargetSelected : SelectedTargets)
@@ -44,12 +50,12 @@ void FRendererTargetOptions::GetSelectedTargets(TQueue<TSharedPtr<FRendererTarge
 	}
 }
 
-TSharedPtr<FRendererTarget> FRendererTargetOptions::RendererTarget(const int TargetType)
+TSharedPtr<FRendererTarget> FRendererTargetOptions::RendererTarget(const int TargetType) const
 {
 	switch (TargetType)
 	{
 	case COLOR_IMAGE: return MakeShared<FColorImageTarget>(); break;
-	case DEPTH_IMAGE: return MakeShared<FDepthImageTarget>(); break;
+	case DEPTH_IMAGE: return MakeShared<FDepthImageTarget>(DepthRangeMetersValue); break;
 	case NORMAL_IMAGE: return MakeShared<FNormalImageTarget>(); break;
 	case SEMANTIC_IMAGE: return MakeShared<FSemanticImageTarget>(); break;
 	default: return nullptr;
