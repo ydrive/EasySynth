@@ -122,7 +122,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			+SScrollBox::Slot()
 			[
 				SNew(SButton)
-				// TODO: Disable if settings are not valid
+				.IsEnabled_Raw(this, &FWidgetManager::GetIsRenderImagesEnabled)
 				.OnClicked_Raw(this, &FWidgetManager::OnRenderImagesClicked)
 				.Content()
 				[
@@ -131,11 +131,6 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				]
 			]
 		];
-}
-
-void FWidgetManager::OnSequencerSelected(const FAssetData& AssetData)
-{
-	LevelSequenceAssetData = AssetData;
 }
 
 FString FWidgetManager::GetSequencerPath() const
@@ -152,9 +147,12 @@ void FWidgetManager::OnRenderTargetsChanged(ECheckBoxState NewState, FRendererTa
 	SequenceRendererTargets.SetSelectedTarget(TargetType, (NewState == ECheckBoxState::Checked));
 }
 
-void FWidgetManager::OnOutputDirectoryChanged(const FString& Directory)
+bool FWidgetManager::GetIsRenderImagesEnabled() const
 {
-	OutputDirectory = Directory;
+	return
+		LevelSequenceAssetData.GetAsset() != nullptr &&
+		SequenceRendererTargets.AnyOptionSelected() &&
+		SequenceRenderer != nullptr && !SequenceRenderer->IsRendering();
 }
 
 FReply FWidgetManager::OnRenderImagesClicked()

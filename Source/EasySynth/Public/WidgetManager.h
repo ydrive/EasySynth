@@ -22,7 +22,7 @@ public:
 
 private:
 	/** Callback funcion handling the update of the selected sequencer */
-	void OnSequencerSelected(const FAssetData& AssetData);
+	void OnSequencerSelected(const FAssetData& AssetData) { LevelSequenceAssetData = AssetData; }
 
 	/** Callback funcion providing the path to the selected sequencer asset */
 	FString GetSequencerPath() const;
@@ -37,7 +37,10 @@ private:
 	void OnDepthRangeValueChanged(float NewValue) { SequenceRendererTargets.DepthRangeMetersValue = NewValue; }
 
 	/** Callback function handling the update of the output directory */
-	void OnOutputDirectoryChanged(const FString& Directory);
+	void OnOutputDirectoryChanged(const FString& Directory) { OutputDirectory = Directory; }
+
+	/** Checks if render images button should be enabled */
+	bool GetIsRenderImagesEnabled() const;
 
 	/** Handles render images button click */
 	FReply OnRenderImagesClicked();

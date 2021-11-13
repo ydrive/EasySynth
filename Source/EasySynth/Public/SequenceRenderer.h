@@ -73,6 +73,9 @@ public:
 		const FRendererTargetOptions RenderingTargets,
 		const FString& OutputDirectory);
 
+	/** Checks if the rendering is currently in progress */
+	bool IsRendering() const { return bCurrentlyRendering; }
+
 	/** Returns the latest error message */
 	const FString& GetErrorMessage() const { return ErrorMessage; }
 
