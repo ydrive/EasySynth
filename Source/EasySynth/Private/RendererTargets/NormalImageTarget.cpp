@@ -9,7 +9,7 @@
 
 bool FNormalImageTarget::PrepareSequence(ULevelSequence* LevelSequence)
 {
-    // Get all camera components bound to the level sequence
+	// Get all camera components bound to the level sequence
 	TArray<UCameraComponent*> Cameras = GetCameras(LevelSequence);
 	if (Cameras.Num() == 0)
 	{
@@ -41,7 +41,7 @@ bool FNormalImageTarget::PrepareSequence(ULevelSequence* LevelSequence)
 
 bool FNormalImageTarget::FinalizeSequence(ULevelSequence* LevelSequence)
 {
-    // Get all camera components bound to the level sequence
+	// Get all camera components bound to the level sequence
 	TArray<UCameraComponent*> Cameras = GetCameras(LevelSequence);
 	if (Cameras.Num() == 0)
 	{

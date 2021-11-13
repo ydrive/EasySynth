@@ -12,7 +12,7 @@ const FString FDepthImageTarget::DepthRangeMetersParameter("DepthRangeMeters");
 
 bool FDepthImageTarget::PrepareSequence(ULevelSequence* LevelSequence)
 {
-    // Get all camera components bound to the level sequence
+	// Get all camera components bound to the level sequence
 	TArray<UCameraComponent*> Cameras = GetCameras(LevelSequence);
 	if (Cameras.Num() == 0)
 	{
@@ -54,7 +54,7 @@ bool FDepthImageTarget::PrepareSequence(ULevelSequence* LevelSequence)
 
 bool FDepthImageTarget::FinalizeSequence(ULevelSequence* LevelSequence)
 {
-    // Get all camera components bound to the level sequence
+	// Get all camera components bound to the level sequence
 	TArray<UCameraComponent*> Cameras = GetCameras(LevelSequence);
 	if (Cameras.Num() == 0)
 	{

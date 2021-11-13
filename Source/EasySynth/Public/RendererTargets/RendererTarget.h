@@ -16,23 +16,23 @@ class ULevelSequence;
 class FRendererTarget
 {
 public:
-    /** Returns a name of a specific target */
-    virtual FString Name() const = 0;
+	/** Returns a name of a specific target */
+	virtual FString Name() const = 0;
 
-    /** Prepares the sequence for rendering a specific target */
-    virtual bool PrepareSequence(ULevelSequence* LevelSequence) = 0;
+	/** Prepares the sequence for rendering a specific target */
+	virtual bool PrepareSequence(ULevelSequence* LevelSequence) = 0;
 
-    /** Reverts changes made to the sequence by the PrepareSequence */
-    virtual bool FinalizeSequence(ULevelSequence* LevelSequence) = 0;
+	/** Reverts changes made to the sequence by the PrepareSequence */
+	virtual bool FinalizeSequence(ULevelSequence* LevelSequence) = 0;
 
 protected:
-    /** Extracts camera components used by the level sequence */
-    TArray<UCameraComponent*> GetCameras(ULevelSequence* LevelSequence);
+	/** Extracts camera components used by the level sequence */
+	TArray<UCameraComponent*> GetCameras(ULevelSequence* LevelSequence);
 
-    /** Returns the path to the specific target post process material */
-    inline UMaterial* LoadPostProcessMatrial() const {
-        return LoadObject<UMaterial>(
-            nullptr,
-            *(FString::Printf(TEXT("/EasySynth/PostProcessMaterials/M_PP%s"), *Name())));
-    }
+	/** Returns the path to the specific target post process material */
+	inline UMaterial* LoadPostProcessMatrial() const {
+		return LoadObject<UMaterial>(
+			nullptr,
+			*(FString::Printf(TEXT("/EasySynth/PostProcessMaterials/M_PP%s"), *Name())));
+	}
 };

@@ -14,12 +14,12 @@
 class FSemanticImageTarget : public FRendererTarget
 {
 public:
-    /** Returns the name of the target */
-    virtual FString Name() const { return TEXT("SemanticImage"); }
+	/** Returns the name of the target */
+	virtual FString Name() const { return TEXT("SemanticImage"); }
 
-    /** Prepares the sequence for rendering the target */
-    bool PrepareSequence(ULevelSequence* LevelSequence) override;
+	/** Prepares the sequence for rendering the target */
+	bool PrepareSequence(ULevelSequence* LevelSequence) override;
 
-    /** Reverts changes made to the sequence by the PrepareSequence */
-    bool FinalizeSequence(ULevelSequence* LevelSequence) override;
+	/** Reverts changes made to the sequence by the PrepareSequence */
+	bool FinalizeSequence(ULevelSequence* LevelSequence) override;
 };

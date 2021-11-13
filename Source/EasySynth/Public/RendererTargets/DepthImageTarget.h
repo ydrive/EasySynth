@@ -14,21 +14,21 @@
 class FDepthImageTarget : public FRendererTarget
 {
 public:
-    explicit FDepthImageTarget(const float DepthRangeMeters) : DepthRange(DepthRangeMeters) {}
+	explicit FDepthImageTarget(const float DepthRangeMeters) : DepthRange(DepthRangeMeters) {}
 
-    /** Returns the name of the target */
-    virtual FString Name() const { return TEXT("DepthImage"); }
+	/** Returns the name of the target */
+	virtual FString Name() const { return TEXT("DepthImage"); }
 
-    /** Prepares the sequence for rendering the target */
-    bool PrepareSequence(ULevelSequence* LevelSequence) override;
+	/** Prepares the sequence for rendering the target */
+	bool PrepareSequence(ULevelSequence* LevelSequence) override;
 
-    /** Reverts changes made to the sequence by the PrepareSequence */
-    bool FinalizeSequence(ULevelSequence* LevelSequence) override;
+	/** Reverts changes made to the sequence by the PrepareSequence */
+	bool FinalizeSequence(ULevelSequence* LevelSequence) override;
 
 private:
-    /** The clipping range meters when rendering the depth target */
-    const float DepthRange;
+	/** The clipping range meters when rendering the depth target */
+	const float DepthRange;
 
-    /** The name of the depth range meters material parameter */
-    static const FString DepthRangeMetersParameter;
+	/** The name of the depth range meters material parameter */
+	static const FString DepthRangeMetersParameter;
 };

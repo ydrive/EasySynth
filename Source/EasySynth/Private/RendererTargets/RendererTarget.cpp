@@ -83,9 +83,9 @@ TArray<UCameraComponent*> FRendererTarget::GetCameras(ULevelSequence* LevelSeque
 		UCameraComponent* Camera = CutSection->GetFirstCamera(*WeakSequencer.Pin(), WeakSequencer.Pin()->GetFocusedTemplateID());
 		if (Camera == nullptr)
 		{
-		    UE_LOG(LogEasySynth, Error, TEXT("%s: Cut section camera component is null"), *FString(__FUNCTION__));
-		    Cameras.Empty();
-		    return Cameras;
+			UE_LOG(LogEasySynth, Error, TEXT("%s: Cut section camera component is null"), *FString(__FUNCTION__));
+			Cameras.Empty();
+			return Cameras;
 		}
 		Cameras.Add(Camera);
 	}

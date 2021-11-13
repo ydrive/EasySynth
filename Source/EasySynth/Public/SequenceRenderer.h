@@ -18,8 +18,6 @@ class UMoviePipelineMasterConfig;
 class UMoviePipelineQueueSubsystem;
 
 
-
-
 /**
  * Class Tracking which renderer targets are requested to be rendered
 */
