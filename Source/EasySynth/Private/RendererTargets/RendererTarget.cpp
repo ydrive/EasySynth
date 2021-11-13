@@ -90,7 +90,5 @@ TArray<UCameraComponent*> FRendererTarget::GetCameras(ULevelSequence* LevelSeque
 		Cameras.Add(Camera);
 	}
 
-	// TODO: Remove
-	UE_LOG(LogEasySynth, Error, TEXT("%s: Num cameras found %d"), *FString(__FUNCTION__), Cameras.Num());
 	return Cameras;
 }
