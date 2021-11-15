@@ -106,6 +106,9 @@ private:
 	/** Runs the rendering of the currently selected target */
 	void StartRendering();
 
+	/** Clears the existing job queue and adds a fresh job */
+	bool PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem);
+
 	/** Finalizes rendering and broadcasts the event */
 	void BroadcastRenderingFinished(const bool bSuccess);
 

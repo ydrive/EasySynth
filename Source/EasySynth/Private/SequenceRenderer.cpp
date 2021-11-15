@@ -195,17 +195,6 @@ void USequenceRenderer::StartRendering()
 		return BroadcastRenderingFinished(false);
 	}
 
-	// Update pipeline output settings for the current target
-	UMoviePipelineOutputSetting* OutputSetting =
-		EasySynthMoviePipelineConfig->FindSetting<UMoviePipelineOutputSetting>();
-	if (OutputSetting == nullptr)
-	{
-		ErrorMessage = "Could not find the output setting inside the default config";
-		return BroadcastRenderingFinished(false);
-	}
-	// Update the image output directory
-	OutputSetting->OutputDirectory.Path = FPaths::Combine(RenderingDirectory, CurrentTarget->Name());
-
 	// Get the movie rendering editor subsystem
 	UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem =
 		GEditor->GetEditorSubsystem<UMoviePipelineQueueSubsystem>();
@@ -215,41 +204,12 @@ void USequenceRenderer::StartRendering()
 		return BroadcastRenderingFinished(false);
 	}
 
-	// Get the queue of sequences to be renderer
-	UMoviePipelineQueue* MoviePipelineQueue = MoviePipelineQueueSubsystem->GetQueue();
-	if (MoviePipelineQueue == nullptr)
-	{
-		ErrorMessage = "Could not get the UMoviePipelineQueue";
-		return BroadcastRenderingFinished(false);
-	}
-	MoviePipelineQueue->Modify();
-
-	// Clear the current queue
-	TArray<UMoviePipelineExecutorJob*> ExistingJobs = MoviePipelineQueue->GetJobs();
-	for (UMoviePipelineExecutorJob* MoviePipelineExecutorJob : ExistingJobs)
-	{
-		MoviePipelineQueue->DeleteJob(MoviePipelineExecutorJob);
-	}
-	if (MoviePipelineQueue->GetJobs().Num() > 0)
-	{
-		ErrorMessage = "Job queue not properly cleared";
-		return BroadcastRenderingFinished(false);
-	}
-
 	// Add received level sequence to the queue as a new job
-	UMoviePipelineExecutorJob* NewJob = MoviePipelineQueue->AllocateNewJob(UMoviePipelineExecutorJob::StaticClass());
-	if (NewJob == nullptr)
+	if (!PrepareJobQueue(MoviePipelineQueueSubsystem))
 	{
-		ErrorMessage = "Failed to create new rendering job";
+		// Propagate the error message set inside the PrepareJobQueue
 		return BroadcastRenderingFinished(false);
 	}
-	NewJob->Modify();
-	NewJob->Map = FSoftObjectPath(GEditor->GetEditorWorldContext().World());
-	NewJob->Author = FPlatformProcess::UserName(false);
-	NewJob->SetSequence(RenderingSequence);
-	NewJob->JobName = NewJob->Sequence.GetAssetName();
-	// The SetConfiguration method creates and assigns the copy of the provided config
-	NewJob->SetConfiguration(EasySynthMoviePipelineConfig);
 
 	// Get the default movie rendering settings
 	const UMovieRenderPipelineProjectSettings* ProjectSettings = GetDefault<UMovieRenderPipelineProjectSettings>();
@@ -271,6 +231,61 @@ void USequenceRenderer::StartRendering()
 	// Assign rendering finished callback
 	ActiveExecutor->OnExecutorFinished().AddUObject(this, &USequenceRenderer::OnExecutorFinished);
 	// TODO: Bind other events, such as rendering canceled
+}
+
+bool USequenceRenderer::PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem)
+{
+	check(MoviePipelineQueueSubsystem)
+
+	// Update pipeline output settings for the current target
+	UMoviePipelineOutputSetting* OutputSetting =
+		EasySynthMoviePipelineConfig->FindSetting<UMoviePipelineOutputSetting>();
+	if (OutputSetting == nullptr)
+	{
+		ErrorMessage = "Could not find the output setting inside the default config";
+		return false;
+	}
+	// Update the image output directory
+	OutputSetting->OutputDirectory.Path = FPaths::Combine(RenderingDirectory, CurrentTarget->Name());
+
+	// Get the queue of sequences to be renderer
+	UMoviePipelineQueue* MoviePipelineQueue = MoviePipelineQueueSubsystem->GetQueue();
+	if (MoviePipelineQueue == nullptr)
+	{
+		ErrorMessage = "Could not get the UMoviePipelineQueue";
+		return false;
+	}
+	MoviePipelineQueue->Modify();
+
+	// Clear the current queue
+	TArray<UMoviePipelineExecutorJob*> ExistingJobs = MoviePipelineQueue->GetJobs();
+	for (UMoviePipelineExecutorJob* MoviePipelineExecutorJob : ExistingJobs)
+	{
+		MoviePipelineQueue->DeleteJob(MoviePipelineExecutorJob);
+	}
+	if (MoviePipelineQueue->GetJobs().Num() > 0)
+	{
+		ErrorMessage = "Job queue not properly cleared";
+		return false;
+	}
+
+	// Add received level sequence to the queue as a new job
+	UMoviePipelineExecutorJob* NewJob = MoviePipelineQueue->AllocateNewJob(UMoviePipelineExecutorJob::StaticClass());
+	if (NewJob == nullptr)
+	{
+		ErrorMessage = "Failed to create new rendering job";
+		return false;
+	}
+	NewJob->Modify();
+	NewJob->Map = FSoftObjectPath(GEditor->GetEditorWorldContext().World());
+	NewJob->Author = FPlatformProcess::UserName(false);
+	NewJob->SetSequence(RenderingSequence);
+	NewJob->JobName = NewJob->Sequence.GetAssetName();
+
+	// The SetConfiguration method creates and assigns the copy of the provided config
+	NewJob->SetConfiguration(EasySynthMoviePipelineConfig);
+
+	return true;
 }
 
 void USequenceRenderer::BroadcastRenderingFinished(const bool bSuccess)
