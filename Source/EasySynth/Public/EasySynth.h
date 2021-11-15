@@ -1,4 +1,5 @@
-// Copyright Ydrive 2021
+// Copyright (c) YDrive Inc. All rights reserved.
+// Licensed under the MIT License.
 
 #pragma once
 
@@ -35,5 +36,5 @@ private:
 	TSharedPtr<class FUICommandList> PluginCommands;
 
 	/** Utility that manages editor tab UI */
-	UWidgetManager WidgetManager;
+	FWidgetManager WidgetManager;
 };

@@ -1,17 +1,38 @@
-// Copyright Ydrive 2021
+// Copyright (c) YDrive Inc. All rights reserved.
+// Licensed under the MIT License.
 
 #include "WidgetManager.h"
 
 #include "LevelSequence.h"
 #include "PropertyCustomizationHelpers.h"
 #include "Widgets/Docking/SDockTab.h"
+#include "Widgets/Input/SDirectoryPicker.h"
+#include "Widgets/Input/SSpinBox.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Text/STextBlock.h"
 
 
-TSharedRef<SDockTab> UWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
+const FText FWidgetManager::StartRenderingErrorMessageBoxTitle = FText::FromString(TEXT("Could not start rendering"));
+const FText FWidgetManager::RenderingErrorMessageBoxTitle = FText::FromString(TEXT("Rendering failed"));
+const FText FWidgetManager::SuccessfulRenderingMessageBoxTitle = FText::FromString(TEXT("Successful rendering"));
+
+FWidgetManager::FWidgetManager()
 {
-    return SNew(SDockTab)
+	// Create the sequence renderer and add it to the root to avoid garbage collection
+	SequenceRenderer = NewObject<USequenceRenderer>();
+	check(SequenceRenderer)
+	SequenceRenderer->AddToRoot();
+	// Register the rendering finished callback
+	SequenceRenderer->OnRenderingFinished().AddRaw(this, &FWidgetManager::OnRenderingFinished);
+
+	// Define the default output directory
+	// TODO: remember the last one used
+	OutputDirectory = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("RenderingOutput"));
+}
+
+TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
+{
+	return SNew(SDockTab)
 		.TabRole(ETabRole::NomadTab)
 		[
 			SNew(SScrollBox)
@@ -23,17 +44,87 @@ TSharedRef<SDockTab> UWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			+SScrollBox::Slot()
 			[
 				SNew(SObjectPropertyEntryBox)
-				.AllowedClass(UObject::StaticClass())
-				.ObjectPath_Raw(this, &UWidgetManager::GetSequencerPath)
-				.OnObjectChanged_Raw(this, &UWidgetManager::OnSequencerSelected)
+				.AllowedClass(ULevelSequence::StaticClass())
+				.ObjectPath_Raw(this, &FWidgetManager::GetSequencerPath)
+				.OnObjectChanged_Raw(this, &FWidgetManager::OnSequencerSelected)
 				.AllowClear(true)
 				.DisplayUseSelected(true)
 				.DisplayBrowse(true)
 			]
 			+SScrollBox::Slot()
 			[
+				SNew(STextBlock)
+				.Text(FText::FromString("Chose targets to be rendered"))
+			]
+			+SScrollBox::Slot()
+			[
+				SNew(SCheckBox)
+				.OnCheckStateChanged_Raw(
+					this, &FWidgetManager::OnRenderTargetsChanged, FRendererTargetOptions::COLOR_IMAGE)
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString("Color images"))
+				]
+			]
+			+SScrollBox::Slot()
+			[
+				SNew(SCheckBox)
+				.OnCheckStateChanged_Raw(
+					this, &FWidgetManager::OnRenderTargetsChanged, FRendererTargetOptions::DEPTH_IMAGE)
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString("Depth images"))
+				]
+			]
+			+SScrollBox::Slot()
+			[
+				SNew(SCheckBox)
+				.OnCheckStateChanged_Raw(
+					this, &FWidgetManager::OnRenderTargetsChanged, FRendererTargetOptions::NORMAL_IMAGE)
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString("Normal images"))
+				]
+			]
+			+SScrollBox::Slot()
+			[
+				SNew(SCheckBox)
+				.OnCheckStateChanged_Raw(
+					this, &FWidgetManager::OnRenderTargetsChanged, FRendererTargetOptions::SEMANTIC_IMAGE)
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString("Semantic images"))
+				]
+			]
+			+SScrollBox::Slot()
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString("Depth range [m]"))
+			]
+			+SScrollBox::Slot()
+			[
+				SNew(SSpinBox<float>)
+				.Value_Raw(this, &FWidgetManager::GetDepthRangeValue)
+				.OnValueChanged_Raw(this, &FWidgetManager::OnDepthRangeValueChanged)
+				.MinValue(0.01f)
+				.MaxValue(10000.0f)
+			]
+			+SScrollBox::Slot()
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString("Ouput directory"))
+			]
+			+SScrollBox::Slot()
+			[
+				SNew(SDirectoryPicker)
+				.Directory(OutputDirectory)
+				.OnDirectoryChanged_Raw(this, &FWidgetManager::OnOutputDirectoryChanged)
+			]
+			+SScrollBox::Slot()
+			[
 				SNew(SButton)
-				.OnClicked_Raw(this, &UWidgetManager::OnRenderImagesClicked)
+				.IsEnabled_Raw(this, &FWidgetManager::GetIsRenderImagesEnabled)
+				.OnClicked_Raw(this, &FWidgetManager::OnRenderImagesClicked)
 				.Content()
 				[
 					SNew(STextBlock)
@@ -43,12 +134,7 @@ TSharedRef<SDockTab> UWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 		];
 }
 
-void UWidgetManager::OnSequencerSelected(const FAssetData& AssetData)
-{
-	LevelSequenceAssetData = AssetData;
-}
-
-FString UWidgetManager::GetSequencerPath() const
+FString FWidgetManager::GetSequencerPath() const
 {
 	if (LevelSequenceAssetData.IsValid())
 	{
@@ -57,8 +143,48 @@ FString UWidgetManager::GetSequencerPath() const
 	return "";
 }
 
-FReply UWidgetManager::OnRenderImagesClicked()
+void FWidgetManager::OnRenderTargetsChanged(ECheckBoxState NewState, FRendererTargetOptions::TargetType TargetType)
 {
-	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
+	SequenceRendererTargets.SetSelectedTarget(TargetType, (NewState == ECheckBoxState::Checked));
+}
+
+bool FWidgetManager::GetIsRenderImagesEnabled() const
+{
+	return
+		LevelSequenceAssetData.GetAsset() != nullptr &&
+		SequenceRendererTargets.AnyOptionSelected() &&
+		SequenceRenderer != nullptr && !SequenceRenderer->IsRendering();
+}
+
+FReply FWidgetManager::OnRenderImagesClicked()
+{
+	ULevelSequence* LevelSequence = Cast<ULevelSequence>(LevelSequenceAssetData.GetAsset());
+	// Make a copy of the SequenceRendererTargets to avoid
+	// them being changed through the UI during rendering
+	if (!SequenceRenderer->RenderSequence(LevelSequence, SequenceRendererTargets, OutputDirectory))
+	{
+		FMessageDialog::Open(
+			EAppMsgType::Ok,
+			FText::FromString(*SequenceRenderer->GetErrorMessage()),
+			&StartRenderingErrorMessageBoxTitle);
+	}
 	return FReply::Handled();
+}
+
+void FWidgetManager::OnRenderingFinished(bool bSuccess)
+{
+	if (bSuccess)
+	{
+		FMessageDialog::Open(
+			EAppMsgType::Ok,
+			FText::FromString(TEXT("Rendering finished successfully")),
+			&SuccessfulRenderingMessageBoxTitle);
+	}
+	else
+	{
+		FMessageDialog::Open(
+			EAppMsgType::Ok,
+			FText::FromString(*SequenceRenderer->GetErrorMessage()),
+			&RenderingErrorMessageBoxTitle);
+	}
 }
