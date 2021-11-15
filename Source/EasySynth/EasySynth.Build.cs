@@ -1,4 +1,5 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright (c) YDrive Inc. All rights reserved.
+// Licensed under the MIT License.
 
 using UnrealBuildTool;
 

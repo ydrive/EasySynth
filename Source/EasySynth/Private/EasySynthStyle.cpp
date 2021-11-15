@@ -1,4 +1,5 @@
-// Copyright Ydrive 2021
+// Copyright (c) YDrive Inc. All rights reserved.
+// Licensed under the MIT License.
 
 #include "EasySynthStyle.h"
 #include "Styling/SlateStyleRegistry.h"
