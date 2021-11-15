@@ -9,8 +9,10 @@
 #include "RendererTargets/RendererTarget.h"
 
 
+const float FRendererTargetOptions::DefaultDepthRangeMetersValue = 100.0f;
+
 FRendererTargetOptions::FRendererTargetOptions() :
-	DepthRangeMetersValue(100.0f)
+	DepthRangeMetersValue(DefaultDepthRangeMetersValue)
 {
 	SelectedTargets.Init(false, TargetType::COUNT);
 }

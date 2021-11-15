@@ -30,19 +30,22 @@ public:
 	FRendererTargetOptions();
 
 	/** Select a rendering target */
-	void SetSelectedTarget(int TargetType, bool Selected) { SelectedTargets[TargetType] = Selected; }
+	void SetSelectedTarget(const int TargetType, const bool Selected) { SelectedTargets[TargetType] = Selected; }
 
 	/** Check if a rendering target is selected */
-	bool TargetSelected(int TargetType) const { return SelectedTargets[TargetType]; }
+	bool TargetSelected(const int TargetType) const { return SelectedTargets[TargetType]; }
 
 	/** Checks if any of the available options is selected */
 	bool AnyOptionSelected() const;
 
+	/** DepthRangeMetersValue getter */
+	void SetDepthRangeMeters(const float DepthRangeMeters) { DepthRangeMetersValue = DepthRangeMeters; }
+
+	/** DepthRangeMetersValue setter */
+	float DepthRangeMeters() const { return DepthRangeMetersValue; }
+
 	/** Populate provided queue with selected renderer targets */
 	void GetSelectedTargets(TQueue<TSharedPtr<FRendererTarget>>& OutTargetsQueue) const;
-
-	/** The clipping range when rendering the depth target */
-	float DepthRangeMetersValue;
 
 private:
 	/** Get the renderer target object from the target type id */
@@ -50,6 +53,15 @@ private:
 
 	/** Is the default color image rendering requested */
 	TArray<bool> SelectedTargets;
+
+	/**
+	 * The clipping range when rendering the depth target
+	 * Larger values provide the longer range, but also the lower granularity
+	*/
+	float DepthRangeMetersValue;
+
+	/** Default value for the depth range */
+	static const float DefaultDepthRangeMetersValue;
 };
 
 
