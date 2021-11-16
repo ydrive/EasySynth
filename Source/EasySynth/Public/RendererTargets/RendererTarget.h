@@ -5,6 +5,8 @@
 
 #include "CoreMinimal.h"
 
+#include "PathUtils.h"
+
 class UCameraComponent;
 class ULevelSequence;
 
@@ -34,9 +36,8 @@ protected:
 	bool ClearCameraPostProcess(ULevelSequence* LevelSequence);
 
 	/** Returns the path to the specific target post process material */
-	inline UMaterial* LoadPostProcessMatrial() const {
-		return LoadObject<UMaterial>(
-			nullptr,
-			*(FString::Printf(TEXT("/EasySynth/PostProcessMaterials/M_PP%s"), *Name())));
+	inline UMaterial* LoadPostProcessMatrial() const
+	{
+		return LoadObject<UMaterial>(nullptr, *FPathUtils::PostProcessMaterialPath(Name()));
 	}
 };

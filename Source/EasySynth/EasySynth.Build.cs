@@ -45,6 +45,7 @@ public class EasySynth : ModuleRules
 				"Slate",
 				"SlateCore",
 				// Editor bindings
+				"EditorScriptingUtilities",
 				"UnrealEd",
 				// Sequencer module
 				"LevelSequence",

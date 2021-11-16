@@ -7,6 +7,7 @@
 #include "MoviePipelineQueueSubsystem.h"
 #include "MovieRenderPipelineSettings.h"
 
+#include "PathUtils.h"
 #include "RendererTargets/RendererTarget.h"
 
 
@@ -65,11 +66,9 @@ TSharedPtr<FRendererTarget> FRendererTargetOptions::RendererTarget(const int Tar
 	}
 }
 
-
-const FString USequenceRenderer::EasySynthMoviePipelineConfigPath("/EasySynth/EasySynthMoviePipelineConfig");
-
 USequenceRenderer::USequenceRenderer() :
-	EasySynthMoviePipelineConfig(LoadObject<UMoviePipelineMasterConfig>(nullptr, *EasySynthMoviePipelineConfigPath)),
+	EasySynthMoviePipelineConfig(
+		LoadObject<UMoviePipelineMasterConfig>(nullptr, *FPathUtils::DefaultMoviePipelineConfigPath())),
 	bCurrentlyRendering(false),
 	ErrorMessage("")
 {
