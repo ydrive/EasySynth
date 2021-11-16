@@ -33,6 +33,9 @@ public:
 	/** Create new semantic class */
 	bool NewSemanticClass(const FString& ClassName, const FColor& ClassColor);
 
+	/** Returns names of existing semantic classes */
+	TArray<FString> SemanticClassNames() const;
+
 	/** Update mesh materials to show requested texture styles */
 	void CheckoutTextureStyle(ETextureStyle TextureStyle);
 

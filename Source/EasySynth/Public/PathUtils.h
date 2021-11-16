@@ -13,7 +13,7 @@ public:
 	 * Universal utils
 	*/
 
-	/***/
+	/** Plugin name to be referenced by other methods */
 	static const FString PluginName;
 
 	/**
@@ -56,7 +56,7 @@ public:
 	/** Plugin's working directory inside the specific project */
 	static FString ProjectPluginContentDir()
 	{
-		return FPaths::Combine(FPaths::ProjectContentDir(), PluginName);
+		return FPaths::Combine(TEXT("/Game"), PluginName);
 	}
 
 	/** Path to the project-specific texture mapping asset */

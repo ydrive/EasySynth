@@ -9,6 +9,8 @@
 
 class ULevelSequence;
 
+class UTextureStyleManager;
+
 
 /**
  * Class that manages UI widget interatcion
@@ -22,6 +24,12 @@ public:
 	TSharedRef<SDockTab> OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs);
 
 private:
+	/** Callback function handling the choosing of the semantic class inside the combo box */
+	void OnSemanticClassComboBoxSelectionChanged(TSharedPtr<FString> StringItem, ESelectInfo::Type SelectInfo);
+
+	/** Callback function handling the opening of the combo box menu */
+	void OnSemanticClassComboBoxOpened();
+
 	/** Callback funcion handling the update of the selected sequencer */
 	void OnSequencerSelected(const FAssetData& AssetData) { LevelSequenceAssetData = AssetData; }
 
@@ -49,6 +57,12 @@ private:
 	/** Handles the sequence renderer finished event */
 	void OnRenderingFinished(bool bSuccess);
 
+	/** FStrings referenced by the combo box */
+	TArray<TSharedPtr<FString>> SemanticClassNames;
+
+	/** Semantic class combo box */
+	TSharedPtr<SComboBox<TSharedPtr<FString>>> SemanticClassComboBox;
+
 	/** Currently selected sequencer asset data */
 	FAssetData LevelSequenceAssetData;
 
@@ -58,6 +72,18 @@ private:
 	/** Currently selected output directory */
 	FString OutputDirectory;
 
+	/**
+	 * Module that manages default color and semantic texture styles,
+	 * must be added to the root to avoid garbage collection
+	*/
+	UTextureStyleManager* TextureStyleManager;
+
+	/**
+	 * Module that runs sequence rendering,
+	 * must be added to the root to avoid garbage collection
+	*/
+	USequenceRenderer* SequenceRenderer;
+
 	/** Error message box title for failed rendering start */
 	static const FText StartRenderingErrorMessageBoxTitle;
 
@@ -66,10 +92,4 @@ private:
 
 	/** Message box title for successful rendering */
 	static const FText SuccessfulRenderingMessageBoxTitle;
-
-	/**
-	 * Module that runs sequence rendering,
-	 * must be added to the root to avoid garbage collection
-	*/
-	USequenceRenderer* SequenceRenderer;
 };

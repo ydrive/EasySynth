@@ -25,6 +25,7 @@ struct FSemanticClass
 	FColor Color;
 
 	/** Reference to the plain color material instance */
+	// TODO: Use material instance
 	UPROPERTY()
 	UMaterial* PlainColorMaterial;
 };
@@ -36,7 +37,7 @@ class UTextureMappingAsset : public UDataAsset
 {
 	GENERATED_BODY()
 
-private:
+public:
 	/** Created semantic classes */
 	UPROPERTY()
 	TMap<FString, FSemanticClass> SemanticClasses;

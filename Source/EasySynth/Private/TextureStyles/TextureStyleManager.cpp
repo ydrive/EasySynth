@@ -19,8 +19,24 @@ UTextureStyleManager::UTextureStyleManager() :
 bool UTextureStyleManager::NewSemanticClass(const FString& ClassName, const FColor& ClassColor)
 {
 	// TODO: Check collision with existing classes
-	// TODO: Crate a new class with its material instance
+
+	// Crate a new class
+	FSemanticClass& SemanticClass = TextureMappingAsset->SemanticClasses.Add(ClassName);
+	SemanticClass.Name = ClassName;
+	SemanticClass.Color = ClassColor;
+	// TODO: Create a material instance for the new class
+
 	return true;
+}
+
+TArray<FString> UTextureStyleManager::SemanticClassNames() const
+{
+	TArray<FString> SemanticClassNames;
+	for (auto& Element : TextureMappingAsset->SemanticClasses)
+	{
+		SemanticClassNames.Add(Element.Key);
+	}
+	return SemanticClassNames;
 }
 
 void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle TextureStyle)
@@ -55,8 +71,7 @@ void UTextureStyleManager::LoadOrCreateTextureMappingAsset()
 			EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
 		check(TextureMappingAsset)
 
-		// Save the asset
-		SaveTextureMappingAsset();
+		// Don't save the asset yet to prevent crashing the editor on startup
 	}
 }
 
