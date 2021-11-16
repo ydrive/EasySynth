@@ -37,6 +37,10 @@ FWidgetManager::FWidgetManager()
 	// Register the rendering finished callback
 	SequenceRenderer->OnRenderingFinished().AddRaw(this, &FWidgetManager::OnRenderingFinished);
 
+	// Prepare content of the texture style checkout combo box
+	TextureStyleNames.Add(MakeShared<FString>(TextureStyleColorName));
+	TextureStyleNames.Add(MakeShared<FString>(TextureStyleSemanticName));
+
 	// Define the default output directory
 	// TODO: remember the last one used
 	OutputDirectory = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("RenderingOutput"));
@@ -44,11 +48,6 @@ FWidgetManager::FWidgetManager()
 
 TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
-	// Prepare content of the texture style checkout combo box
-	TArray<TSharedPtr<FString>> TextureStyleNames;
-	TextureStyleNames.Add(MakeShared<FString>(TextureStyleColorName));
-	TextureStyleNames.Add(MakeShared<FString>(TextureStyleSemanticName));
-
 	return SNew(SDockTab)
 		.TabRole(ETabRole::NomadTab)
 		[
@@ -77,10 +76,9 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 					[](TSharedPtr<FString> StringItem)
 					{ return SNew(STextBlock).Text(FText::FromString(*StringItem)); })
 				.OnSelectionChanged_Raw(this, &FWidgetManager::OnTextureStyleComboBoxSelectionChanged)
-				// .OnComboBoxOpening_Raw(this, &FWidgetManager::OnSemanticClassComboBoxOpened)
 				.Content()
 				[
-					SNew(STextBlock).Text(FText::FromString(TEXT("Pick a semantic class")))
+					SNew(STextBlock).Text(FText::FromString(TEXT("Pick a mesh texture style")))
 				]
 			]
 			+SScrollBox::Slot()

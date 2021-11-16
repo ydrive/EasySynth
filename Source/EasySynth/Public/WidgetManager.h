@@ -60,11 +60,14 @@ private:
 	/** Handles the sequence renderer finished event */
 	void OnRenderingFinished(bool bSuccess);
 
-	/** FStrings referenced by the combo box */
+	/** FStrings semantic class names referenced by the combo box */
 	TArray<TSharedPtr<FString>> SemanticClassNames;
 
 	/** Semantic class combo box */
 	TSharedPtr<SComboBox<TSharedPtr<FString>>> SemanticClassComboBox;
+
+	/** FStrings texture style names referenced by the combo box */
+	TArray<TSharedPtr<FString>> TextureStyleNames;
 
 	/** Currently selected sequencer asset data */
 	FAssetData LevelSequenceAssetData;
