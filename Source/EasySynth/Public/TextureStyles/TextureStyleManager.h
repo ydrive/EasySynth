@@ -36,6 +36,9 @@ public:
 	/** Returns names of existing semantic classes */
 	TArray<FString> SemanticClassNames() const;
 
+	/** Apllies desired class to all selected actors */
+	void ApplySemanticClass(const FString& ClassName);
+
 	/** Update mesh materials to show requested texture styles */
 	void CheckoutTextureStyle(ETextureStyle TextureStyle);
 
@@ -48,6 +51,9 @@ private:
 
 	/** Save texture mapping asset modifications */
 	void SaveTextureMappingAsset();
+
+	/** Sets a semantic class to the actor */
+	void SetSemanticClassToActor(AActor* Actor, const FString& ClassName);
 
 	/** Global texture mapping asset of the specific project */
 	UPROPERTY()

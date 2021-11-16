@@ -12,6 +12,9 @@
 #include "Widgets/Text/STextBlock.h"
 
 
+const FString FWidgetManager::TextureStyleColorName(TEXT("Original color textures"));
+const FString FWidgetManager::TextureStyleSemanticName(TEXT("Semantic color textures"));
+
 const FText FWidgetManager::StartRenderingErrorMessageBoxTitle = FText::FromString(TEXT("Could not start rendering"));
 const FText FWidgetManager::RenderingErrorMessageBoxTitle = FText::FromString(TEXT("Rendering failed"));
 const FText FWidgetManager::SuccessfulRenderingMessageBoxTitle = FText::FromString(TEXT("Successful rendering"));
@@ -41,6 +44,11 @@ FWidgetManager::FWidgetManager()
 
 TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
+	// Prepare content of the texture style checkout combo box
+	TArray<TSharedPtr<FString>> TextureStyleNames;
+	TextureStyleNames.Add(MakeShared<FString>(TextureStyleColorName));
+	TextureStyleNames.Add(MakeShared<FString>(TextureStyleSemanticName));
+
 	return SNew(SDockTab)
 		.TabRole(ETabRole::NomadTab)
 		[
@@ -57,8 +65,22 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				.OnComboBoxOpening_Raw(this, &FWidgetManager::OnSemanticClassComboBoxOpened)
 				.Content()
 				[
-					SNew(STextBlock)
-					.Text(FText::FromString(TEXT("Pick a semantic class")))
+					SNew(STextBlock).Text(FText::FromString(TEXT("Pick a semantic class")))
+				]
+			]
+			+SScrollBox::Slot()
+			[
+				SNew(SComboBox<TSharedPtr<FString>>)
+				.OptionsSource(&TextureStyleNames)
+				.ContentPadding(2)
+				.OnGenerateWidget_Lambda(
+					[](TSharedPtr<FString> StringItem)
+					{ return SNew(STextBlock).Text(FText::FromString(*StringItem)); })
+				.OnSelectionChanged_Raw(this, &FWidgetManager::OnTextureStyleComboBoxSelectionChanged)
+				// .OnComboBoxOpening_Raw(this, &FWidgetManager::OnSemanticClassComboBoxOpened)
+				.Content()
+				[
+					SNew(STextBlock).Text(FText::FromString(TEXT("Pick a semantic class")))
 				]
 			]
 			+SScrollBox::Slot()
@@ -166,6 +188,7 @@ void FWidgetManager::OnSemanticClassComboBoxSelectionChanged(
 	if (StringItem.IsValid())
 	{
 		UE_LOG(LogEasySynth, Log, TEXT("%s: Semantic class selected: %s"), *FString(__FUNCTION__), **StringItem);
+		TextureStyleManager->ApplySemanticClass(*StringItem);
 	}
 }
 
@@ -186,7 +209,31 @@ void FWidgetManager::OnSemanticClassComboBoxOpened()
 	}
 	else
 	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Semantic class picker is invalid, could not refresh"), *FString(__FUNCTION__));
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Semantic class picker is invalid, could not refresh"),
+			*FString(__FUNCTION__));
+	}
+}
+
+void FWidgetManager::OnTextureStyleComboBoxSelectionChanged(
+	TSharedPtr<FString> StringItem,
+	ESelectInfo::Type SelectInfo)
+{
+	if (StringItem.IsValid())
+	{
+		UE_LOG(LogEasySynth, Log, TEXT("%s: Texture style selected: %s"), *FString(__FUNCTION__), **StringItem);
+		if (*StringItem == TextureStyleColorName)
+		{
+			TextureStyleManager->CheckoutTextureStyle(ETextureStyle::COLOR);
+		}
+		else if (*StringItem == TextureStyleSemanticName)
+		{
+			TextureStyleManager->CheckoutTextureStyle(ETextureStyle::SEMANTIC);
+		}
+		else
+		{
+			UE_LOG(LogEasySynth, Error, TEXT("%s: Got unexpected texture style: %s"),
+				*FString(__FUNCTION__), **StringItem);
+		}
 	}
 }
 

@@ -5,6 +5,7 @@
 
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "EditorAssetLibrary.h"
+#include "Engine/Selection.h"
 
 #include "PathUtils.h"
 #include "TextureStyles/TextureMappingAsset.h"
@@ -15,6 +16,8 @@ UTextureStyleManager::UTextureStyleManager() :
 {
 	LoadOrCreateTextureMappingAsset();
 }
+
+// TODO: On begin play bind event to OnLevelActorDeleted event to remove the actor from our buffers
 
 bool UTextureStyleManager::NewSemanticClass(const FString& ClassName, const FColor& ClassColor)
 {
@@ -39,10 +42,66 @@ TArray<FString> UTextureStyleManager::SemanticClassNames() const
 	return SemanticClassNames;
 }
 
+void UTextureStyleManager::ApplySemanticClass(const FString& ClassName)
+{
+	if (!TextureMappingAsset->SemanticClasses.Contains(ClassName))
+	{
+		UE_LOG(LogEasySynth, Log, TEXT("%s: Received semantic class '%s' not found"),
+			*FString(__FUNCTION__), *ClassName);
+		return;
+	}
+
+	UE_LOG(LogEasySynth, Log, TEXT("%s: Setting the '%s' semantic class"), *FString(__FUNCTION__), *ClassName);
+
+	TArray<UObject*> SelectedActors;
+	GEditor->GetSelectedActors()->GetSelectedObjects(AActor::StaticClass(), SelectedActors);
+
+	for (UObject* SelectedObject : SelectedActors)
+	{
+		AActor* SelectedActor = Cast<AActor>(SelectedObject);
+		if (SelectedActor == nullptr)
+		{
+			UE_LOG(LogEasySynth, Log, TEXT("%s: Got null actor"), *FString(__FUNCTION__));
+			return;
+		}
+
+		// Set the class to the actor
+		SetSemanticClassToActor(SelectedActor, ClassName);
+	}
+}
+
 void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle TextureStyle)
 {
-	// TODO: Apply new style to all meshes
+	UE_LOG(LogEasySynth, Log, TEXT("%s: %d"), *FString(__FUNCTION__), TextureStyle);
 	CurrentTextureStyle = TextureStyle;
+
+	for (auto& Element : TextureMappingAsset->ActorClassPairs)
+	{
+		AActor* Actor = Element.Key;
+		const FString& ClassName = Element.Value;
+
+		UE_LOG(LogEasySynth, Log, TEXT("%s: Painting actor '%s'"), *FString(__FUNCTION__), *Actor->GetName());
+
+		// Get actor mesh components
+		TArray<UActorComponent*> ActorComponenets;
+		const bool bIncludeFromChildActors = true;
+		Actor->GetComponents(UStaticMeshComponent::StaticClass(), ActorComponenets, bIncludeFromChildActors);
+
+		// Set new materials
+		for (UActorComponent* ActorComponent : ActorComponenets)
+		{
+			UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(ActorComponent);
+			if (MeshComponent == nullptr)
+			{
+				UE_LOG(LogEasySynth, Log, TEXT("%s: Got null static mesh component"), *FString(__FUNCTION__));
+				return;
+			}
+			UE_LOG(LogEasySynth, Log, TEXT("%s: Painting mesh component '%s'"),
+				*FString(__FUNCTION__), *MeshComponent->GetName());
+
+			// TODO: Work with materials
+		}
+	}
 }
 
 void UTextureStyleManager::LoadOrCreateTextureMappingAsset()
@@ -52,7 +111,8 @@ void UTextureStyleManager::LoadOrCreateTextureMappingAsset()
 
 	if (TextureMappingAsset == nullptr)
 	{
-		UE_LOG(LogEasySynth, Log, TEXT("%s: Texture mapping asset not found, creating a new one"), *FString(__FUNCTION__));
+		UE_LOG(LogEasySynth, Log, TEXT("%s: Texture mapping asset not found, creating a new one"),
+			*FString(__FUNCTION__));
 
 		// TODO: Remove all potentially existing EasySynth assets from the project
 
@@ -80,4 +140,16 @@ void UTextureStyleManager::SaveTextureMappingAsset()
 	check(TextureMappingAsset)
 	const bool bOnlyIfIsDirty = false;
 	UEditorAssetLibrary::SaveLoadedAsset(TextureMappingAsset, bOnlyIfIsDirty);
+}
+
+void UTextureStyleManager::SetSemanticClassToActor(AActor* Actor, const FString& ClassName)
+{
+	// Remove class if already assigned
+	if (TextureMappingAsset->ActorClassPairs.Contains(Actor))
+	{
+		TextureMappingAsset->ActorClassPairs.Remove(Actor);
+	}
+
+	// Set the new class
+	TextureMappingAsset->ActorClassPairs.Add(Actor, ClassName);
 }

@@ -30,6 +30,9 @@ private:
 	/** Callback function handling the opening of the combo box menu */
 	void OnSemanticClassComboBoxOpened();
 
+	/** Callback function handling the choosing of the texture style inside the combo box */
+	void OnTextureStyleComboBoxSelectionChanged(TSharedPtr<FString> StringItem, ESelectInfo::Type SelectInfo);
+
 	/** Callback funcion handling the update of the selected sequencer */
 	void OnSequencerSelected(const FAssetData& AssetData) { LevelSequenceAssetData = AssetData; }
 
@@ -83,6 +86,12 @@ private:
 	 * must be added to the root to avoid garbage collection
 	*/
 	USequenceRenderer* SequenceRenderer;
+
+	/** The name of the texture style representing original colors */
+	static const FString TextureStyleColorName;
+
+	/** The name of the texture style representing semantic colors */
+	static const FString TextureStyleSemanticName;
 
 	/** Error message box title for failed rendering start */
 	static const FText StartRenderingErrorMessageBoxTitle;
