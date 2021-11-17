@@ -156,7 +156,7 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 			UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(ActorComponent);
 			if (MeshComponent == nullptr)
 			{
-				UE_LOG(LogEasySynth, Log, TEXT("%s: Got null static mesh component"), *FString(__FUNCTION__))
+				UE_LOG(LogEasySynth, Error, TEXT("%s: Got null static mesh component"), *FString(__FUNCTION__))
 				return;
 			}
 
@@ -169,7 +169,6 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 			UE_LOG(LogEasySynth, Log, TEXT("%s: Painting mesh component '%s'"),
 				*FString(__FUNCTION__), *MeshComponent->GetName());
 
-			// TODO: Work with materials
 			for (int i = 0; i < MeshComponent->GetNumMaterials(); i++)
 			{
 				// Apply to each material
@@ -265,4 +264,52 @@ void UTextureStyleManager::SetSemanticClassToActor(AActor* Actor, const FString&
 
 	// Set the new class
 	TextureMappingAsset->ActorClassPairs.Add(Actor, ClassName);
+
+	if (CurrentTextureStyle == ETextureStyle::SEMANTIC)
+	{
+		// Immediately display the change
+		// Simplified checkout of the semantic view for this actor
+
+		// In case this actor has not already been added to the original descriptor,
+		// add all its contents before chinging the material
+		const bool bAddingNew = !FOrignalActorDescriptors.Contains(Actor);
+		if (bAddingNew)
+		{
+			FOrignalActorDescriptors.Add(Actor);
+		}
+
+		// Get actor mesh components
+		TArray<UActorComponent*> ActorComponenets;
+		const bool bIncludeFromChildActors = true;
+		Actor->GetComponents(UStaticMeshComponent::StaticClass(), ActorComponenets, bIncludeFromChildActors);
+
+		// Set new materials
+		for (UActorComponent* ActorComponent : ActorComponenets)
+		{
+			// Apply to each static mesh componenet
+			UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(ActorComponent);
+			if (MeshComponent == nullptr)
+			{
+				UE_LOG(LogEasySynth, Error, TEXT("%s: Got null static mesh component"), *FString(__FUNCTION__))
+				return;
+			}
+
+			if (bAddingNew)
+			{
+				FOrignalActorDescriptors[Actor].Add(MeshComponent);
+			}
+
+			for (int i = 0; i < MeshComponent->GetNumMaterials(); i++)
+			{
+				// Apply to each material
+				if (bAddingNew)
+				{
+					FOrignalActorDescriptors[Actor][MeshComponent].Add(MeshComponent->GetMaterial(i));
+				}
+
+				MeshComponent->SetMaterial(
+					i, TextureMappingAsset->SemanticClasses[ClassName].PlainColorMaterialInstance);
+			}
+		}
+	}
 }
