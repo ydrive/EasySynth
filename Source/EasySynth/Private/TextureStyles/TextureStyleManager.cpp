@@ -4,6 +4,7 @@
 #include "TextureStyles/TextureStyleManager.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "Components/StaticMeshComponent.h"
 #include "EditorAssetLibrary.h"
 #include "Engine/Selection.h"
 #include "HAL/FileManagerGeneric.h"
@@ -92,7 +93,8 @@ void UTextureStyleManager::ApplySemanticClass(const FString& ClassName)
 		return;
 	}
 
-	UE_LOG(LogEasySynth, Log, TEXT("%s: Setting the '%s' semantic class"), *FString(__FUNCTION__), *ClassName)
+	UE_LOG(LogEasySynth, Log, TEXT("%s: Setting the '%s' semantic class to selected actors"),
+		*FString(__FUNCTION__), *ClassName)
 
 	TArray<UObject*> SelectedActors;
 	GEditor->GetSelectedActors()->GetSelectedObjects(AActor::StaticClass(), SelectedActors);
@@ -111,17 +113,36 @@ void UTextureStyleManager::ApplySemanticClass(const FString& ClassName)
 	}
 }
 
-void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle TextureStyle)
+void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 {
-	UE_LOG(LogEasySynth, Log, TEXT("%s: %d"), *FString(__FUNCTION__), TextureStyle)
-	CurrentTextureStyle = TextureStyle;
+	UE_LOG(LogEasySynth, Log, TEXT("%s: New texture style: %d"), *FString(__FUNCTION__), NewTextureStyle)
+
+	if (NewTextureStyle == CurrentTextureStyle)
+	{
+		// Return if the desired style is already selected
+		UE_LOG(LogEasySynth, Log, TEXT("%s: TextureStyle %d already selected"), *FString(__FUNCTION__), NewTextureStyle)
+		return;
+	}
+
+	if (CurrentTextureStyle == ETextureStyle::COLOR)
+	{
+		// Reset the original actor material storage to prepare it for new data
+		FOrignalActorDescriptors.Empty();
+	}
 
 	for (auto& Element : TextureMappingAsset->ActorClassPairs)
 	{
+		// Apply to each actor
 		AActor* Actor = Element.Key;
 		const FString& ClassName = Element.Value;
 
 		UE_LOG(LogEasySynth, Log, TEXT("%s: Painting actor '%s'"), *FString(__FUNCTION__), *Actor->GetName())
+
+		if (CurrentTextureStyle == ETextureStyle::COLOR)
+		{
+			// Changing to semantic view, store the original data
+			FOrignalActorDescriptors.Add(Actor);
+		}
 
 		// Get actor mesh components
 		TArray<UActorComponent*> ActorComponenets;
@@ -131,18 +152,49 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle TextureStyle)
 		// Set new materials
 		for (UActorComponent* ActorComponent : ActorComponenets)
 		{
+			// Apply to each static mesh componenet
 			UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(ActorComponent);
 			if (MeshComponent == nullptr)
 			{
 				UE_LOG(LogEasySynth, Log, TEXT("%s: Got null static mesh component"), *FString(__FUNCTION__))
 				return;
 			}
+
+			if (CurrentTextureStyle == ETextureStyle::COLOR)
+			{
+				// Changing to semantic view, store the original data
+				FOrignalActorDescriptors[Actor].Add(MeshComponent);
+			}
+
 			UE_LOG(LogEasySynth, Log, TEXT("%s: Painting mesh component '%s'"),
 				*FString(__FUNCTION__), *MeshComponent->GetName());
 
 			// TODO: Work with materials
+			for (int i = 0; i < MeshComponent->GetNumMaterials(); i++)
+			{
+				// Apply to each material
+				if (CurrentTextureStyle == ETextureStyle::COLOR)
+				{
+					// Change to semantic material
+					FOrignalActorDescriptors[Actor][MeshComponent].Add(MeshComponent->GetMaterial(i));
+					MeshComponent->SetMaterial(i, TextureMappingAsset->SemanticClasses[ClassName].PlainColorMaterialInstance);
+				}
+				else
+				{
+					// Revert to original material
+					MeshComponent->SetMaterial(i, FOrignalActorDescriptors[Actor][MeshComponent][i]);
+				}
+			}
 		}
 	}
+
+	if (CurrentTextureStyle == ETextureStyle::SEMANTIC)
+	{
+		// Reset the original actor material storage as it is no longer needed
+		FOrignalActorDescriptors.Empty();
+	}
+
+	CurrentTextureStyle = NewTextureStyle;
 }
 
 void UTextureStyleManager::LoadOrCreateTextureMappingAsset()
@@ -203,6 +255,7 @@ void UTextureStyleManager::OnLevelActorDeleted(AActor* Actor)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Removing actor '%s'"), *FString(__FUNCTION__), *Actor->GetName())
 	TextureMappingAsset->ActorClassPairs.Remove(Actor);
+	FOrignalActorDescriptors.Remove(Actor);
 }
 
 void UTextureStyleManager::SetSemanticClassToActor(AActor* Actor, const FString& ClassName)
