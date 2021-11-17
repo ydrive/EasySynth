@@ -6,24 +6,34 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "EditorAssetLibrary.h"
 #include "Engine/Selection.h"
+#include "HAL/FileManagerGeneric.h"
 
 #include "PathUtils.h"
 #include "TextureStyles/TextureMappingAsset.h"
 
 
 UTextureStyleManager::UTextureStyleManager() :
-	CurrentTextureStyle(ETextureStyle::COLOR)
+	CurrentTextureStyle(ETextureStyle::COLOR),
+	bEventsBound(false)
 {
 	LoadOrCreateTextureMappingAsset();
 }
 
-// TODO: On begin play bind event to OnLevelActorDeleted event to remove the actor from our buffers
+void UTextureStyleManager::BindEvents()
+{
+	// Bind event to OnLevelActorDeleted event to remove the actor from our buffers
+	if (!bEventsBound)
+	{
+		GEngine->OnLevelActorDeleted().AddUObject(this, &UTextureStyleManager::OnLevelActorsRemoved);
+		bEventsBound = true;
+	}
+}
 
 bool UTextureStyleManager::NewSemanticClass(const FString& ClassName, const FColor& ClassColor)
 {
 	// TODO: Check collision with existing classes
 
-	// Crate a new class
+	// Crate the new class
 	FSemanticClass& SemanticClass = TextureMappingAsset->SemanticClasses.Add(ClassName);
 	SemanticClass.Name = ClassName;
 	SemanticClass.Color = ClassColor;
@@ -114,8 +124,14 @@ void UTextureStyleManager::LoadOrCreateTextureMappingAsset()
 		UE_LOG(LogEasySynth, Log, TEXT("%s: Texture mapping asset not found, creating a new one"),
 			*FString(__FUNCTION__));
 
-		// TODO: Remove all potentially existing EasySynth assets from the project
+		// Remove all potentially existing EasySynth assets from the project
+		const bool bIsAbsolute = true;
+		const bool bRequireExists = false;
+		const bool bTree = true;
+		FFileManagerGeneric::Get().DeleteDirectory(
+			*FPathUtils::ProjectPluginContentDir(bIsAbsolute), bRequireExists, bTree);
 
+		// Register the plugin directroy with the editor
 		FAssetRegistryModule& AssetRegistryModule =
 			FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 		AssetRegistryModule.Get().AddPath(FPathUtils::ProjectPluginContentDir());
@@ -142,13 +158,16 @@ void UTextureStyleManager::SaveTextureMappingAsset()
 	UEditorAssetLibrary::SaveLoadedAsset(TextureMappingAsset, bOnlyIfIsDirty);
 }
 
+void UTextureStyleManager::OnLevelActorsRemoved(AActor* Actor)
+{
+	UE_LOG(LogEasySynth, Log, TEXT("%s: Removing actor '%s'"), *FString(__FUNCTION__), *Actor->GetName())
+	TextureMappingAsset->ActorClassPairs.Remove(Actor);
+}
+
 void UTextureStyleManager::SetSemanticClassToActor(AActor* Actor, const FString& ClassName)
 {
 	// Remove class if already assigned
-	if (TextureMappingAsset->ActorClassPairs.Contains(Actor))
-	{
-		TextureMappingAsset->ActorClassPairs.Remove(Actor);
-	}
+	TextureMappingAsset->ActorClassPairs.Remove(Actor);
 
 	// Set the new class
 	TextureMappingAsset->ActorClassPairs.Add(Actor, ClassName);

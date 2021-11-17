@@ -22,6 +22,7 @@ const FText FWidgetManager::SuccessfulRenderingMessageBoxTitle = FText::FromStri
 FWidgetManager::FWidgetManager()
 {
 	// Create the texture style manager and add it to the root to avoid garbage collection
+	// No need to ever release it, as the FWidgetManager lives as long as the plugin inside the editor
 	TextureStyleManager = NewObject<UTextureStyleManager>();
 	check(TextureStyleManager);
 	TextureStyleManager->AddToRoot();
@@ -31,6 +32,7 @@ FWidgetManager::FWidgetManager()
 	TextureStyleManager->NewSemanticClass("Sidewalk", FColor(0, 0, 255, 255));
 
 	// Create the sequence renderer and add it to the root to avoid garbage collection
+	// No need to ever release it, as the FWidgetManager lives as long as the plugin inside the editor
 	SequenceRenderer = NewObject<USequenceRenderer>();
 	check(SequenceRenderer)
 	SequenceRenderer->AddToRoot();
@@ -48,6 +50,9 @@ FWidgetManager::FWidgetManager()
 
 TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
+	// Bind events now that the editor has finished starting up
+	TextureStyleManager->BindEvents();
+
 	return SNew(SDockTab)
 		.TabRole(ETabRole::NomadTab)
 		[

@@ -30,6 +30,9 @@ class UTextureStyleManager : public UObject
 public:
 	UTextureStyleManager();
 
+	/** Called when the editor has finished starting up to bind event handlers */
+	void BindEvents();
+
 	/** Create new semantic class */
 	bool NewSemanticClass(const FString& ClassName, const FColor& ClassColor);
 
@@ -52,6 +55,9 @@ private:
 	/** Save texture mapping asset modifications */
 	void SaveTextureMappingAsset();
 
+	/** Handles removing actor references from the manager */
+	void OnLevelActorsRemoved(AActor* Actor);
+
 	/** Sets a semantic class to the actor */
 	void SetSemanticClassToActor(AActor* Actor, const FString& ClassName);
 
@@ -61,4 +67,7 @@ private:
 
 	/** Currently selected texture style */
 	ETextureStyle CurrentTextureStyle;
+
+	/** Marks if events have already been bounded */
+	bool bEventsBound;
 };

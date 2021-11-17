@@ -53,10 +53,14 @@ public:
 	 * Point to the content created by the plugin inside the specific project
 	*/
 
-	/** Plugin's working directory inside the specific project */
-	static FString ProjectPluginContentDir()
+	/**
+	 * Plugin's working directory inside the specific project
+	 * Can return the absolute path to the directory, or the in-game reference path
+	*/
+	static FString ProjectPluginContentDir(const bool bIsAbsolute = false)
 	{
-		return FPaths::Combine(TEXT("/Game"), PluginName);
+		const FString Prefix = (bIsAbsolute ? FPaths::ProjectContentDir() : TEXT("/Game"));
+		return FPaths::Combine(Prefix, PluginName);
 	}
 
 	/** Path to the project-specific texture mapping asset */
