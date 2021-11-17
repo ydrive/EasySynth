@@ -18,6 +18,8 @@ class UMoviePipelineExecutorBase;
 class UMoviePipelineMasterConfig;
 class UMoviePipelineQueueSubsystem;
 
+class UTextureStyleManager;
+
 
 /**
  * Class Tracking which renderer targets are requested to be rendered
@@ -48,9 +50,18 @@ public:
 	/** Populate provided queue with selected renderer targets */
 	void GetSelectedTargets(TQueue<TSharedPtr<FRendererTarget>>& OutTargetsQueue) const;
 
+	/** Sets TextureStyleManager */
+	void SetTextureStyleManager(UTextureStyleManager* TextureStyleManager) { ViewManager = TextureStyleManager; }
+
+	/** Returns TextureStyleManager */
+	UTextureStyleManager* GetTextureStyleManager() { return ViewManager; }
+
 private:
 	/** Get the renderer target object from the target type id */
 	TSharedPtr<FRendererTarget> RendererTarget(const int TargetType) const;
+
+	/** TextureStyleManager needed to be forwarded to created render targets */
+	UTextureStyleManager* ViewManager;
 
 	/** Is the default color image rendering requested */
 	TArray<bool> SelectedTargets;

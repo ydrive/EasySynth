@@ -31,6 +31,9 @@ FWidgetManager::FWidgetManager()
 	TextureStyleManager->NewSemanticClass("Marking", FColor(0, 255, 0, 255));
 	TextureStyleManager->NewSemanticClass("Sidewalk", FColor(0, 0, 255, 255));
 
+	// Assign TextureStyleManager to SequenceRendererTargets
+	SequenceRendererTargets.SetTextureStyleManager(TextureStyleManager);
+
 	// Create the sequence renderer and add it to the root to avoid garbage collection
 	// No need to ever release it, as the FWidgetManager lives as long as the plugin inside the editor
 	SequenceRenderer = NewObject<USequenceRenderer>();
