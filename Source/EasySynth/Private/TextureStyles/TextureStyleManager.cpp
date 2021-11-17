@@ -12,10 +12,21 @@
 #include "TextureStyles/TextureMappingAsset.h"
 
 
+const FString UTextureStyleManager::SemanticColorParameter(TEXT("SemanticColor"));
+
 UTextureStyleManager::UTextureStyleManager() :
+	PlainColorMaterial(LoadObject<UMaterial>(nullptr, *FPathUtils::PlainColorMaterialPath())),
 	CurrentTextureStyle(ETextureStyle::COLOR),
 	bEventsBound(false)
 {
+	// Check if the plain color material is loaded correctly
+	if (PlainColorMaterial == nullptr)
+	{
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not load the PlainColorMaterial"), *FString(__FUNCTION__))
+		check(PlainColorMaterial)
+	}
+
+	// Prepare the texture mapping asset
 	LoadOrCreateTextureMappingAsset();
 }
 
@@ -24,7 +35,8 @@ void UTextureStyleManager::BindEvents()
 	// Bind event to OnLevelActorDeleted event to remove the actor from our buffers
 	if (!bEventsBound)
 	{
-		GEngine->OnLevelActorDeleted().AddUObject(this, &UTextureStyleManager::OnLevelActorsRemoved);
+		GEngine->OnLevelActorAdded().AddUObject(this, &UTextureStyleManager::OnLevelActorAdded);
+		GEngine->OnLevelActorDeleted().AddUObject(this, &UTextureStyleManager::OnLevelActorDeleted);
 		bEventsBound = true;
 	}
 }
@@ -49,7 +61,14 @@ bool UTextureStyleManager::NewSemanticClass(const FString& ClassName, const FCol
 	FSemanticClass& NewSemanticClass = TextureMappingAsset->SemanticClasses.Add(ClassName);
 	NewSemanticClass.Name = ClassName;
 	NewSemanticClass.Color = ClassColor;
-	// TODO: Create a material instance for the new class
+	// Create the material instance and set the color parameter
+	NewSemanticClass.PlainColorMaterialInstance = UMaterialInstanceDynamic::Create(PlainColorMaterial, nullptr);
+	if (NewSemanticClass.PlainColorMaterialInstance == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s: Could not create the plain color material instance"), *FString(__FUNCTION__))
+		return false;
+	}
+	NewSemanticClass.PlainColorMaterialInstance->SetVectorParameterValue(*SemanticColorParameter, ClassColor);
 
 	return true;
 }
@@ -170,7 +189,17 @@ void UTextureStyleManager::SaveTextureMappingAsset()
 	UEditorAssetLibrary::SaveLoadedAsset(TextureMappingAsset, bOnlyIfIsDirty);
 }
 
-void UTextureStyleManager::OnLevelActorsRemoved(AActor* Actor)
+void UTextureStyleManager::OnLevelActorAdded(AActor* Actor)
+{
+	UE_LOG(LogEasySynth, Log, TEXT("%s: Adding actor '%s'"), *FString(__FUNCTION__), *Actor->GetName())
+
+	if (CurrentTextureStyle == ETextureStyle::SEMANTIC)
+	{
+		// TODO: Assign a default semantic class and display it
+	}
+}
+
+void UTextureStyleManager::OnLevelActorDeleted(AActor* Actor)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Removing actor '%s'"), *FString(__FUNCTION__), *Actor->GetName())
 	TextureMappingAsset->ActorClassPairs.Remove(Actor);

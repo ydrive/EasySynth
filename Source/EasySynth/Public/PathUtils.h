@@ -27,6 +27,12 @@ public:
 		return FString::Printf(TEXT("/%s"), *PluginName);
 	}
 
+	/** Plugin content directory, because editor utils cannot tell us that */
+	static FString PlainColorMaterialPath()
+	{
+		return FPaths::Combine(PluginContentDir(), PlainColorMaterialAssetName);
+	}
+
 	/** Path to the plugin specific movie pipeline config preset */
 	static FString DefaultMoviePipelineConfigPath()
 	{
@@ -44,6 +50,9 @@ public:
 	{
 		return FPaths::Combine(PostProcessMaterialsDir(), FString::Printf(TEXT("M_PP%s"), *TargetName));
 	}
+
+	/** Clean name of the plan color material asset */
+	static const FString PlainColorMaterialAssetName;
 
 	/** Clean name of the movie pipeline config asset */
 	static const FString DefaultMoviePipelineConfigAssetName;

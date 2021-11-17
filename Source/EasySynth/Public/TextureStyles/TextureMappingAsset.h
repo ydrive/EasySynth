@@ -25,9 +25,8 @@ struct FSemanticClass
 	FColor Color;
 
 	/** Reference to the plain color material instance */
-	// TODO: Use material instance
 	UPROPERTY()
-	UMaterial* PlainColorMaterial;
+	UMaterialInstanceDynamic* PlainColorMaterialInstance;
 };
 
 

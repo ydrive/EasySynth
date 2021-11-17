@@ -55,8 +55,11 @@ private:
 	/** Save texture mapping asset modifications */
 	void SaveTextureMappingAsset();
 
+	/** Handles adding a new actor to the level */
+	void OnLevelActorAdded(AActor* Actor);
+
 	/** Handles removing actor references from the manager */
-	void OnLevelActorsRemoved(AActor* Actor);
+	void OnLevelActorDeleted(AActor* Actor);
 
 	/** Sets a semantic class to the actor */
 	void SetSemanticClassToActor(AActor* Actor, const FString& ClassName);
@@ -65,9 +68,16 @@ private:
 	UPROPERTY()
 	UTextureMappingAsset* TextureMappingAsset;
 
+	/** Plain color material used for semantic mesh coloring */
+	UPROPERTY()
+	UMaterial* PlainColorMaterial;
+
 	/** Currently selected texture style */
 	ETextureStyle CurrentTextureStyle;
 
 	/** Marks if events have already been bounded */
 	bool bEventsBound;
+
+	/** The name of the semantic color material parameter */
+	static const FString SemanticColorParameter;
 };
