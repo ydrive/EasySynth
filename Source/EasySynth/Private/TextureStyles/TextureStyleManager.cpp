@@ -51,7 +51,7 @@ void UTextureStyleManager::ApplySemanticClass(const FString& ClassName)
 		return;
 	}
 
-	UE_LOG(LogEasySynth, Log, TEXT("%s: Setting the '%s' semantic class"), *FString(__FUNCTION__), *ClassName);
+	UE_LOG(LogEasySynth, Log, TEXT("%s: Setting the '%s' semantic class"), *FString(__FUNCTION__), *ClassName)
 
 	TArray<UObject*> SelectedActors;
 	GEditor->GetSelectedActors()->GetSelectedObjects(AActor::StaticClass(), SelectedActors);
@@ -61,7 +61,7 @@ void UTextureStyleManager::ApplySemanticClass(const FString& ClassName)
 		AActor* SelectedActor = Cast<AActor>(SelectedObject);
 		if (SelectedActor == nullptr)
 		{
-			UE_LOG(LogEasySynth, Log, TEXT("%s: Got null actor"), *FString(__FUNCTION__));
+			UE_LOG(LogEasySynth, Log, TEXT("%s: Got null actor"), *FString(__FUNCTION__))
 			return;
 		}
 
@@ -72,7 +72,7 @@ void UTextureStyleManager::ApplySemanticClass(const FString& ClassName)
 
 void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle TextureStyle)
 {
-	UE_LOG(LogEasySynth, Log, TEXT("%s: %d"), *FString(__FUNCTION__), TextureStyle);
+	UE_LOG(LogEasySynth, Log, TEXT("%s: %d"), *FString(__FUNCTION__), TextureStyle)
 	CurrentTextureStyle = TextureStyle;
 
 	for (auto& Element : TextureMappingAsset->ActorClassPairs)
@@ -80,7 +80,7 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle TextureStyle)
 		AActor* Actor = Element.Key;
 		const FString& ClassName = Element.Value;
 
-		UE_LOG(LogEasySynth, Log, TEXT("%s: Painting actor '%s'"), *FString(__FUNCTION__), *Actor->GetName());
+		UE_LOG(LogEasySynth, Log, TEXT("%s: Painting actor '%s'"), *FString(__FUNCTION__), *Actor->GetName())
 
 		// Get actor mesh components
 		TArray<UActorComponent*> ActorComponenets;
@@ -93,7 +93,7 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle TextureStyle)
 			UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(ActorComponent);
 			if (MeshComponent == nullptr)
 			{
-				UE_LOG(LogEasySynth, Log, TEXT("%s: Got null static mesh component"), *FString(__FUNCTION__));
+				UE_LOG(LogEasySynth, Log, TEXT("%s: Got null static mesh component"), *FString(__FUNCTION__))
 				return;
 			}
 			UE_LOG(LogEasySynth, Log, TEXT("%s: Painting mesh component '%s'"),

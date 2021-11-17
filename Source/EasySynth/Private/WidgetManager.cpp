@@ -185,7 +185,7 @@ void FWidgetManager::OnSemanticClassComboBoxSelectionChanged(
 {
 	if (StringItem.IsValid())
 	{
-		UE_LOG(LogEasySynth, Log, TEXT("%s: Semantic class selected: %s"), *FString(__FUNCTION__), **StringItem);
+		UE_LOG(LogEasySynth, Log, TEXT("%s: Semantic class selected: %s"), *FString(__FUNCTION__), **StringItem)
 		TextureStyleManager->ApplySemanticClass(*StringItem);
 	}
 }
@@ -218,7 +218,7 @@ void FWidgetManager::OnTextureStyleComboBoxSelectionChanged(
 {
 	if (StringItem.IsValid())
 	{
-		UE_LOG(LogEasySynth, Log, TEXT("%s: Texture style selected: %s"), *FString(__FUNCTION__), **StringItem);
+		UE_LOG(LogEasySynth, Log, TEXT("%s: Texture style selected: %s"), *FString(__FUNCTION__), **StringItem)
 		if (*StringItem == TextureStyleColorName)
 		{
 			TextureStyleManager->CheckoutTextureStyle(ETextureStyle::COLOR);
