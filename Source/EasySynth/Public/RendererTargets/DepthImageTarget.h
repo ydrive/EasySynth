@@ -7,6 +7,8 @@
 
 #include "RendererTargets/RendererTarget.h"
 
+class UTextureStyleManager;
+
 
 /**
  * Class responsible for updating the world properties before
@@ -15,7 +17,10 @@
 class FDepthImageTarget : public FRendererTarget
 {
 public:
-	explicit FDepthImageTarget(const float DepthRangeMeters) : DepthRange(DepthRangeMeters) {}
+	explicit FDepthImageTarget(UTextureStyleManager* TextureStyleManager, const float DepthRangeMeters) :
+		FRendererTarget(TextureStyleManager),
+		DepthRange(DepthRangeMeters)
+	{}
 
 	/** Returns the name of the target */
 	virtual FString Name() const { return TEXT("DepthImage"); }

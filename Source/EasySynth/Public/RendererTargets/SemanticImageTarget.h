@@ -7,6 +7,8 @@
 
 #include "RendererTargets/RendererTarget.h"
 
+class UTextureStyleManager;
+
 
 /**
  * Class responsible for updating the world properties before
@@ -15,6 +17,8 @@
 class FSemanticImageTarget : public FRendererTarget
 {
 public:
+	explicit FSemanticImageTarget(UTextureStyleManager* TextureStyleManager) : FRendererTarget(TextureStyleManager) {}
+
 	/** Returns the name of the target */
 	virtual FString Name() const { return TEXT("SemanticImage"); }
 

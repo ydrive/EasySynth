@@ -58,10 +58,10 @@ TSharedPtr<FRendererTarget> FRendererTargetOptions::RendererTarget(const int Tar
 {
 	switch (TargetType)
 	{
-	case COLOR_IMAGE: return MakeShared<FColorImageTarget>(); break;
-	case DEPTH_IMAGE: return MakeShared<FDepthImageTarget>(DepthRangeMetersValue); break;
-	case NORMAL_IMAGE: return MakeShared<FNormalImageTarget>(); break;
-	case SEMANTIC_IMAGE: return MakeShared<FSemanticImageTarget>(); break;
+	case COLOR_IMAGE: return MakeShared<FColorImageTarget>(ViewManager); break;
+	case DEPTH_IMAGE: return MakeShared<FDepthImageTarget>(ViewManager, DepthRangeMetersValue); break;
+	case NORMAL_IMAGE: return MakeShared<FNormalImageTarget>(ViewManager); break;
+	case SEMANTIC_IMAGE: return MakeShared<FSemanticImageTarget>(ViewManager); break;
 	default: return nullptr;
 	}
 }

@@ -10,6 +10,8 @@
 class UCameraComponent;
 class ULevelSequence;
 
+class UTextureStyleManager;
+
 
 /**
  * Base class for renderer targets responsible for updating the
@@ -19,6 +21,8 @@ class ULevelSequence;
 class FRendererTarget
 {
 public:
+	explicit FRendererTarget(UTextureStyleManager* TextureStyleManager) : ViewManager(TextureStyleManager) {}
+
 	/** Returns a name of a specific target */
 	virtual FString Name() const = 0;
 
@@ -40,4 +44,7 @@ protected:
 	{
 		return LoadObject<UMaterial>(nullptr, *FPathUtils::PostProcessMaterialPath(Name()));
 	}
+
+	/** Handle for managing texture style in the level */
+	UTextureStyleManager* ViewManager;
 };
