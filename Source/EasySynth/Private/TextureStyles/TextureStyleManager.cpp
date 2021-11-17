@@ -31,12 +31,24 @@ void UTextureStyleManager::BindEvents()
 
 bool UTextureStyleManager::NewSemanticClass(const FString& ClassName, const FColor& ClassColor)
 {
-	// TODO: Check collision with existing classes
+	// Check collisions with existing classes
+	for (auto& Element : TextureMappingAsset->SemanticClasses)
+	{
+		const FSemanticClass& SemanticClass = Element.Value;
+		if (SemanticClass.Name == ClassName || SemanticClass.Color == ClassColor)
+		{
+			UE_LOG(LogEasySynth, Warning, TEXT("%s: New semantic class (%s, (%d %d %d)) colliding with existing (%s, (%d %d %d))"),
+				*FString(__FUNCTION__),
+				*ClassName, ClassColor.R, ClassColor.G, ClassColor.B,
+				*SemanticClass.Name, SemanticClass.Color.R, SemanticClass.Color.G, SemanticClass.Color.B);
+			return false;
+		}
+	}
 
 	// Crate the new class
-	FSemanticClass& SemanticClass = TextureMappingAsset->SemanticClasses.Add(ClassName);
-	SemanticClass.Name = ClassName;
-	SemanticClass.Color = ClassColor;
+	FSemanticClass& NewSemanticClass = TextureMappingAsset->SemanticClasses.Add(ClassName);
+	NewSemanticClass.Name = ClassName;
+	NewSemanticClass.Color = ClassColor;
 	// TODO: Create a material instance for the new class
 
 	return true;
