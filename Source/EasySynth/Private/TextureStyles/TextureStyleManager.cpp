@@ -155,6 +155,14 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 			// Changing to semantic view, store the original data
 			FOrignalActorDescriptors.Add(Actor);
 		}
+		else if (CurrentTextureStyle == ETextureStyle::SEMANTIC)
+		{
+			if (!FOrignalActorDescriptors.Contains(Actor))
+			{
+				UE_LOG(LogEasySynth, Error, TEXT("%s: Actor original descriptor not found"), *FString(__FUNCTION__))
+				continue;
+			}
+		}
 
 		// Get actor mesh components
 		TArray<UActorComponent*> ActorComponenets;
@@ -176,6 +184,23 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 			{
 				// Changing to semantic view, store the original data
 				FOrignalActorDescriptors[Actor].Add(MeshComponent);
+			}
+			else if (CurrentTextureStyle == ETextureStyle::SEMANTIC)
+			{
+				if (!FOrignalActorDescriptors[Actor].Contains(MeshComponent))
+				{
+					UE_LOG(LogEasySynth, Error, TEXT("%s: Actor's mesh component original descriptor not found"),
+						*FString(__FUNCTION__))
+					continue;
+				}
+				else if (FOrignalActorDescriptors[Actor][MeshComponent].Num() != MeshComponent->GetNumMaterials())
+				{
+					UE_LOG(LogEasySynth, Error, TEXT("%s: %d instead of %d actor's mesh component materials found"),
+						*FString(__FUNCTION__),
+						FOrignalActorDescriptors[Actor][MeshComponent].Num(),
+						MeshComponent->GetNumMaterials())
+					continue;
+				}
 			}
 
 			UE_LOG(LogEasySynth, Log, TEXT("%s: Painting mesh component '%s'"),
@@ -205,6 +230,9 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 		// Reset the original actor material storage as it is no longer needed
 		FOrignalActorDescriptors.Empty();
 	}
+
+	// Make sure any changes to the TextureMappingAsset are changed
+	SaveTextureMappingAsset();
 
 	CurrentTextureStyle = NewTextureStyle;
 }
@@ -260,10 +288,10 @@ void UTextureStyleManager::OnLevelActorAdded(AActor* Actor)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Adding actor '%s'"), *FString(__FUNCTION__), *Actor->GetName())
 
-	if (CurrentTextureStyle == ETextureStyle::SEMANTIC)
-	{
-		// TODO: Assign a default semantic class and display it
-	}
+	// Preemprively assign the undefined semantic class to the new actor
+	// In the case of the semantic mode being selected, assigned class will be immediately displayed
+	const bool bDelayAddingDescriptors = true;
+	SetSemanticClassToActor(Actor, UndefinedSemanticClassName, bDelayAddingDescriptors);
 }
 
 void UTextureStyleManager::OnLevelActorDeleted(AActor* Actor)
@@ -273,7 +301,10 @@ void UTextureStyleManager::OnLevelActorDeleted(AActor* Actor)
 	FOrignalActorDescriptors.Remove(Actor);
 }
 
-void UTextureStyleManager::SetSemanticClassToActor(AActor* Actor, const FString& ClassName)
+void UTextureStyleManager::SetSemanticClassToActor(
+	AActor* Actor,
+	const FString& ClassName,
+	const bool bDelayAddingDescriptors)
 {
 	// Remove class if already assigned
 	TextureMappingAsset->ActorClassPairs.Remove(Actor->GetActorGuid());
@@ -315,19 +346,29 @@ void UTextureStyleManager::SetSemanticClassToActor(AActor* Actor, const FString&
 				FOrignalActorDescriptors[Actor].Add(MeshComponent);
 			}
 
-			for (int i = 0; i < MeshComponent->GetNumMaterials(); i++)
+			if (bDelayAddingDescriptors)
 			{
-				// Apply to each material
-				if (bAddingNew)
+				// TODO: A way to execute the same thing with a very quick delay
+			}
+			else
+			{
+				// Store actor descriptors immediately
+				for (int i = 0; i < MeshComponent->GetNumMaterials(); i++)
 				{
-					FOrignalActorDescriptors[Actor][MeshComponent].Add(MeshComponent->GetMaterial(i));
-				}
+					// Apply to each material
+					if (bAddingNew)
+					{
+						FOrignalActorDescriptors[Actor][MeshComponent].Add(MeshComponent->GetMaterial(i));
+					}
 
-				MeshComponent->SetMaterial(
-					i, GetSemanticClassMaterial(TextureMappingAsset->SemanticClasses[ClassName]));
+					MeshComponent->SetMaterial(
+						i, GetSemanticClassMaterial(TextureMappingAsset->SemanticClasses[ClassName]));
+				}
 			}
 		}
 	}
+
+	// No need to save the TextureMappingAsset for every actor, the caller will do it
 }
 
 UMaterialInstanceDynamic* UTextureStyleManager::GetSemanticClassMaterial(FSemanticClass& SemanticClass)

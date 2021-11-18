@@ -37,6 +37,9 @@ struct FOriginalComponentDescriptor
 	/** Wrap TArray Add method */
 	void Add(UMaterialInterface* MaterialInterface) { MaterialInterfaces.Add(MaterialInterface); }
 
+	/** Wrap TArray Num method */
+	int Num() const { return MaterialInterfaces.Num(); }
+
 	/** Wrap TArray [] operator */
 	UMaterialInterface* operator[](int i) { return MaterialInterfaces[i]; }
 };
@@ -54,6 +57,9 @@ struct FOrignalActorDescriptor
 
 	/** Wrap TMap Add method */
 	void Add(UStaticMeshComponent* Component) { CompDescriptors.Add(Component); }
+
+	/** Wrap TMap Contains method */
+	bool Contains(UStaticMeshComponent* Component) const { return CompDescriptors.Contains(Component); }
 
 	/** Wrap TMap [] operator */
 	FOriginalComponentDescriptor& operator[](UStaticMeshComponent* Component) { return CompDescriptors[Component]; }
@@ -106,7 +112,7 @@ private:
 	void OnLevelActorDeleted(AActor* Actor);
 
 	/** Sets a semantic class to the actor */
-	void SetSemanticClassToActor(AActor* Actor, const FString& ClassName);
+	void SetSemanticClassToActor(AActor* Actor, const FString& ClassName, const bool bDelayAddingDescriptors = false);
 
 	/** Generates the semantic class material if needed and returns it */
 	UMaterialInstanceDynamic* GetSemanticClassMaterial(FSemanticClass& SemanticClass);
