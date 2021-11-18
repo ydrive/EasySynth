@@ -31,9 +31,6 @@ FWidgetManager::FWidgetManager()
 	TextureStyleManager->NewSemanticClass("Marking", FColor(0, 255, 0, 255));
 	TextureStyleManager->NewSemanticClass("Sidewalk", FColor(0, 0, 255, 255));
 
-	// Assign TextureStyleManager to SequenceRendererTargets
-	SequenceRendererTargets.SetTextureStyleManager(TextureStyleManager);
-
 	// Create the sequence renderer and add it to the root to avoid garbage collection
 	// No need to ever release it, as the FWidgetManager lives as long as the plugin inside the editor
 	SequenceRenderer = NewObject<USequenceRenderer>();
@@ -41,6 +38,7 @@ FWidgetManager::FWidgetManager()
 	SequenceRenderer->AddToRoot();
 	// Register the rendering finished callback
 	SequenceRenderer->OnRenderingFinished().AddRaw(this, &FWidgetManager::OnRenderingFinished);
+	SequenceRenderer->SetTextureStyleManager(TextureStyleManager);
 
 	// Prepare content of the texture style checkout combo box
 	TextureStyleNames.Add(MakeShared<FString>(TextureStyleColorName));

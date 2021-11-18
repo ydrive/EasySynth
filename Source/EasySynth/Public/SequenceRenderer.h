@@ -10,6 +10,7 @@
 #include "RendererTargets/DepthImageTarget.h"
 #include "RendererTargets/NormalImageTarget.h"
 #include "RendererTargets/SemanticImageTarget.h"
+#include "TextureStyles/TextureStyleManager.h"
 
 #include "SequenceRenderer.generated.h"
 
@@ -17,8 +18,6 @@ class ULevelSequence;
 class UMoviePipelineExecutorBase;
 class UMoviePipelineMasterConfig;
 class UMoviePipelineQueueSubsystem;
-
-class UTextureStyleManager;
 
 
 /**
@@ -48,17 +47,13 @@ public:
 	float DepthRangeMeters() const { return DepthRangeMetersValue; }
 
 	/** Populate provided queue with selected renderer targets */
-	void GetSelectedTargets(TQueue<TSharedPtr<FRendererTarget>>& OutTargetsQueue) const;
-
-	/** Sets TextureStyleManager */
-	void SetTextureStyleManager(UTextureStyleManager* TextureStyleManager) { ViewManager = TextureStyleManager; }
-
-	/** Returns TextureStyleManager */
-	UTextureStyleManager* GetTextureStyleManager() { return ViewManager; }
+	void GetSelectedTargets(
+		UTextureStyleManager* TextureStyleManager,
+		TQueue<TSharedPtr<FRendererTarget>>& OutTargetsQueue) const;
 
 private:
 	/** Get the renderer target object from the target type id */
-	TSharedPtr<FRendererTarget> RendererTarget(const int TargetType) const;
+	TSharedPtr<FRendererTarget> RendererTarget(const int TargetType, UTextureStyleManager* TextureStyleManager) const;
 
 	/** TextureStyleManager needed to be forwarded to created render targets */
 	UTextureStyleManager* ViewManager;
@@ -88,6 +83,9 @@ class USequenceRenderer : public UObject
 public:
 	/** Initialize the SequenceRenderer */
 	USequenceRenderer();
+
+	/** Sets TextureStyleManager */
+	void SetTextureStyleManager(UTextureStyleManager* TextureStyleManager) { ViewManager = TextureStyleManager; }
 
 	/** Runs sequence rendering, returns false if rendering could not start */
 	bool RenderSequence(
@@ -133,6 +131,12 @@ private:
 	/** Points to the user-created level sequence */
 	UPROPERTY()
 	ULevelSequence* RenderingSequence;
+
+	/** TextureStyleManager needed to be finalize the rendering */
+	UTextureStyleManager* ViewManager;
+
+	/** Used to revert to this style after finishing the rendering */
+	ETextureStyle OriginalTextureStyle;
 
 	/** Queue of targets to be rendered */
 	TQueue<TSharedPtr<FRendererTarget>> TargetsQueue;
