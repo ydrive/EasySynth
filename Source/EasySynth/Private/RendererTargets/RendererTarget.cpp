@@ -17,14 +17,16 @@ TArray<UCameraComponent*> FRendererTarget::GetCameras(ULevelSequence* LevelSeque
 	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
 	if (MovieScene == nullptr)
 	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not get the movie scene from the level sequence"), *FString(__FUNCTION__))
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not get the movie scene from the level sequence"),
+			*FString(__FUNCTION__))
 		return Cameras;
 	}
 
 	UMovieSceneTrack* CameraCutTrack = MovieScene->GetCameraCutTrack();
 	if (CameraCutTrack == nullptr)
 	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not get the camera cut track from the movie scene"), *FString(__FUNCTION__))
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not get the camera cut track from the movie scene"),
+			*FString(__FUNCTION__))
 		return Cameras;
 	}
 
@@ -81,7 +83,8 @@ TArray<UCameraComponent*> FRendererTarget::GetCameras(ULevelSequence* LevelSeque
 		}
 
 		// Get the camera componenet
-		UCameraComponent* Camera = CutSection->GetFirstCamera(*WeakSequencer.Pin(), WeakSequencer.Pin()->GetFocusedTemplateID());
+		UCameraComponent* Camera =
+			CutSection->GetFirstCamera(*WeakSequencer.Pin(), WeakSequencer.Pin()->GetFocusedTemplateID());
 		if (Camera == nullptr)
 		{
 			UE_LOG(LogEasySynth, Error, TEXT("%s: Cut section camera component is null"), *FString(__FUNCTION__))
