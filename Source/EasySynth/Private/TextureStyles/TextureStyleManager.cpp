@@ -42,7 +42,10 @@ void UTextureStyleManager::BindEvents()
 	}
 }
 
-bool UTextureStyleManager::NewSemanticClass(const FString& ClassName, const FColor& ClassColor)
+bool UTextureStyleManager::NewSemanticClass(
+	const FString& ClassName,
+	const FColor& ClassColor,
+	const bool bSaveTextureMappingAsset)
 {
 	// Check collisions with existing classes
 	for (auto& Element : TextureMappingAsset->SemanticClasses)
@@ -70,6 +73,11 @@ bool UTextureStyleManager::NewSemanticClass(const FString& ClassName, const FCol
 		return false;
 	}
 	NewSemanticClass.PlainColorMaterialInstance->SetVectorParameterValue(*SemanticColorParameter, ClassColor);
+
+	if (bSaveTextureMappingAsset)
+	{
+		SaveTextureMappingAsset();
+	}
 
 	return true;
 }
@@ -111,6 +119,8 @@ void UTextureStyleManager::ApplySemanticClass(const FString& ClassName)
 		// Set the class to the actor
 		SetSemanticClassToActor(SelectedActor, ClassName);
 	}
+
+	SaveTextureMappingAsset();
 }
 
 void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
@@ -229,6 +239,9 @@ void UTextureStyleManager::LoadOrCreateTextureMappingAsset()
 			EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
 		check(TextureMappingAsset)
 
+		// Initialize the default undefined semantic class with pure white color
+		NewSemanticClass("Undefined", FColor(255, 255, 255, 255), false);
+
 		// Don't save the asset yet to prevent crashing the editor on startup
 	}
 }
@@ -265,9 +278,9 @@ void UTextureStyleManager::SetSemanticClassToActor(AActor* Actor, const FString&
 	// Set the new class
 	TextureMappingAsset->ActorClassPairs.Add(Actor, ClassName);
 
+	// Immediately display the change when in the semantic mode
 	if (CurrentTextureStyle == ETextureStyle::SEMANTIC)
 	{
-		// Immediately display the change
 		// Simplified checkout of the semantic view for this actor
 
 		// In case this actor has not already been added to the original descriptor,

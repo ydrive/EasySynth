@@ -74,7 +74,10 @@ public:
 	void BindEvents();
 
 	/** Create new semantic class */
-	bool NewSemanticClass(const FString& ClassName, const FColor& ClassColor);
+	bool NewSemanticClass(
+		const FString& ClassName,
+		const FColor& ClassColor,
+		const bool bSaveTextureMappingAsset = true);
 
 	/** Returns names of existing semantic classes */
 	TArray<FString> SemanticClassNames() const;

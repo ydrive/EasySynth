@@ -27,9 +27,9 @@ FWidgetManager::FWidgetManager()
 	check(TextureStyleManager);
 	TextureStyleManager->AddToRoot();
 	// Add some dummy sematic classes
-	TextureStyleManager->NewSemanticClass("Drivable", FColor(255, 0, 0, 255));
-	TextureStyleManager->NewSemanticClass("Marking", FColor(0, 255, 0, 255));
-	TextureStyleManager->NewSemanticClass("Sidewalk", FColor(0, 0, 255, 255));
+	TextureStyleManager->NewSemanticClass("Drivable", FColor(255, 0, 0, 255), false);
+	TextureStyleManager->NewSemanticClass("Marking", FColor(0, 255, 0, 255), false);
+	TextureStyleManager->NewSemanticClass("Sidewalk", FColor(0, 0, 255, 255), false);
 
 	// Create the sequence renderer and add it to the root to avoid garbage collection
 	// No need to ever release it, as the FWidgetManager lives as long as the plugin inside the editor

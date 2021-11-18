@@ -11,37 +11,37 @@
 
 
 /** Structure that represents a user-defined semantic class */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FSemanticClass
 {
 	GENERATED_USTRUCT_BODY()
 
 	/** The semantic class name */
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = "Semantic Class Propterties")
 	FString Name;
 
 	/** The semantic class color */
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = "Semantic Class Propterties")
 	FColor Color;
 
 	/** Reference to the plain color material instance */
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = "Semantic Class Material")
 	UMaterialInstanceDynamic* PlainColorMaterialInstance;
 };
 
 
 /** An asset containing semantic mapping for each actor */
 UCLASS()
-class UTextureMappingAsset : public UDataAsset
+class EASYSYNTH_API UTextureMappingAsset : public UDataAsset
 {
 	GENERATED_BODY()
 
 public:
 	/** Created semantic classes */
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = "Semantic Classes")
 	TMap<FString, FSemanticClass> SemanticClasses;
 
 	/** Actor to semantic class name bindings */
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = "Actor Data")
 	TMap<AActor*, FString> ActorClassPairs;
 };
