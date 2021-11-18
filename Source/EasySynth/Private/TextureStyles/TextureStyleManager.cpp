@@ -8,12 +8,14 @@
 #include "EditorAssetLibrary.h"
 #include "Engine/Selection.h"
 #include "HAL/FileManagerGeneric.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "PathUtils.h"
 #include "TextureStyles/TextureMappingAsset.h"
 
 
 const FString UTextureStyleManager::SemanticColorParameter(TEXT("SemanticColor"));
+const FString UTextureStyleManager::UndefinedSemanticClassName(TEXT("Undefined"));
 
 UTextureStyleManager::UTextureStyleManager() :
 	PlainColorMaterial(LoadObject<UMaterial>(nullptr, *FPathUtils::PlainColorMaterialPath())),
@@ -65,14 +67,7 @@ bool UTextureStyleManager::NewSemanticClass(
 	FSemanticClass& NewSemanticClass = TextureMappingAsset->SemanticClasses.Add(ClassName);
 	NewSemanticClass.Name = ClassName;
 	NewSemanticClass.Color = ClassColor;
-	// Create the material instance and set the color parameter
-	NewSemanticClass.PlainColorMaterialInstance = UMaterialInstanceDynamic::Create(PlainColorMaterial, nullptr);
-	if (NewSemanticClass.PlainColorMaterialInstance == nullptr)
-	{
-		UE_LOG(LogTemp, Error, TEXT("%s: Could not create the plain color material instance"), *FString(__FUNCTION__))
-		return false;
-	}
-	NewSemanticClass.PlainColorMaterialInstance->SetVectorParameterValue(*SemanticColorParameter, ClassColor);
+	// The semantic class material instance will be created when it's needed
 
 	if (bSaveTextureMappingAsset)
 	{
@@ -92,7 +87,7 @@ TArray<FString> UTextureStyleManager::SemanticClassNames() const
 	return SemanticClassNames;
 }
 
-void UTextureStyleManager::ApplySemanticClass(const FString& ClassName)
+void UTextureStyleManager::ApplySemanticClassToSelectedActors(const FString& ClassName)
 {
 	if (!TextureMappingAsset->SemanticClasses.Contains(ClassName))
 	{
@@ -140,11 +135,18 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 		FOrignalActorDescriptors.Empty();
 	}
 
-	for (auto& Element : TextureMappingAsset->ActorClassPairs)
+	// Apply materials to all actors
+	TArray<AActor*> LevelActors;
+	UGameplayStatics::GetAllActorsOfClass(GEditor->GetEditorWorldContext().World(), AActor::StaticClass(), LevelActors);
+	for (AActor* Actor : LevelActors)
 	{
-		// Apply to each actor
-		AActor* Actor = Element.Key;
-		const FString& ClassName = Element.Value;
+		// If actor is unknown, apply the undefined semantic class
+		if (!TextureMappingAsset->ActorClassPairs.Contains(Actor->GetActorGuid()))
+		{
+			SetSemanticClassToActor(Actor, UndefinedSemanticClassName);
+		}
+
+		const FString& ClassName = TextureMappingAsset->ActorClassPairs[Actor->GetActorGuid()];
 
 		UE_LOG(LogEasySynth, Log, TEXT("%s: Painting actor '%s'"), *FString(__FUNCTION__), *Actor->GetName())
 
@@ -186,7 +188,8 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 				{
 					// Change to semantic material
 					FOrignalActorDescriptors[Actor][MeshComponent].Add(MeshComponent->GetMaterial(i));
-					MeshComponent->SetMaterial(i, TextureMappingAsset->SemanticClasses[ClassName].PlainColorMaterialInstance);
+					MeshComponent->SetMaterial(
+						i, GetSemanticClassMaterial(TextureMappingAsset->SemanticClasses[ClassName]));
 				}
 				else
 				{
@@ -240,7 +243,7 @@ void UTextureStyleManager::LoadOrCreateTextureMappingAsset()
 		check(TextureMappingAsset)
 
 		// Initialize the default undefined semantic class with pure white color
-		NewSemanticClass("Undefined", FColor(255, 255, 255, 255), false);
+		NewSemanticClass(UndefinedSemanticClassName, FColor(255, 255, 255, 255), false);
 
 		// Don't save the asset yet to prevent crashing the editor on startup
 	}
@@ -266,17 +269,17 @@ void UTextureStyleManager::OnLevelActorAdded(AActor* Actor)
 void UTextureStyleManager::OnLevelActorDeleted(AActor* Actor)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Removing actor '%s'"), *FString(__FUNCTION__), *Actor->GetName())
-	TextureMappingAsset->ActorClassPairs.Remove(Actor);
+	TextureMappingAsset->ActorClassPairs.Remove(Actor->GetActorGuid());
 	FOrignalActorDescriptors.Remove(Actor);
 }
 
 void UTextureStyleManager::SetSemanticClassToActor(AActor* Actor, const FString& ClassName)
 {
 	// Remove class if already assigned
-	TextureMappingAsset->ActorClassPairs.Remove(Actor);
+	TextureMappingAsset->ActorClassPairs.Remove(Actor->GetActorGuid());
 
 	// Set the new class
-	TextureMappingAsset->ActorClassPairs.Add(Actor, ClassName);
+	TextureMappingAsset->ActorClassPairs.Add(Actor->GetActorGuid(), ClassName);
 
 	// Immediately display the change when in the semantic mode
 	if (CurrentTextureStyle == ETextureStyle::SEMANTIC)
@@ -321,8 +324,26 @@ void UTextureStyleManager::SetSemanticClassToActor(AActor* Actor, const FString&
 				}
 
 				MeshComponent->SetMaterial(
-					i, TextureMappingAsset->SemanticClasses[ClassName].PlainColorMaterialInstance);
+					i, GetSemanticClassMaterial(TextureMappingAsset->SemanticClasses[ClassName]));
 			}
 		}
 	}
+}
+
+UMaterialInstanceDynamic* UTextureStyleManager::GetSemanticClassMaterial(FSemanticClass& SemanticClass)
+{
+	// If the plain color material is null, create it
+	if (SemanticClass.PlainColorMaterialInstance == nullptr)
+	{
+		SemanticClass.PlainColorMaterialInstance = UMaterialInstanceDynamic::Create(PlainColorMaterial, nullptr);
+		if (SemanticClass.PlainColorMaterialInstance == nullptr)
+		{
+			UE_LOG(LogTemp, Error, TEXT("%s: Could not create the plain color material instance"),
+				*FString(__FUNCTION__))
+			check(SemanticClass.PlainColorMaterialInstance)
+		}
+		SemanticClass.PlainColorMaterialInstance->SetVectorParameterValue(*SemanticColorParameter, SemanticClass.Color);
+	}
+
+	return SemanticClass.PlainColorMaterialInstance;
 }

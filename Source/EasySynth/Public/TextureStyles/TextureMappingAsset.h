@@ -43,5 +43,5 @@ public:
 
 	/** Actor to semantic class name bindings */
 	UPROPERTY(EditAnywhere, Category = "Actor Data")
-	TMap<AActor*, FString> ActorClassPairs;
+	TMap<FGuid, FString> ActorClassPairs;
 };

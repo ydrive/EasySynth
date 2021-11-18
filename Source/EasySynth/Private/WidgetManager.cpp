@@ -192,7 +192,7 @@ void FWidgetManager::OnSemanticClassComboBoxSelectionChanged(
 	if (StringItem.IsValid())
 	{
 		UE_LOG(LogEasySynth, Log, TEXT("%s: Semantic class selected: %s"), *FString(__FUNCTION__), **StringItem)
-		TextureStyleManager->ApplySemanticClass(*StringItem);
+		TextureStyleManager->ApplySemanticClassToSelectedActors(*StringItem);
 	}
 }
 

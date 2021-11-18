@@ -11,6 +11,7 @@ class AActor;
 class UMaterial;
 class UStaticMeshComponent;
 
+struct FSemanticClass;
 class UTextureMappingAsset;
 
 
@@ -83,7 +84,7 @@ public:
 	TArray<FString> SemanticClassNames() const;
 
 	/** Apllies desired class to all selected actors */
-	void ApplySemanticClass(const FString& ClassName);
+	void ApplySemanticClassToSelectedActors(const FString& ClassName);
 
 	/** Update mesh materials to show requested texture styles */
 	void CheckoutTextureStyle(ETextureStyle TextureStyle);
@@ -106,6 +107,9 @@ private:
 
 	/** Sets a semantic class to the actor */
 	void SetSemanticClassToActor(AActor* Actor, const FString& ClassName);
+
+	/** Generates the semantic class material if needed and returns it */
+	UMaterialInstanceDynamic* GetSemanticClassMaterial(FSemanticClass& SemanticClass);
 
 	/** Global texture mapping asset of the specific project */
 	UPROPERTY()
@@ -131,4 +135,7 @@ private:
 
 	/** The name of the semantic color material parameter */
 	static const FString SemanticColorParameter;
+
+	/** The name of the Undefined semantic class */
+	static const FString UndefinedSemanticClassName;
 };
