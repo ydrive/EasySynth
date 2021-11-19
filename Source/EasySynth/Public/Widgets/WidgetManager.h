@@ -7,13 +7,15 @@
 
 #include "SequenceRenderer.h"
 
+#include "Widgets/SemanticClassesWidgetManager.h"
+
 class ULevelSequence;
 
 class UTextureStyleManager;
 
 
 /**
- * Class that manages UI widget interatcion
+ * Class that manages main UI widget interatcion
 */
 class FWidgetManager
 {
@@ -24,6 +26,13 @@ public:
 	TSharedRef<SDockTab> OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs);
 
 private:
+	/**
+	 * Main plugin widget handlers
+	*/
+
+	/** Handles manage semantic classes button click */
+	FReply OnManageSemanticClassesClicked();
+
 	/** Callback function handling the choosing of the semantic class inside the combo box */
 	void OnSemanticClassComboBoxSelectionChanged(TSharedPtr<FString> StringItem, ESelectInfo::Type SelectInfo);
 
@@ -59,6 +68,13 @@ private:
 
 	/** Handles the sequence renderer finished event */
 	void OnRenderingFinished(bool bSuccess);
+
+	/**
+	 * Local members
+	*/
+
+	/** Manager that handles semantic class widget */
+	FSemanticClassesWidgetManager SemanticsWidget;
 
 	/** FStrings semantic class names referenced by the combo box */
 	TArray<TSharedPtr<FString>> SemanticClassNames;

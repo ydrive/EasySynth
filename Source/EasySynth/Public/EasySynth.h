@@ -6,7 +6,7 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-#include "WidgetManager.h"
+#include "Widgets/WidgetManager.h"
 
 class FToolBarBuilder;
 class FMenuBuilder;

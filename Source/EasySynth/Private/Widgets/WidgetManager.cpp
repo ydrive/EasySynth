@@ -1,7 +1,7 @@
 // Copyright (c) YDrive Inc. All rights reserved.
 // Licensed under the MIT License.
 
-#include "WidgetManager.h"
+#include "Widgets/WidgetManager.h"
 
 #include "LevelSequence.h"
 #include "PropertyCustomizationHelpers.h"
@@ -58,6 +58,16 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 		.TabRole(ETabRole::NomadTab)
 		[
 			SNew(SScrollBox)
+			+SScrollBox::Slot()
+			[
+				SNew(SButton)
+				.OnClicked_Raw(&SemanticsWidget, &FSemanticClassesWidgetManager::OnManageSemanticClassesClicked)
+				.Content()
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString("Manage Semantic Classes"))
+				]
+			]
 			+SScrollBox::Slot()
 			[
 				SAssignNew(SemanticClassComboBox, SComboBox<TSharedPtr<FString>>)

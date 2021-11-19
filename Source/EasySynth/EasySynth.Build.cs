@@ -57,6 +57,7 @@ public class EasySynth : ModuleRules
 				"Sequencer",
 				// Editor tab functionality
 				"DesktopWidgets",
+				"MainFrame",
 				"PropertyEditor",
 				// ... add private dependencies that you statically link with here ...
 			}
