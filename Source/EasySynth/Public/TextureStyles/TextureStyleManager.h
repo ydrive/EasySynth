@@ -111,6 +111,9 @@ private:
 	/** Handles removing actor references from the manager */
 	void OnLevelActorDeleted(AActor* Actor);
 
+	/** Handles editor closing, making sure original mesh colors are selected */
+	void OnEditorClose();
+
 	/** Sets a semantic class to the actor */
 	void SetSemanticClassToActor(AActor* Actor, const FString& ClassName, const bool bDelayAddingDescriptors = false);
 

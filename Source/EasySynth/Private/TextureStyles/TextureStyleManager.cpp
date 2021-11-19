@@ -7,6 +7,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "EditorAssetLibrary.h"
 #include "Engine/Selection.h"
+#include "FileHelpers.h"
 #include "HAL/FileManagerGeneric.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -40,7 +41,8 @@ void UTextureStyleManager::BindEvents()
 	{
 		GEngine->OnLevelActorAdded().AddUObject(this, &UTextureStyleManager::OnLevelActorAdded);
 		GEngine->OnLevelActorDeleted().AddUObject(this, &UTextureStyleManager::OnLevelActorDeleted);
-		// TODO: Bind events on level save and editor close
+		GEngine->OnEditorClose().AddUObject(this, &UTextureStyleManager::OnEditorClose);
+		// TODO: Try to bind an event to the level save action
 		bEventsBound = true;
 	}
 }
@@ -317,6 +319,16 @@ void UTextureStyleManager::OnLevelActorDeleted(AActor* Actor)
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Removing actor '%s'"), *FString(__FUNCTION__), *Actor->GetName())
 	TextureMappingAsset->ActorClassPairs.Remove(Actor->GetActorGuid());
 	FOrignalActorDescriptors.Remove(Actor);
+}
+
+void UTextureStyleManager::OnEditorClose()
+{
+	UE_LOG(LogEasySynth, Log, TEXT("%s: Making sure original mesh colors are selected"), *FString(__FUNCTION__))
+	CheckoutTextureStyle(ETextureStyle::COLOR);
+	// Make level dirty and save it
+	ULevel* Level = GWorld->GetCurrentLevel();
+	Level->MarkPackageDirty();
+	FEditorFileUtils::SaveLevel(Level);
 }
 
 void UTextureStyleManager::SetSemanticClassToActor(
