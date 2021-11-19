@@ -44,6 +44,9 @@ FWidgetManager::FWidgetManager()
 	TextureStyleNames.Add(MakeShared<FString>(TextureStyleColorName));
 	TextureStyleNames.Add(MakeShared<FString>(TextureStyleSemanticName));
 
+	// Initialize SemanticClassesWidgetManager
+	SemanticsWidget.SetTextureStyleManager(TextureStyleManager);
+
 	// Define the default output directory
 	// TODO: remember the last one used
 	OutputDirectory = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("RenderingOutput"));
