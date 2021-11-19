@@ -40,6 +40,7 @@ void UTextureStyleManager::BindEvents()
 	{
 		GEngine->OnLevelActorAdded().AddUObject(this, &UTextureStyleManager::OnLevelActorAdded);
 		GEngine->OnLevelActorDeleted().AddUObject(this, &UTextureStyleManager::OnLevelActorDeleted);
+		// TODO: Bind events on level save and editor close
 		bEventsBound = true;
 	}
 }
@@ -140,10 +141,32 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 	UGameplayStatics::GetAllActorsOfClass(GEditor->GetEditorWorldContext().World(), AActor::StaticClass(), LevelActors);
 	for (AActor* Actor : LevelActors)
 	{
-		// If actor is unknown, apply the undefined semantic class
+		// Get actor mesh components
+		TArray<UActorComponent*> ActorComponenets;
+		const bool bIncludeFromChildActors = true;
+		Actor->GetComponents(UStaticMeshComponent::StaticClass(), ActorComponenets, bIncludeFromChildActors);
+
+		// If no mesh componenets are found, ignore the actor
+		if (ActorComponenets.Num() == 0)
+		{
+			continue;
+		}
+
+		// Cannot just proceed if the actor is unknown
 		if (!TextureMappingAsset->ActorClassPairs.Contains(Actor->GetActorGuid()))
 		{
-			SetSemanticClassToActor(Actor, UndefinedSemanticClassName);
+			if (CurrentTextureStyle == ETextureStyle::COLOR)
+			{
+				// Moving from original to semantic colors, we need to assign a class to the actor
+				SetSemanticClassToActor(Actor, UndefinedSemanticClassName);
+			}
+			else if (CurrentTextureStyle == ETextureStyle::SEMANTIC)
+			{
+				// Moving from semantic to original colors, cross the fingers and ignore the actor for now
+				UE_LOG(LogEasySynth, Warning, TEXT("%s: Found unknown actor '%s' while transitionsing from semantic to original color mode, ignoring it"),
+					*FString(__FUNCTION__), *Actor->GetName())
+				continue;
+			}
 		}
 
 		const FString& ClassName = TextureMappingAsset->ActorClassPairs[Actor->GetActorGuid()];
@@ -163,11 +186,6 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 				continue;
 			}
 		}
-
-		// Get actor mesh components
-		TArray<UActorComponent*> ActorComponenets;
-		const bool bIncludeFromChildActors = true;
-		Actor->GetComponents(UStaticMeshComponent::StaticClass(), ActorComponenets, bIncludeFromChildActors);
 
 		// Set new materials
 		for (UActorComponent* ActorComponent : ActorComponenets)
@@ -317,18 +335,39 @@ void UTextureStyleManager::SetSemanticClassToActor(
 	{
 		// Simplified checkout of the semantic view for this actor
 
-		// In case this actor has not already been added to the original descriptor,
-		// add all its contents before chinging the material
-		const bool bAddingNew = !FOrignalActorDescriptors.Contains(Actor);
-		if (bAddingNew)
-		{
-			FOrignalActorDescriptors.Add(Actor);
-		}
-
 		// Get actor mesh components
 		TArray<UActorComponent*> ActorComponenets;
 		const bool bIncludeFromChildActors = true;
 		Actor->GetComponents(UStaticMeshComponent::StaticClass(), ActorComponenets, bIncludeFromChildActors);
+
+		// If no mesh componenets are found, ignore the actor
+		if (ActorComponenets.Num() == 0)
+		{
+			return;
+		}
+
+		// In case this actor has not already been added to the original descriptor,
+		// add its contents before changing the material
+		const bool bAddingNew = !FOrignalActorDescriptors.Contains(Actor);
+		if (bAddingNew)
+		{
+			if (bDelayAddingDescriptors)
+			{
+				// Adding with a delay is requested, add the actor to the delay buffer, start the timer,
+				// stop the current execution and come back in a few millisecond
+				DelayActorBuffer.Add(Actor);
+				const float DelaySeconds = 0.2f;
+				const bool bLoop = false;
+				GEditor->GetEditorWorldContext().World()->GetTimerManager().SetTimer(
+					DelayActorTimerHandle,
+					this,
+					&UTextureStyleManager::ProcessDelayActorBuffer,
+					DelaySeconds,
+					bLoop);
+				return;
+			}
+			FOrignalActorDescriptors.Add(Actor);
+		}
 
 		// Set new materials
 		for (UActorComponent* ActorComponent : ActorComponenets)
@@ -346,29 +385,41 @@ void UTextureStyleManager::SetSemanticClassToActor(
 				FOrignalActorDescriptors[Actor].Add(MeshComponent);
 			}
 
-			if (bDelayAddingDescriptors)
+			// Store actor descriptors immediately
+			for (int i = 0; i < MeshComponent->GetNumMaterials(); i++)
 			{
-				// TODO: A way to execute the same thing with a very quick delay
-			}
-			else
-			{
-				// Store actor descriptors immediately
-				for (int i = 0; i < MeshComponent->GetNumMaterials(); i++)
+				// Apply to each material
+				if (bAddingNew)
 				{
-					// Apply to each material
-					if (bAddingNew)
-					{
-						FOrignalActorDescriptors[Actor][MeshComponent].Add(MeshComponent->GetMaterial(i));
-					}
-
-					MeshComponent->SetMaterial(
-						i, GetSemanticClassMaterial(TextureMappingAsset->SemanticClasses[ClassName]));
+					FOrignalActorDescriptors[Actor][MeshComponent].Add(MeshComponent->GetMaterial(i));
 				}
+
+				MeshComponent->SetMaterial(
+					i, GetSemanticClassMaterial(TextureMappingAsset->SemanticClasses[ClassName]));
 			}
 		}
 	}
 
 	// No need to save the TextureMappingAsset for every actor, the caller will do it
+}
+
+void UTextureStyleManager::ProcessDelayActorBuffer()
+{
+	bool bAnyActorProcessed = false;
+	for (AActor* Actor : DelayActorBuffer)
+	{
+		if (IsValid(Actor))
+		{
+			// Must not call with bDelayAddingDescriptors = true, to avoid infinite recursion
+			SetSemanticClassToActor(Actor, UndefinedSemanticClassName);
+			bAnyActorProcessed = true;
+		}
+	}
+	DelayActorBuffer.Empty();
+	if (bAnyActorProcessed)
+	{
+		SaveTextureMappingAsset();
+	}
 }
 
 UMaterialInstanceDynamic* UTextureStyleManager::GetSemanticClassMaterial(FSemanticClass& SemanticClass)

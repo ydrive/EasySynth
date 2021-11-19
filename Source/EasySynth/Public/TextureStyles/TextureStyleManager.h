@@ -114,6 +114,9 @@ private:
 	/** Sets a semantic class to the actor */
 	void SetSemanticClassToActor(AActor* Actor, const FString& ClassName, const bool bDelayAddingDescriptors = false);
 
+	/** Adds semantic classes to actors in the delay actor buffer after a delay */
+	void ProcessDelayActorBuffer();
+
 	/** Generates the semantic class material if needed and returns it */
 	UMaterialInstanceDynamic* GetSemanticClassMaterial(FSemanticClass& SemanticClass);
 
@@ -135,6 +138,15 @@ private:
 	*/
 	UPROPERTY()
 	TMap<AActor*, FOrignalActorDescriptor> FOrignalActorDescriptors;
+
+	/**
+	 * Buffer used to store actors that need to have the semantic class set with a delay
+	 * This is needed when immediately setting the undefined class to just spawned actor
+	*/
+	TArray<AActor*> DelayActorBuffer;
+
+	/** The handle for the timer that managers DelayActorBuffer */
+	FTimerHandle DelayActorTimerHandle;
 
 	/** Marks if events have already been bounded */
 	bool bEventsBound;
