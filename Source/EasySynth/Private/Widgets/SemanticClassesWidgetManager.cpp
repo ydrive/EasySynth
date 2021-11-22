@@ -151,7 +151,8 @@ FReply FSemanticClassesWidgetManager::OnUpdateClassColorClicked(
 void FSemanticClassesWidgetManager::OnUpdateClassColorCommited(const FLinearColor NewLinearColor)
 {
 	const bool bSRGB = true;
-	const FColor NewColor = NewLinearColor.ToFColor(bSRGB);
+	FColor NewColor = NewLinearColor.ToFColor(bSRGB);
+	NewColor.A = 255;
 
 	SemanticClassesManager->UpdateClassColor(CurrenltyEditedClass, NewColor);
 
@@ -202,6 +203,7 @@ void FSemanticClassesWidgetManager::OnNewClassColorCommited(const FLinearColor N
 {
 	const bool bSRGB = true;
 	NewClassColor = NewLinearColor.ToFColor(bSRGB);
+	NewClassColor.A = 255;
 }
 
 FReply FSemanticClassesWidgetManager::OnAddNewClassClicked()

@@ -159,6 +159,18 @@ bool UTextureStyleManager::UpdateClassColor(const FString& ClassName, const FCol
 		return true;
 	}
 
+	// Check if color is already in use
+	for (auto& Element : TextureMappingAsset->SemanticClasses)
+	{
+		const FSemanticClass& SemanticClass = Element.Value;
+		if (SemanticClass.Color == NewClassColor)
+		{
+			UE_LOG(LogEasySynth, Warning, TEXT("%s: Requested color (%d %d %d) already used by %s"),
+				*FString(__FUNCTION__), NewClassColor.R, NewClassColor.G, NewClassColor.B, *SemanticClass.Name);
+			return false;
+		}
+	}
+
 	// Update the class color
 	TextureMappingAsset->SemanticClasses[ClassName].Color = NewClassColor;
 	// Invalidate the material instance
