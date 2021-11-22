@@ -98,6 +98,25 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 	return FReply::Handled();
 }
 
+void FSemanticClassesWidgetManager::OnClassNameChanged(const FText& NewText, ETextCommit::Type CommitType, FString ClassName)
+{
+	const bool bSuccess = SemanticClassesManager->UpdateClassName(ClassName, NewText.ToString());
+	if (bSuccess)
+	{
+		RefreshSemanticClasses();
+	}
+}
+
+FReply FSemanticClassesWidgetManager::OnUpdateClassColorClicked(
+	const FGeometry& MyGeometry,
+	const FPointerEvent& MouseEvent,
+	FString ClassName)
+{
+	UE_LOG(LogEasySynth, Log, TEXT("%s: Starting color picker"), *FString(__FUNCTION__))
+	// TODO: Start color picker and call SemanticClassesManager->UpdateClassName
+	return FReply::Handled();
+}
+
 FReply FSemanticClassesWidgetManager::OnNewClassColorClicked(
 	const FGeometry& MyGeometry,
 	const FPointerEvent& MouseEvent)
@@ -144,18 +163,20 @@ void FSemanticClassesWidgetManager::RefreshSemanticClasses()
 	ClassesBox.Pin()->ClearChildren();
 
 	TArray<const FSemanticClass*> SemanticClasses = SemanticClassesManager->SemanticClasses();
-	for (const FSemanticClass* SemanticClass : SemanticClasses)
+	for (int i = 0; i < SemanticClasses.Num(); i++)
 	{
+		const FSemanticClass* SemanticClass = SemanticClasses[i];
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Adding %s"), *FString(__FUNCTION__), *SemanticClass->Name)
 		ClassesBox.Pin()->AddSlot()
 		[
 			SNew(SVerticalBox)
+			.IsEnabled_Lambda([i](){ return i > 0; })
 			+ SVerticalBox::Slot()
 			.Padding(2)
 			[
 				SNew(SEditableTextBox)
 				.Text_Lambda([SemanticClass](){ return FText::FromString(SemanticClass->Name); })
-				// TODO: .OnTextChanged_Lambda([&](const FText& NewText){ NewClassName = NewText; })
+				.OnTextCommitted_Raw(this, &FSemanticClassesWidgetManager::OnClassNameChanged, SemanticClass->Name)
 			]
 			+ SVerticalBox::Slot()
 			.Padding(2)
@@ -164,7 +185,7 @@ void FSemanticClassesWidgetManager::RefreshSemanticClasses()
 				.Color_Lambda([SemanticClass](){ return SemanticClass->Color; })
 				.ShowBackgroundForAlpha(false)
 				.IgnoreAlpha(true)
-				.OnMouseButtonDown_Raw(this, &FSemanticClassesWidgetManager::OnNewClassColorClicked)
+				.OnMouseButtonDown_Raw(this, &FSemanticClassesWidgetManager::OnUpdateClassColorClicked, SemanticClass->Name)
 			]
 			// TODO: Remove a class
 		];

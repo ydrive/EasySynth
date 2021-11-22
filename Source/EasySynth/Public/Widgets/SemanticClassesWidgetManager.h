@@ -24,6 +24,15 @@ public:
 	FReply OnManageSemanticClassesClicked();
 
 private:
+    /** Handles the user request to change a semantic class name */
+    void OnClassNameChanged(const FText& NewText, ETextCommit::Type CommitType, FString ClassName);
+
+    /** Handles the user request to change a semantic class color */
+    FReply OnUpdateClassColorClicked(
+        const FGeometry& MyGeometry,
+        const FPointerEvent& MouseEvent,
+        FString ClassName);
+
     /** Displays the color picker and for the new class color */
     FReply OnNewClassColorClicked(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent);
 
