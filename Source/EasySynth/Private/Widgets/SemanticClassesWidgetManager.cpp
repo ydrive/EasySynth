@@ -12,17 +12,24 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 {
 	if (!FModuleManager::Get().IsModuleLoaded("MainFrame"))
 	{
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed to load the main frame module"), *FString(__FUNCTION__))
 		return FReply::Unhandled();
 	}
+	IMainFrameModule& MainFrame = FModuleManager::LoadModuleChecked<IMainFrameModule>("MainFrame");
 
 	// Prepare the classes box
 	TSharedRef<SVerticalBox> Box = SNew(SVerticalBox);
 	ClassesBox = Box;
 
+	// Populate the semantic classes box
+	RefreshSemanticClasses();
+
 	// Crate the window
 	TSharedRef<SWindow> Window = SNew(SWindow)
 		.Title(FText::FromString("Manage Semantic Classes"))
 		.SizingRule(ESizingRule::Autosized)
+		.SupportsMaximize(false)
+		.SupportsMinimize(false)
 		.Content()
 		[
 			SNew(SVerticalBox)
@@ -34,6 +41,7 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 			]
 			+ SVerticalBox::Slot()
 			.Padding(2)
+			.AutoHeight()
 			[
 				Box
 			]
@@ -68,29 +76,23 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 				.OnClicked_Raw(this, &FSemanticClassesWidgetManager::OnAddNewClassClicked)
 			]
 			+ SVerticalBox::Slot()
-			.AutoHeight()
 			.HAlign(HAlign_Right)
 			.Padding(2)
 			[
-				SNew(SUniformGridPanel)
-				.SlotPadding(2)
-				+ SUniformGridPanel::Slot(0, 0)
-				[
-					SNew(SButton)
-					.HAlign(HAlign_Center)
-					.Text(FText::FromString("Done"))
-					.OnClicked_Raw(this, &FSemanticClassesWidgetManager::OnDoneClicked)
-				]
+				SNew(SButton)
+				.HAlign(HAlign_Center)
+				.Text(FText::FromString("Done"))
+				.OnClicked_Raw(this, &FSemanticClassesWidgetManager::OnDoneClicked)
 			]
 		];
-    WidgetWindow = Window;
+	WidgetWindow = Window;
 
-	// Refresh existing semantic classes
-	RefreshSemanticClasses();
-
-	TSharedPtr<SWindow> ParentWindow;
-	IMainFrameModule& MainFrame = FModuleManager::LoadModuleChecked<IMainFrameModule>("MainFrame");
-	ParentWindow = MainFrame.GetParentWindow();
+	TSharedPtr<SWindow> ParentWindow = MainFrame.GetParentWindow();
+	if (!ParentWindow.IsValid())
+	{
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed to get the parent window"), *FString(__FUNCTION__))
+		return FReply::Unhandled();
+	}
 	FSlateApplication::Get().AddModalWindow(Window, ParentWindow, false);
 
 	return FReply::Handled();
@@ -110,20 +112,21 @@ FReply FSemanticClassesWidgetManager::OnAddNewClassClicked()
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Adding new semantic class"), *FString(__FUNCTION__))
 	// TODO: Create new class
 	// TODO: If successful, refresh existing classes
+	RefreshSemanticClasses();
 
 	return FReply::Handled();
 }
 
 FReply FSemanticClassesWidgetManager::OnDoneClicked()
 {
-    if (WidgetWindow.IsValid())
-    {
-        WidgetWindow.Pin()->RequestDestroyWindow();
-    }
-    else
-    {
-        UE_LOG(LogEasySynth, Error, TEXT("%s: Widget window is invalid"), *FString(__FUNCTION__))
-    }
+	if (WidgetWindow.IsValid())
+	{
+		WidgetWindow.Pin()->RequestDestroyWindow();
+	}
+	else
+	{
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Widget window is invalid"), *FString(__FUNCTION__))
+	}
 
 	return FReply::Handled();
 }
@@ -131,21 +134,36 @@ FReply FSemanticClassesWidgetManager::OnDoneClicked()
 void FSemanticClassesWidgetManager::RefreshSemanticClasses()
 {
 	if (!ClassesBox.IsValid())
-    {
+	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Invalid classes box"), *FString(__FUNCTION__))
 		return;
 	}
 
 	ClassesBox.Pin()->ClearChildren();
 
-	for (const FString& Name : SemanticClassesManager->SemanticClassNames())
+	TArray<const FSemanticClass*> SemanticClasses = SemanticClassesManager->SemanticClasses();
+	for (const FSemanticClass* SemanticClass : SemanticClasses)
 	{
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Adding %s"), *FString(__FUNCTION__), *SemanticClass->Name)
 		ClassesBox.Pin()->AddSlot()
-		.Padding(FMargin(5.0f))
 		[
-			SNew(STextBlock)
-			.Text(FText::FromString(Name))
+			SNew(SVerticalBox)
+			+ SVerticalBox::Slot()
+			.Padding(2)
+			[
+				SNew(SEditableTextBox)
+				.Text_Lambda([SemanticClass](){ return FText::FromString(SemanticClass->Name); })
+				// TODO: .OnTextChanged_Lambda([&](const FText& NewText){ NewClassName = NewText; })
+			]
+			+ SVerticalBox::Slot()
+			.Padding(2)
+			[
+				SNew(SColorBlock)
+				.Color_Lambda([SemanticClass](){ return SemanticClass->Color; })
+				.ShowBackgroundForAlpha(false)
+				.IgnoreAlpha(true)
+				.OnMouseButtonDown_Raw(this, &FSemanticClassesWidgetManager::OnNewClassColorClicked)
+			]
 		];
 	}
-
 }

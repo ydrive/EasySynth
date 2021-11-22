@@ -89,6 +89,9 @@ public:
 	/** Returns names of existing semantic classes */
 	TArray<FString> SemanticClassNames() const;
 
+	/** Returns array of const pointers to semantic classes */
+	TArray<const FSemanticClass*> SemanticClasses() const;
+
 	/** Apllies desired class to all selected actors */
 	void ApplySemanticClassToSelectedActors(const FString& ClassName);
 

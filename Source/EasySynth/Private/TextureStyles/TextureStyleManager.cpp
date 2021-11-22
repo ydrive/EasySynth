@@ -90,6 +90,16 @@ TArray<FString> UTextureStyleManager::SemanticClassNames() const
 	return SemanticClassNames;
 }
 
+TArray<const FSemanticClass*> UTextureStyleManager::SemanticClasses() const
+{
+	TArray<const FSemanticClass*> SemanticClasses;
+	for (auto& Element : TextureMappingAsset->SemanticClasses)
+	{
+		SemanticClasses.Add(&Element.Value);
+	}
+	return SemanticClasses;
+}
+
 void UTextureStyleManager::ApplySemanticClassToSelectedActors(const FString& ClassName)
 {
 	if (!TextureMappingAsset->SemanticClasses.Contains(ClassName))
