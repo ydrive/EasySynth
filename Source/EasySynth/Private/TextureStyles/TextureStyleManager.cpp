@@ -160,6 +160,33 @@ bool UTextureStyleManager::UpdateClassColor(const FString& ClassName, const FCol
 	return true;
 }
 
+bool UTextureStyleManager::RemoveSemanticClass(const FString& ClassName)
+{
+	if (!TextureMappingAsset->SemanticClasses.Contains(ClassName))
+	{
+		UE_LOG(LogEasySynth, Log, TEXT("%s: Requested semantic class '%s' not found"),
+			*FString(__FUNCTION__), *ClassName);
+		return false;
+	}
+
+	// Reset all actor to the undefined class
+	TArray<AActor*> LevelActors;
+	UGameplayStatics::GetAllActorsOfClass(GEditor->GetEditorWorldContext().World(), AActor::StaticClass(), LevelActors);
+	for (AActor* Actor : LevelActors)
+	{
+		if (TextureMappingAsset->ActorClassPairs.Contains(Actor->GetActorGuid()) &&
+			TextureMappingAsset->ActorClassPairs[Actor->GetActorGuid()] == ClassName)
+		{
+			SetSemanticClassToActor(Actor, UndefinedSemanticClassName);
+		}
+	}
+
+	// Remove the class
+	TextureMappingAsset->SemanticClasses.Remove(ClassName);
+
+	return true;
+}
+
 TArray<FString> UTextureStyleManager::SemanticClassNames() const
 {
 	TArray<FString> SemanticClassNames;

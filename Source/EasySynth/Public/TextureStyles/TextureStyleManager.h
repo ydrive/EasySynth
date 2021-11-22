@@ -92,6 +92,9 @@ public:
 	/** Update the color of a semantic class */
 	bool UpdateClassColor(const FString& ClassName, const FColor& NewClassColor);
 
+	/** Remove a semantic class */
+	bool RemoveSemanticClass(const FString& ClassName);
+
 	/** Returns names of existing semantic classes */
 	TArray<FString> SemanticClassNames() const;
 
