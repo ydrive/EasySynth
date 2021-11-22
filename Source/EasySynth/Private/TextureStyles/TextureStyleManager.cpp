@@ -51,6 +51,12 @@ bool UTextureStyleManager::NewSemanticClass(
 	const FColor& ClassColor,
 	const bool bSaveTextureMappingAsset)
 {
+	if (ClassName.Len() == 0)
+	{
+		UE_LOG(LogEasySynth, Warning, TEXT("%s: Cannot create a class with the name ''"), *FString(__FUNCTION__));
+		return false;
+	}
+
 	// Check collisions with existing classes
 	for (auto& Element : TextureMappingAsset->SemanticClasses)
 	{
@@ -106,6 +112,12 @@ bool UTextureStyleManager::UpdateClassName(const FString& OldClassName, const FS
 	{
 		UE_LOG(LogEasySynth, Log, TEXT("%s: New semantic class '%s' already exists"),
 			*FString(__FUNCTION__), *NewClassName);
+		return false;
+	}
+
+	if (NewClassName.Len() == 0)
+	{
+		UE_LOG(LogEasySynth, Warning, TEXT("%s: Cannot update class name to ''"), *FString(__FUNCTION__));
 		return false;
 	}
 
