@@ -9,6 +9,11 @@
 #include "Widgets/Layout/SUniformGridPanel.h"
 
 
+FSemanticClassesWidgetManager::FSemanticClassesWidgetManager() :
+	NewClassName(FText::GetEmpty()),
+    NewClassColor(FColor::White)
+{}
+
 FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 {
 	if (!FModuleManager::Get().IsModuleLoaded("MainFrame"))
@@ -204,6 +209,8 @@ FReply FSemanticClassesWidgetManager::OnAddNewClassClicked()
 	const bool bSuccess = SemanticClassesManager->NewSemanticClass(NewClassName.ToString(), NewClassColor);
 	if (bSuccess)
 	{
+		NewClassName = FText::GetEmpty();
+		NewClassColor = FColor::White;
 		RefreshSemanticClasses();
 	}
 

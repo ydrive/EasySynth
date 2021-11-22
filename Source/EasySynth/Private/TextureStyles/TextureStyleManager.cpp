@@ -91,7 +91,7 @@ FColor UTextureStyleManager::ClassColor(const FString& ClassName)
 	{
 		return TextureMappingAsset->SemanticClasses[ClassName].Color;
 	}
-	return FColor(255, 255, 255, 255);
+	return FColor::White;
 }
 
 bool UTextureStyleManager::UpdateClassName(const FString& OldClassName, const FString& NewClassName)

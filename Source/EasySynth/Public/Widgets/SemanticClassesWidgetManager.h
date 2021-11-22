@@ -16,6 +16,8 @@ class UTextureStyleManager;
 class FSemanticClassesWidgetManager
 {
 public:
+    FSemanticClassesWidgetManager();
+
     /** Initializes the needed semantic class manager */
     void SetTextureStyleManager(UTextureStyleManager* TextureStyleManager)
     {
