@@ -40,6 +40,9 @@ private:
     /** Handles the new submitted color for an existing semantic class */
     void OnUpdateClassColorCommited(FLinearColor NewLinearColor);
 
+    /** Handles add new semantic class button click */
+	FReply OnDeleteClassClicked(FString ClassName);
+
     /**
      * New class operations
     */

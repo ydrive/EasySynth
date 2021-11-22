@@ -204,6 +204,8 @@ bool UTextureStyleManager::RemoveSemanticClass(const FString& ClassName)
 	// Remove the class
 	TextureMappingAsset->SemanticClasses.Remove(ClassName);
 
+	SaveTextureMappingAsset();
+
 	return true;
 }
 

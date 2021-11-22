@@ -35,32 +35,31 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 		[
 			SNew(SVerticalBox)
 			+ SVerticalBox::Slot()
-			.Padding(2)
+			.Padding(3)
 			[
 				SNew(STextBlock)
 				.Text(FText::FromString("Edit or remove semantic classes"))
 			]
 			+ SVerticalBox::Slot()
-			.Padding(2)
 			.AutoHeight()
 			[
 				Box
 			]
 			+ SVerticalBox::Slot()
-			.Padding(2)
+			.Padding(3)
 			[
 				SNew(STextBlock)
 				.Text(FText::FromString("Add new semantic classes"))
 			]
 			+ SVerticalBox::Slot()
-			.Padding(2)
+			.Padding(4)
 			[
 				SNew(SEditableTextBox)
 				.Text_Lambda([&](){ return NewClassName; })
 				.OnTextChanged_Lambda([&](const FText& NewText){ NewClassName = NewText; })
 			]
 			+ SVerticalBox::Slot()
-			.Padding(2)
+			.Padding(4)
 			[
 				SNew(SColorBlock)
 				.Color_Lambda([&](){ return NewClassColor; })
@@ -70,7 +69,7 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 				.Size(FVector2D(35.0f, 17.0f))
 			]
 			+ SVerticalBox::Slot()
-			.Padding(2)
+			.Padding(4)
 			[
 				SNew(SButton)
 				.Text(FText::FromString("Add new class"))
@@ -156,6 +155,16 @@ void FSemanticClassesWidgetManager::OnUpdateClassColorCommited(FLinearColor NewL
 	SemanticClassesManager->UpdateClassColor(CurrenltyEditedClass, NewColor);
 
 	CurrenltyEditedClass = "";
+}
+
+FReply FSemanticClassesWidgetManager::OnDeleteClassClicked(FString ClassName) // TODO: cosnt ref
+{
+	const bool bSuccess = SemanticClassesManager->RemoveSemanticClass(ClassName);
+	if (bSuccess)
+	{
+		RefreshSemanticClasses();
+	}
+	return FReply::Handled();
 }
 
 FReply FSemanticClassesWidgetManager::OnNewClassColorClicked(
@@ -249,10 +258,11 @@ void FSemanticClassesWidgetManager::RefreshSemanticClasses()
 	for (int i = 0; i < SemanticClasses.Num(); i++)
 	{
 		const FSemanticClass* SemanticClass = SemanticClasses[i];
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Adding %s"), *FString(__FUNCTION__), *SemanticClass->Name)
+		TSharedPtr<SVerticalBox> ClassBox;
 		ClassesBox.Pin()->AddSlot()
+		.Padding(6)
 		[
-			SNew(SVerticalBox)
+			SAssignNew(ClassBox, SVerticalBox)
 			.IsEnabled_Lambda([i](){ return i > 0; })
 			+ SVerticalBox::Slot()
 			.Padding(2)
@@ -270,7 +280,16 @@ void FSemanticClassesWidgetManager::RefreshSemanticClasses()
 				.IgnoreAlpha(true)
 				.OnMouseButtonDown_Raw(this, &FSemanticClassesWidgetManager::OnUpdateClassColorClicked, SemanticClass->Name)
 			]
-			// TODO: Remove a class
 		];
+		if (i > 0)
+		{
+			// Add Delete for all but the first (undefined) class
+			ClassBox->AddSlot().Padding(2)
+			[
+				SNew(SButton)
+				.Text(FText::FromString("Delete"))
+				.OnClicked_Raw(this, &FSemanticClassesWidgetManager::OnDeleteClassClicked, SemanticClass->Name)
+			];
+		}
 	}
 }
