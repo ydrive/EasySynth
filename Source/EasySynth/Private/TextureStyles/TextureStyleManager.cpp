@@ -42,7 +42,6 @@ void UTextureStyleManager::BindEvents()
 		GEngine->OnLevelActorAdded().AddUObject(this, &UTextureStyleManager::OnLevelActorAdded);
 		GEngine->OnLevelActorDeleted().AddUObject(this, &UTextureStyleManager::OnLevelActorDeleted);
 		GEngine->OnEditorClose().AddUObject(this, &UTextureStyleManager::OnEditorClose);
-		// TODO: Try to bind an event to the level save action
 		bEventsBound = true;
 	}
 }

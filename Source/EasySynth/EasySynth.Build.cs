@@ -56,6 +56,7 @@ public class EasySynth : ModuleRules
 				"MovieSceneTracks",
 				"Sequencer",
 				// Editor tab functionality
+				"AppFramework",
 				"DesktopWidgets",
 				"MainFrame",
 				"PropertyEditor",

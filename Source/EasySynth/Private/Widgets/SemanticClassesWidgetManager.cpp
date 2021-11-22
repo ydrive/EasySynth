@@ -5,6 +5,7 @@
 
 #include "Interfaces/IMainFrameModule.h"
 #include "Widgets/Colors/SColorBlock.h"
+#include "Widgets/Colors/SColorPicker.h"
 #include "Widgets/Layout/SUniformGridPanel.h"
 
 
@@ -98,7 +99,10 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 	return FReply::Handled();
 }
 
-void FSemanticClassesWidgetManager::OnClassNameChanged(const FText& NewText, ETextCommit::Type CommitType, FString ClassName)
+void FSemanticClassesWidgetManager::OnClassNameChanged(
+	const FText& NewText,
+	ETextCommit::Type CommitType,
+	FString ClassName)
 {
 	const bool bSuccess = SemanticClassesManager->UpdateClassName(ClassName, NewText.ToString());
 	if (bSuccess)
@@ -113,17 +117,81 @@ FReply FSemanticClassesWidgetManager::OnUpdateClassColorClicked(
 	FString ClassName)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Starting color picker"), *FString(__FUNCTION__))
-	// TODO: Start color picker and call SemanticClassesManager->UpdateClassName
+
+	CurrenltyEditedClass = ClassName;
+
+	if (MouseEvent.GetEffectingButton() != EKeys::LeftMouseButton)
+	{
+		return FReply::Unhandled();
+	}
+
+	FColorPickerArgs PickerArgs;
+	{
+		PickerArgs.bUseAlpha = false;
+		PickerArgs.bOnlyRefreshOnOk = true;
+		PickerArgs.DisplayGamma = TAttribute<float>::Create(TAttribute<float>::FGetter::CreateUObject(GEngine, &UEngine::GetDisplayGamma));
+		PickerArgs.OnColorCommitted = FOnLinearColorValueChanged::CreateRaw(this, &FSemanticClassesWidgetManager::OnUpdateClassColorCommited);
+		PickerArgs.OnColorPickerWindowClosed = FOnWindowClosed::CreateRaw(this, &FSemanticClassesWidgetManager::OnColorPickerWindowClosed);
+	}
+
+	// Need to close the current window to be able to display the color picker
+	if (WidgetWindow.IsValid())
+	{
+		WidgetWindow.Pin()->RequestDestroyWindow();
+	}
+
+	OpenColorPicker(PickerArgs);
+
 	return FReply::Handled();
+}
+
+void FSemanticClassesWidgetManager::OnUpdateClassColorCommited(FLinearColor NewLinearColor)
+{
+	UE_LOG(LogEasySynth, Log, TEXT("%s: Color picked %f %f %f"), *FString(__FUNCTION__), NewLinearColor.R, NewLinearColor.G, NewLinearColor.B)
+
+	const bool bSRGB = true;
+	const FColor NewColor = NewLinearColor.ToFColor(bSRGB);
+
+	SemanticClassesManager->UpdateClassColor(CurrenltyEditedClass, NewColor);
+
+	CurrenltyEditedClass = "";
 }
 
 FReply FSemanticClassesWidgetManager::OnNewClassColorClicked(
 	const FGeometry& MyGeometry,
 	const FPointerEvent& MouseEvent)
 {
-	UE_LOG(LogEasySynth, Log, TEXT("%s: Starting color picker"), *FString(__FUNCTION__))
-	// TODO: Start color picker
+	UE_LOG(LogEasySynth, Log, TEXT("%s: Starting color picker for the new class color"), *FString(__FUNCTION__))
+
+	if (MouseEvent.GetEffectingButton() != EKeys::LeftMouseButton)
+	{
+		return FReply::Unhandled();
+	}
+
+	FColorPickerArgs PickerArgs;
+	{
+		PickerArgs.bUseAlpha = false;
+		PickerArgs.bOnlyRefreshOnOk = true;
+		PickerArgs.DisplayGamma = TAttribute<float>::Create(TAttribute<float>::FGetter::CreateUObject(GEngine, &UEngine::GetDisplayGamma));
+		PickerArgs.OnColorCommitted = FOnLinearColorValueChanged::CreateRaw(this, &FSemanticClassesWidgetManager::OnNewClassColorCommited);
+		PickerArgs.OnColorPickerWindowClosed = FOnWindowClosed::CreateRaw(this, &FSemanticClassesWidgetManager::OnColorPickerWindowClosed);
+	}
+
+	// Need to close the current window to be able to display the color picker
+	if (WidgetWindow.IsValid())
+	{
+		WidgetWindow.Pin()->RequestDestroyWindow();
+	}
+
+	OpenColorPicker(PickerArgs);
+
 	return FReply::Handled();
+}
+
+void FSemanticClassesWidgetManager::OnNewClassColorCommited(FLinearColor NewLinearColor)
+{
+	const bool bSRGB = true;
+	NewClassColor = NewLinearColor.ToFColor(bSRGB);
 }
 
 FReply FSemanticClassesWidgetManager::OnAddNewClassClicked()
@@ -136,6 +204,19 @@ FReply FSemanticClassesWidgetManager::OnAddNewClassClicked()
 	}
 
 	return FReply::Handled();
+}
+
+void FSemanticClassesWidgetManager::OnColorPickerWindowClosed(const TSharedRef<SWindow>& Window)
+{
+	// Reopen the semantic classes window
+	// Make a brief delay to enable the color picker to close
+	const float DelaySeconds = 0.2f;
+	const bool bLoop = false;
+	GEditor->GetEditorWorldContext().World()->GetTimerManager().SetTimer(
+		ReopenTimerHandle,
+		[this](){ OnManageSemanticClassesClicked(); },
+		DelaySeconds,
+		bLoop);
 }
 
 FReply FSemanticClassesWidgetManager::OnDoneClicked()
