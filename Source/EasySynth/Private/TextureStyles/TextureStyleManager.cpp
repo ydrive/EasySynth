@@ -79,6 +79,15 @@ bool UTextureStyleManager::NewSemanticClass(
 	return true;
 }
 
+FColor UTextureStyleManager::ClassColor(const FString& ClassName)
+{
+	if (TextureMappingAsset->SemanticClasses.Contains(ClassName))
+	{
+		return TextureMappingAsset->SemanticClasses[ClassName].Color;
+	}
+	return FColor(255, 255, 255, 255);
+}
+
 bool UTextureStyleManager::UpdateClassName(const FString& OldClassName, const FString& NewClassName)
 {
 	if (OldClassName == NewClassName)

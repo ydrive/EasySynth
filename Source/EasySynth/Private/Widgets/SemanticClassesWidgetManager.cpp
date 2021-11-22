@@ -132,6 +132,7 @@ FReply FSemanticClassesWidgetManager::OnUpdateClassColorClicked(
 		PickerArgs.DisplayGamma = TAttribute<float>::Create(TAttribute<float>::FGetter::CreateUObject(GEngine, &UEngine::GetDisplayGamma));
 		PickerArgs.OnColorCommitted = FOnLinearColorValueChanged::CreateRaw(this, &FSemanticClassesWidgetManager::OnUpdateClassColorCommited);
 		PickerArgs.OnColorPickerWindowClosed = FOnWindowClosed::CreateRaw(this, &FSemanticClassesWidgetManager::OnColorPickerWindowClosed);
+		PickerArgs.InitialColorOverride = FLinearColor(SemanticClassesManager->ClassColor(ClassName));
 	}
 
 	// Need to close the current window to be able to display the color picker
@@ -175,6 +176,7 @@ FReply FSemanticClassesWidgetManager::OnNewClassColorClicked(
 		PickerArgs.DisplayGamma = TAttribute<float>::Create(TAttribute<float>::FGetter::CreateUObject(GEngine, &UEngine::GetDisplayGamma));
 		PickerArgs.OnColorCommitted = FOnLinearColorValueChanged::CreateRaw(this, &FSemanticClassesWidgetManager::OnNewClassColorCommited);
 		PickerArgs.OnColorPickerWindowClosed = FOnWindowClosed::CreateRaw(this, &FSemanticClassesWidgetManager::OnColorPickerWindowClosed);
+		PickerArgs.InitialColorOverride = FLinearColor(NewClassColor);
 	}
 
 	// Need to close the current window to be able to display the color picker

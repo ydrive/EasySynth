@@ -86,6 +86,9 @@ public:
 		const FColor& ClassColor,
 		const bool bSaveTextureMappingAsset = true);
 
+	/** Gets the class color if it exists */
+	FColor ClassColor(const FString& ClassName);
+
 	/** Update the name of a semantic class */
 	bool UpdateClassName(const FString& OldClassName, const FString& NewClassName);
 
