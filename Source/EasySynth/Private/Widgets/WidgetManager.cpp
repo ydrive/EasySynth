@@ -59,9 +59,11 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 
 	return SNew(SDockTab)
 		.TabRole(ETabRole::NomadTab)
+		.ContentPadding(2)
 		[
 			SNew(SScrollBox)
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(SButton)
 				.OnClicked_Raw(&SemanticsWidget, &FSemanticClassesWidgetManager::OnManageSemanticClassesClicked)
@@ -72,6 +74,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				]
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SAssignNew(SemanticClassComboBox, SComboBox<TSharedPtr<FString>>)
 				.OptionsSource(&SemanticClassNames)
@@ -87,6 +90,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				]
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(SComboBox<TSharedPtr<FString>>)
 				.OptionsSource(&TextureStyleNames)
@@ -101,11 +105,13 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				]
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(STextBlock)
 				.Text(FText::FromString("Pick sequencer"))
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(SObjectPropertyEntryBox)
 				.AllowedClass(ULevelSequence::StaticClass())
@@ -116,11 +122,13 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				.DisplayBrowse(true)
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(STextBlock)
 				.Text(FText::FromString("Chose targets to be rendered"))
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(SCheckBox)
 				.OnCheckStateChanged_Raw(
@@ -131,6 +139,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				]
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(SCheckBox)
 				.OnCheckStateChanged_Raw(
@@ -141,6 +150,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				]
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(SCheckBox)
 				.OnCheckStateChanged_Raw(
@@ -151,6 +161,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				]
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(SCheckBox)
 				.OnCheckStateChanged_Raw(
@@ -161,11 +172,13 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				]
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(STextBlock)
 				.Text(FText::FromString("Depth range [m]"))
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(SSpinBox<float>)
 				.Value_Raw(this, &FWidgetManager::GetDepthRangeValue)
@@ -174,17 +187,20 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				.MaxValue(10000.0f)
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(STextBlock)
 				.Text(FText::FromString("Ouput directory"))
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(SDirectoryPicker)
 				.Directory(OutputDirectory)
 				.OnDirectoryChanged_Raw(this, &FWidgetManager::OnOutputDirectoryChanged)
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(SButton)
 				.IsEnabled_Raw(this, &FWidgetManager::GetIsRenderImagesEnabled)
