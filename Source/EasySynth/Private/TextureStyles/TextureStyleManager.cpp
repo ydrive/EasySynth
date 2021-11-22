@@ -101,10 +101,12 @@ bool UTextureStyleManager::UpdateClassName(const FString& OldClassName, const FS
 		return false;
 	}
 
-	// Add new class with the same color
-	NewSemanticClass(NewClassName, TextureMappingAsset->SemanticClasses[OldClassName].Color);
+	const FColor ClassColor = TextureMappingAsset->SemanticClasses[OldClassName].Color;
+
 	// Remove the existing class
 	TextureMappingAsset->SemanticClasses.Remove(OldClassName);
+	// Add new class with the same color
+	NewSemanticClass(NewClassName, ClassColor);
 	// Update actor mappings to the new semantic class name
 	TArray<AActor*> LevelActors;
 	UGameplayStatics::GetAllActorsOfClass(GEditor->GetEditorWorldContext().World(), AActor::StaticClass(), LevelActors);
