@@ -52,14 +52,14 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 				.Text(FText::FromString("Add new semantic classes"))
 			]
 			+ SVerticalBox::Slot()
-			.Padding(4)
+			.Padding(3)
 			[
 				SNew(SEditableTextBox)
 				.Text_Lambda([&](){ return NewClassName; })
 				.OnTextChanged_Lambda([&](const FText& NewText){ NewClassName = NewText; })
 			]
 			+ SVerticalBox::Slot()
-			.Padding(4)
+			.Padding(3)
 			[
 				SNew(SColorBlock)
 				.Color_Lambda([&](){ return NewClassColor; })
@@ -69,7 +69,7 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 				.Size(FVector2D(35.0f, 17.0f))
 			]
 			+ SVerticalBox::Slot()
-			.Padding(4)
+			.Padding(3)
 			[
 				SNew(SButton)
 				.Text(FText::FromString("Add new class"))
@@ -115,8 +115,6 @@ FReply FSemanticClassesWidgetManager::OnUpdateClassColorClicked(
 	const FPointerEvent& MouseEvent,
 	FString ClassName)
 {
-	UE_LOG(LogEasySynth, Log, TEXT("%s: Starting color picker"), *FString(__FUNCTION__))
-
 	CurrenltyEditedClass = ClassName;
 
 	if (MouseEvent.GetEffectingButton() != EKeys::LeftMouseButton)
@@ -147,8 +145,6 @@ FReply FSemanticClassesWidgetManager::OnUpdateClassColorClicked(
 
 void FSemanticClassesWidgetManager::OnUpdateClassColorCommited(FLinearColor NewLinearColor)
 {
-	UE_LOG(LogEasySynth, Log, TEXT("%s: Color picked %f %f %f"), *FString(__FUNCTION__), NewLinearColor.R, NewLinearColor.G, NewLinearColor.B)
-
 	const bool bSRGB = true;
 	const FColor NewColor = NewLinearColor.ToFColor(bSRGB);
 
@@ -171,8 +167,6 @@ FReply FSemanticClassesWidgetManager::OnNewClassColorClicked(
 	const FGeometry& MyGeometry,
 	const FPointerEvent& MouseEvent)
 {
-	UE_LOG(LogEasySynth, Log, TEXT("%s: Starting color picker for the new class color"), *FString(__FUNCTION__))
-
 	if (MouseEvent.GetEffectingButton() != EKeys::LeftMouseButton)
 	{
 		return FReply::Unhandled();
@@ -207,7 +201,6 @@ void FSemanticClassesWidgetManager::OnNewClassColorCommited(FLinearColor NewLine
 
 FReply FSemanticClassesWidgetManager::OnAddNewClassClicked()
 {
-	UE_LOG(LogEasySynth, Log, TEXT("%s: Adding new semantic class"), *FString(__FUNCTION__))
 	const bool bSuccess = SemanticClassesManager->NewSemanticClass(NewClassName.ToString(), NewClassColor);
 	if (bSuccess)
 	{
@@ -258,11 +251,10 @@ void FSemanticClassesWidgetManager::RefreshSemanticClasses()
 	for (int i = 0; i < SemanticClasses.Num(); i++)
 	{
 		const FSemanticClass* SemanticClass = SemanticClasses[i];
-		TSharedPtr<SVerticalBox> ClassBox;
 		ClassesBox.Pin()->AddSlot()
 		.Padding(6)
 		[
-			SAssignNew(ClassBox, SVerticalBox)
+			SNew(SVerticalBox)
 			.IsEnabled_Lambda([i](){ return i > 0; })
 			+ SVerticalBox::Slot()
 			.Padding(2)
@@ -280,16 +272,13 @@ void FSemanticClassesWidgetManager::RefreshSemanticClasses()
 				.IgnoreAlpha(true)
 				.OnMouseButtonDown_Raw(this, &FSemanticClassesWidgetManager::OnUpdateClassColorClicked, SemanticClass->Name)
 			]
-		];
-		if (i > 0)
-		{
-			// Add Delete for all but the first (undefined) class
-			ClassBox->AddSlot().Padding(2)
+			+ SVerticalBox::Slot()
+			.Padding(2)
 			[
 				SNew(SButton)
 				.Text(FText::FromString("Delete"))
 				.OnClicked_Raw(this, &FSemanticClassesWidgetManager::OnDeleteClassClicked, SemanticClass->Name)
-			];
-		}
+			]
+		];
 	}
 }
