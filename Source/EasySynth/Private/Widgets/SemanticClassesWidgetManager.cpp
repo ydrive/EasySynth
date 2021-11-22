@@ -101,7 +101,7 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 void FSemanticClassesWidgetManager::OnClassNameChanged(
 	const FText& NewText,
 	ETextCommit::Type CommitType,
-	FString ClassName)
+	const FString ClassName)
 {
 	const bool bSuccess = SemanticClassesManager->UpdateClassName(ClassName, NewText.ToString());
 	if (bSuccess)
@@ -113,7 +113,7 @@ void FSemanticClassesWidgetManager::OnClassNameChanged(
 FReply FSemanticClassesWidgetManager::OnUpdateClassColorClicked(
 	const FGeometry& MyGeometry,
 	const FPointerEvent& MouseEvent,
-	FString ClassName)
+	const FString ClassName)
 {
 	CurrenltyEditedClass = ClassName;
 
@@ -143,7 +143,7 @@ FReply FSemanticClassesWidgetManager::OnUpdateClassColorClicked(
 	return FReply::Handled();
 }
 
-void FSemanticClassesWidgetManager::OnUpdateClassColorCommited(FLinearColor NewLinearColor)
+void FSemanticClassesWidgetManager::OnUpdateClassColorCommited(const FLinearColor NewLinearColor)
 {
 	const bool bSRGB = true;
 	const FColor NewColor = NewLinearColor.ToFColor(bSRGB);
@@ -153,7 +153,7 @@ void FSemanticClassesWidgetManager::OnUpdateClassColorCommited(FLinearColor NewL
 	CurrenltyEditedClass = "";
 }
 
-FReply FSemanticClassesWidgetManager::OnDeleteClassClicked(FString ClassName) // TODO: cosnt ref
+FReply FSemanticClassesWidgetManager::OnDeleteClassClicked(const FString ClassName)
 {
 	const bool bSuccess = SemanticClassesManager->RemoveSemanticClass(ClassName);
 	if (bSuccess)
@@ -193,7 +193,7 @@ FReply FSemanticClassesWidgetManager::OnNewClassColorClicked(
 	return FReply::Handled();
 }
 
-void FSemanticClassesWidgetManager::OnNewClassColorCommited(FLinearColor NewLinearColor)
+void FSemanticClassesWidgetManager::OnNewClassColorCommited(const FLinearColor NewLinearColor)
 {
 	const bool bSRGB = true;
 	NewClassColor = NewLinearColor.ToFColor(bSRGB);

@@ -10,6 +10,8 @@ class UTextureStyleManager;
 
 /**
  * Class that manages semantic class widget interatcion
+ * The class contains numerous delagate handlers which do not allow
+ * for some of the parameters to be referenced, only const
 */
 class FSemanticClassesWidgetManager
 {
@@ -29,19 +31,19 @@ private:
     */
 
     /** Handles the user request to change a semantic class name */
-    void OnClassNameChanged(const FText& NewText, ETextCommit::Type CommitType, FString ClassName);
+    void OnClassNameChanged(const FText& NewText, ETextCommit::Type CommitType, const FString ClassName);
 
     /** Handles the user request to change a semantic class color */
     FReply OnUpdateClassColorClicked(
         const FGeometry& MyGeometry,
         const FPointerEvent& MouseEvent,
-        FString ClassName);
+        const FString ClassName);
 
     /** Handles the new submitted color for an existing semantic class */
-    void OnUpdateClassColorCommited(FLinearColor NewLinearColor);
+    void OnUpdateClassColorCommited(const FLinearColor NewLinearColor);
 
     /** Handles add new semantic class button click */
-	FReply OnDeleteClassClicked(FString ClassName);
+	FReply OnDeleteClassClicked(const FString ClassName);
 
     /**
      * New class operations
@@ -51,7 +53,7 @@ private:
     FReply OnNewClassColorClicked(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent);
 
     /** Handles the new submitted color for the new semantic class */
-    void OnNewClassColorCommited(FLinearColor NewLinearColor);
+    void OnNewClassColorCommited(const FLinearColor NewLinearColor);
 
     /** Handles add new semantic class button click */
 	FReply OnAddNewClassClicked();
