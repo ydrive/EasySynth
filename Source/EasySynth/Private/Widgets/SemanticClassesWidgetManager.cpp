@@ -110,9 +110,11 @@ FReply FSemanticClassesWidgetManager::OnNewClassColorClicked(
 FReply FSemanticClassesWidgetManager::OnAddNewClassClicked()
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Adding new semantic class"), *FString(__FUNCTION__))
-	// TODO: Create new class
-	// TODO: If successful, refresh existing classes
-	RefreshSemanticClasses();
+	const bool bSuccess = SemanticClassesManager->NewSemanticClass(NewClassName.ToString(), NewClassColor);
+	if (bSuccess)
+	{
+		RefreshSemanticClasses();
+	}
 
 	return FReply::Handled();
 }
@@ -164,6 +166,7 @@ void FSemanticClassesWidgetManager::RefreshSemanticClasses()
 				.IgnoreAlpha(true)
 				.OnMouseButtonDown_Raw(this, &FSemanticClassesWidgetManager::OnNewClassColorClicked)
 			]
+			// TODO: Remove a class
 		];
 	}
 }

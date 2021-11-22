@@ -80,6 +80,84 @@ bool UTextureStyleManager::NewSemanticClass(
 	return true;
 }
 
+bool UTextureStyleManager::UpdateClassName(const FString& OldClassName, const FString& NewClassName)
+{
+	if (OldClassName == NewClassName)
+	{
+		return true;
+	}
+
+	if (!TextureMappingAsset->SemanticClasses.Contains(OldClassName))
+	{
+		UE_LOG(LogEasySynth, Log, TEXT("%s: Previous semantic class '%s' not found"),
+			*FString(__FUNCTION__), *OldClassName);
+		return false;
+	}
+
+	if (TextureMappingAsset->SemanticClasses.Contains(NewClassName))
+	{
+		UE_LOG(LogEasySynth, Log, TEXT("%s: New semantic class '%s' already exists"),
+			*FString(__FUNCTION__), *NewClassName);
+		return false;
+	}
+
+	// Add new class with the same color
+	NewSemanticClass(NewClassName, TextureMappingAsset->SemanticClasses[OldClassName].Color);
+	// Remove the existing class
+	TextureMappingAsset->SemanticClasses.Remove(OldClassName);
+	// Update actor mappings to the new semantic class name
+	TArray<AActor*> LevelActors;
+	UGameplayStatics::GetAllActorsOfClass(GEditor->GetEditorWorldContext().World(), AActor::StaticClass(), LevelActors);
+	for (AActor* Actor : LevelActors)
+	{
+		if (TextureMappingAsset->ActorClassPairs.Contains(Actor->GetActorGuid()) &&
+			TextureMappingAsset->ActorClassPairs[Actor->GetActorGuid()] == OldClassName)
+		{
+			TextureMappingAsset->ActorClassPairs[Actor->GetActorGuid()] = NewClassName;
+		}
+	}
+	// No action regarding actor materials necessary
+
+	SaveTextureMappingAsset();
+
+	return true;
+}
+
+bool UTextureStyleManager::UpdateClassColor(const FString& ClassName, const FColor& NewClassColor)
+{
+	if (!TextureMappingAsset->SemanticClasses.Contains(ClassName))
+	{
+		UE_LOG(LogEasySynth, Log, TEXT("%s: Requested semantic class '%s' not found"),
+			*FString(__FUNCTION__), *ClassName);
+		return false;
+	}
+
+	if (TextureMappingAsset->SemanticClasses[ClassName].Color == NewClassColor)
+	{
+		return true;
+	}
+
+	// Update the class color
+	TextureMappingAsset->SemanticClasses[ClassName].Color = NewClassColor;
+	// Invalidate the material instance
+	TextureMappingAsset->SemanticClasses[ClassName].PlainColorMaterialInstance = nullptr;
+	// Update each actor color immediately in case of the semantic view mode
+	TArray<AActor*> LevelActors;
+	UGameplayStatics::GetAllActorsOfClass(GEditor->GetEditorWorldContext().World(), AActor::StaticClass(), LevelActors);
+	for (AActor* Actor : LevelActors)
+	{
+		if (TextureMappingAsset->ActorClassPairs.Contains(Actor->GetActorGuid()) &&
+			TextureMappingAsset->ActorClassPairs[Actor->GetActorGuid()] == ClassName)
+		{
+			SetSemanticClassToActor(Actor, ClassName);
+		}
+	}
+
+	SaveTextureMappingAsset();
+
+	return true;
+}
+
 TArray<FString> UTextureStyleManager::SemanticClassNames() const
 {
 	TArray<FString> SemanticClassNames;
@@ -288,7 +366,6 @@ void UTextureStyleManager::LoadOrCreateTextureMappingAsset()
 		FAssetRegistryModule& AssetRegistryModule =
 			FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 		AssetRegistryModule.Get().AddPath(FPathUtils::ProjectPluginContentDir());
-		// TODO: Add all other subpaths here
 
 		// Create and populate the asset
 		UPackage *TextureMappingPackage = CreatePackage(*FPathUtils::TextureMappingAssetPath());

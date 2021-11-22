@@ -86,6 +86,12 @@ public:
 		const FColor& ClassColor,
 		const bool bSaveTextureMappingAsset = true);
 
+	/** Update the name of a semantic class */
+	bool UpdateClassName(const FString& OldClassName, const FString& NewClassName);
+
+	/** Update the color of a semantic class */
+	bool UpdateClassColor(const FString& ClassName, const FColor& NewClassColor);
+
 	/** Returns names of existing semantic classes */
 	TArray<FString> SemanticClassNames() const;
 
