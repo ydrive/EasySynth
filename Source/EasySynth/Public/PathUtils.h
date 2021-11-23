@@ -27,7 +27,7 @@ public:
 		return FString::Printf(TEXT("/%s"), *PluginName);
 	}
 
-	/** Plugin content directory, because editor utils cannot tell us that */
+	/** Path to the plain color material asset */
 	static FString PlainColorMaterialPath()
 	{
 		return FPaths::Combine(PluginContentDir(), PlainColorMaterialAssetName);

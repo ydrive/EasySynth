@@ -153,6 +153,7 @@ private:
 	 * Storage of the original actor materials while semantics are displayed
 	 * Mimics the behavior of the structure defined as
 	 * TMap<AActor*, TMap<UStaticMeshComponent*, TArray<UMaterialInterface*>>>
+	 * which throws the UE specific complie error "Nested containers are not supported."
 	*/
 	UPROPERTY()
 	TMap<AActor*, FOrignalActorDescriptor> FOrignalActorDescriptors;
