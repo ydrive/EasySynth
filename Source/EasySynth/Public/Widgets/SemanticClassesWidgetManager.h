@@ -9,7 +9,7 @@ class UTextureStyleManager;
 
 
 /**
- * Class that manages semantic class widget interatcion
+ * Class that manages the widget for manipulating semantic classes
  * The class contains numerous delagate handlers which do not allow
  * for some of the parameters to be referenced, only const
 */
@@ -82,7 +82,7 @@ private:
     /** Stores which existing semantic class is being edited */
     FString CurrenltyEditedClass;
 
-    /** Timer handle for the widnow reopen timer */
+    /** Timer handle for the window reopen timer */
     FTimerHandle ReopenTimerHandle;
 
     /** The text value of the new semantic class */
