@@ -156,7 +156,7 @@ private:
 	 * which throws the UE specific complie error "Nested containers are not supported."
 	*/
 	UPROPERTY()
-	TMap<AActor*, FOrignalActorDescriptor> FOrignalActorDescriptors;
+	TMap<AActor*, FOrignalActorDescriptor> OriginalActorDescriptors;
 
 	/**
 	 * Buffer used to store actors that need to have the semantic class set with a delay

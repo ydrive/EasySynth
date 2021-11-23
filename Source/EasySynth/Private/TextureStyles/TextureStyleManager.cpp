@@ -286,7 +286,7 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 	if (CurrentTextureStyle == ETextureStyle::COLOR)
 	{
 		// Reset the original actor material storage to prepare it for new data
-		FOrignalActorDescriptors.Empty();
+		OriginalActorDescriptors.Empty();
 	}
 
 	// Apply materials to all actors
@@ -329,11 +329,11 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 		if (CurrentTextureStyle == ETextureStyle::COLOR)
 		{
 			// Changing to semantic view, store the original data
-			FOrignalActorDescriptors.Add(Actor);
+			OriginalActorDescriptors.Add(Actor);
 		}
 		else if (CurrentTextureStyle == ETextureStyle::SEMANTIC)
 		{
-			if (!FOrignalActorDescriptors.Contains(Actor))
+			if (!OriginalActorDescriptors.Contains(Actor))
 			{
 				UE_LOG(LogEasySynth, Error, TEXT("%s: Actor original descriptor not found"), *FString(__FUNCTION__))
 				continue;
@@ -354,21 +354,21 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 			if (CurrentTextureStyle == ETextureStyle::COLOR)
 			{
 				// Changing to semantic view, store the original data
-				FOrignalActorDescriptors[Actor].Add(MeshComponent);
+				OriginalActorDescriptors[Actor].Add(MeshComponent);
 			}
 			else if (CurrentTextureStyle == ETextureStyle::SEMANTIC)
 			{
-				if (!FOrignalActorDescriptors[Actor].Contains(MeshComponent))
+				if (!OriginalActorDescriptors[Actor].Contains(MeshComponent))
 				{
 					UE_LOG(LogEasySynth, Error, TEXT("%s: Actor's mesh component original descriptor not found"),
 						*FString(__FUNCTION__))
 					continue;
 				}
-				else if (FOrignalActorDescriptors[Actor][MeshComponent].Num() != MeshComponent->GetNumMaterials())
+				else if (OriginalActorDescriptors[Actor][MeshComponent].Num() != MeshComponent->GetNumMaterials())
 				{
 					UE_LOG(LogEasySynth, Error, TEXT("%s: %d instead of %d actor's mesh component materials found"),
 						*FString(__FUNCTION__),
-						FOrignalActorDescriptors[Actor][MeshComponent].Num(),
+						OriginalActorDescriptors[Actor][MeshComponent].Num(),
 						MeshComponent->GetNumMaterials())
 					continue;
 				}
@@ -383,14 +383,14 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 				if (CurrentTextureStyle == ETextureStyle::COLOR)
 				{
 					// Change to semantic material
-					FOrignalActorDescriptors[Actor][MeshComponent].Add(MeshComponent->GetMaterial(i));
+					OriginalActorDescriptors[Actor][MeshComponent].Add(MeshComponent->GetMaterial(i));
 					MeshComponent->SetMaterial(
 						i, GetSemanticClassMaterial(TextureMappingAsset->SemanticClasses[ClassName]));
 				}
 				else
 				{
 					// Revert to original material
-					MeshComponent->SetMaterial(i, FOrignalActorDescriptors[Actor][MeshComponent][i]);
+					MeshComponent->SetMaterial(i, OriginalActorDescriptors[Actor][MeshComponent][i]);
 				}
 			}
 		}
@@ -399,7 +399,7 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 	if (CurrentTextureStyle == ETextureStyle::SEMANTIC)
 	{
 		// Reset the original actor material storage as it is no longer needed
-		FOrignalActorDescriptors.Empty();
+		OriginalActorDescriptors.Empty();
 	}
 
 	// Make sure any changes to the TextureMappingAsset are changed
@@ -461,7 +461,7 @@ void UTextureStyleManager::OnLevelActorDeleted(AActor* Actor)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Removing actor '%s'"), *FString(__FUNCTION__), *Actor->GetName())
 	TextureMappingAsset->ActorClassPairs.Remove(Actor->GetActorGuid());
-	FOrignalActorDescriptors.Remove(Actor);
+	OriginalActorDescriptors.Remove(Actor);
 }
 
 void UTextureStyleManager::OnEditorClose()
@@ -503,7 +503,7 @@ void UTextureStyleManager::SetSemanticClassToActor(
 
 		// In case this actor has not already been added to the original descriptor,
 		// add its contents before changing the material
-		const bool bAddingNew = !FOrignalActorDescriptors.Contains(Actor);
+		const bool bAddingNew = !OriginalActorDescriptors.Contains(Actor);
 		if (bAddingNew)
 		{
 			if (bDelayAddingDescriptors)
@@ -521,7 +521,7 @@ void UTextureStyleManager::SetSemanticClassToActor(
 					bLoop);
 				return;
 			}
-			FOrignalActorDescriptors.Add(Actor);
+			OriginalActorDescriptors.Add(Actor);
 		}
 
 		// Set new materials
@@ -537,7 +537,7 @@ void UTextureStyleManager::SetSemanticClassToActor(
 
 			if (bAddingNew)
 			{
-				FOrignalActorDescriptors[Actor].Add(MeshComponent);
+				OriginalActorDescriptors[Actor].Add(MeshComponent);
 			}
 
 			// Store actor descriptors immediately
@@ -546,7 +546,7 @@ void UTextureStyleManager::SetSemanticClassToActor(
 				// Apply to each material
 				if (bAddingNew)
 				{
-					FOrignalActorDescriptors[Actor][MeshComponent].Add(MeshComponent->GetMaterial(i));
+					OriginalActorDescriptors[Actor][MeshComponent].Add(MeshComponent->GetMaterial(i));
 				}
 
 				MeshComponent->SetMaterial(
