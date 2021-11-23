@@ -418,13 +418,6 @@ void UTextureStyleManager::LoadOrCreateTextureMappingAsset()
 		UE_LOG(LogEasySynth, Log, TEXT("%s: Texture mapping asset not found, creating a new one"),
 			*FString(__FUNCTION__));
 
-		// Remove all potentially existing EasySynth assets from the project
-		const bool bIsAbsolute = true;
-		const bool bRequireExists = false;
-		const bool bTree = true;
-		FFileManagerGeneric::Get().DeleteDirectory(
-			*FPathUtils::ProjectPluginContentDir(bIsAbsolute), bRequireExists, bTree);
-
 		// Register the plugin directroy with the editor
 		FAssetRegistryModule& AssetRegistryModule =
 			FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
