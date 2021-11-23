@@ -108,7 +108,7 @@ void FSemanticClassesWidgetManager::OnClassNameChanged(
 	ETextCommit::Type CommitType,
 	const FString ClassName)
 {
-	const bool bSuccess = SemanticClassesManager->UpdateClassName(ClassName, NewText.ToString());
+	const bool bSuccess = TextureStyleManager->UpdateClassName(ClassName, NewText.ToString());
 	if (bSuccess)
 	{
 		RefreshSemanticClasses();
@@ -134,7 +134,7 @@ FReply FSemanticClassesWidgetManager::OnUpdateClassColorClicked(
 		PickerArgs.DisplayGamma = TAttribute<float>::Create(TAttribute<float>::FGetter::CreateUObject(GEngine, &UEngine::GetDisplayGamma));
 		PickerArgs.OnColorCommitted = FOnLinearColorValueChanged::CreateRaw(this, &FSemanticClassesWidgetManager::OnUpdateClassColorCommited);
 		PickerArgs.OnColorPickerWindowClosed = FOnWindowClosed::CreateRaw(this, &FSemanticClassesWidgetManager::OnColorPickerWindowClosed);
-		PickerArgs.InitialColorOverride = FLinearColor(SemanticClassesManager->ClassColor(ClassName));
+		PickerArgs.InitialColorOverride = FLinearColor(TextureStyleManager->ClassColor(ClassName));
 	}
 
 	// Need to close the current window to be able to display the color picker
@@ -154,14 +154,14 @@ void FSemanticClassesWidgetManager::OnUpdateClassColorCommited(const FLinearColo
 	FColor NewColor = NewLinearColor.ToFColor(bSRGB);
 	NewColor.A = 255;
 
-	SemanticClassesManager->UpdateClassColor(CurrenltyEditedClass, NewColor);
+	TextureStyleManager->UpdateClassColor(CurrenltyEditedClass, NewColor);
 
 	CurrenltyEditedClass = "";
 }
 
 FReply FSemanticClassesWidgetManager::OnDeleteClassClicked(const FString ClassName)
 {
-	const bool bSuccess = SemanticClassesManager->RemoveSemanticClass(ClassName);
+	const bool bSuccess = TextureStyleManager->RemoveSemanticClass(ClassName);
 	if (bSuccess)
 	{
 		RefreshSemanticClasses();
@@ -208,7 +208,7 @@ void FSemanticClassesWidgetManager::OnNewClassColorCommited(const FLinearColor N
 
 FReply FSemanticClassesWidgetManager::OnAddNewClassClicked()
 {
-	const bool bSuccess = SemanticClassesManager->NewSemanticClass(NewClassName.ToString(), NewClassColor);
+	const bool bSuccess = TextureStyleManager->NewSemanticClass(NewClassName.ToString(), NewClassColor);
 	if (bSuccess)
 	{
 		NewClassName = FText::GetEmpty();
@@ -256,7 +256,7 @@ void FSemanticClassesWidgetManager::RefreshSemanticClasses()
 
 	ClassesBox.Pin()->ClearChildren();
 
-	TArray<const FSemanticClass*> SemanticClasses = SemanticClassesManager->SemanticClasses();
+	TArray<const FSemanticClass*> SemanticClasses = TextureStyleManager->SemanticClasses();
 	for (int i = 0; i < SemanticClasses.Num(); i++)
 	{
 		const FSemanticClass* SemanticClass = SemanticClasses[i];

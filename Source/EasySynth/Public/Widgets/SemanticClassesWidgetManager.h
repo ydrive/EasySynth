@@ -19,10 +19,7 @@ public:
     FSemanticClassesWidgetManager();
 
     /** Initializes the needed semantic class manager */
-    void SetTextureStyleManager(UTextureStyleManager* TextureStyleManager)
-    {
-        SemanticClassesManager = TextureStyleManager;
-    }
+    void SetTextureStyleManager(UTextureStyleManager* Value) { TextureStyleManager = Value; }
 
 	/** Handles the window creation when requested */
 	FReply OnManageSemanticClassesClicked();
@@ -92,5 +89,5 @@ private:
     FColor NewClassColor;
 
     /** References the semantic class manager need for storing modifications */
-    UTextureStyleManager* SemanticClassesManager;
+    UTextureStyleManager* TextureStyleManager;
 };

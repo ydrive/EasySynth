@@ -21,7 +21,7 @@ class UTextureStyleManager;
 class FRendererTarget
 {
 public:
-	explicit FRendererTarget(UTextureStyleManager* TextureStyleManager) : ViewManager(TextureStyleManager) {}
+	explicit FRendererTarget(UTextureStyleManager* Value) : TextureStyleManager(Value) {}
 
 	/** Returns a name of a specific target */
 	virtual FString Name() const = 0;
@@ -46,5 +46,5 @@ protected:
 	}
 
 	/** Handle for managing texture style in the level */
-	UTextureStyleManager* ViewManager;
+	UTextureStyleManager* TextureStyleManager;
 };

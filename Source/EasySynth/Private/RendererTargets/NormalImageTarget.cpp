@@ -12,7 +12,7 @@
 bool FNormalImageTarget::PrepareSequence(ULevelSequence* LevelSequence)
 {
 	// Update texture style inside the level
-	ViewManager->CheckoutTextureStyle(ETextureStyle::COLOR);
+	TextureStyleManager->CheckoutTextureStyle(ETextureStyle::COLOR);
 
 	// Get all camera components bound to the level sequence
 	TArray<UCameraComponent*> Cameras = GetCameras(LevelSequence);

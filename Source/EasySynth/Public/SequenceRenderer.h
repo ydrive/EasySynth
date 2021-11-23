@@ -55,9 +55,6 @@ private:
 	/** Get the renderer target object from the target type id */
 	TSharedPtr<FRendererTarget> RendererTarget(const int TargetType, UTextureStyleManager* TextureStyleManager) const;
 
-	/** TextureStyleManager needed to be forwarded to created render targets */
-	UTextureStyleManager* ViewManager;
-
 	/** Is the default color image rendering requested */
 	TArray<bool> SelectedTargets;
 
@@ -85,7 +82,7 @@ public:
 	USequenceRenderer();
 
 	/** Sets TextureStyleManager */
-	void SetTextureStyleManager(UTextureStyleManager* TextureStyleManager) { ViewManager = TextureStyleManager; }
+	void SetTextureStyleManager(UTextureStyleManager* Value) { TextureStyleManager = Value; }
 
 	/** Runs sequence rendering, returns false if rendering could not start */
 	bool RenderSequence(
@@ -133,7 +130,7 @@ private:
 	ULevelSequence* RenderingSequence;
 
 	/** TextureStyleManager needed to be finalize the rendering */
-	UTextureStyleManager* ViewManager;
+	UTextureStyleManager* TextureStyleManager;
 
 	/** Used to revert to this style after finishing the rendering */
 	ETextureStyle OriginalTextureStyle;

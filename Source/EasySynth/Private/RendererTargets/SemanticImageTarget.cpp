@@ -12,7 +12,7 @@
 bool FSemanticImageTarget::PrepareSequence(ULevelSequence* LevelSequence)
 {
 	// Update texture style inside the level
-	ViewManager->CheckoutTextureStyle(ETextureStyle::SEMANTIC);
+	TextureStyleManager->CheckoutTextureStyle(ETextureStyle::SEMANTIC);
 
 	// Get all camera components bound to the level sequence
 	TArray<UCameraComponent*> Cameras = GetCameras(LevelSequence);

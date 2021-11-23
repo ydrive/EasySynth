@@ -92,10 +92,10 @@ bool USequenceRenderer::RenderSequence(
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
 
-	if (ViewManager == nullptr)
+	if (TextureStyleManager == nullptr)
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Texture style manager is null"), *FString(__FUNCTION__))
-		check(ViewManager)
+		check(TextureStyleManager)
 	}
 
 	// Check if rendering is already in progress
@@ -124,8 +124,8 @@ bool USequenceRenderer::RenderSequence(
 	}
 
 	// Prepare the targets queue
-	RenderingTargets.GetSelectedTargets(ViewManager, TargetsQueue);
-	OriginalTextureStyle = ViewManager->SelectedTextureStyle();
+	RenderingTargets.GetSelectedTargets(TextureStyleManager, TargetsQueue);
+	OriginalTextureStyle = TextureStyleManager->SelectedTextureStyle();
 	CurrentTarget = nullptr;
 
 	// Store the output directory
@@ -306,7 +306,7 @@ void USequenceRenderer::BroadcastRenderingFinished(const bool bSuccess)
 	}
 
 	// Revert world state to the original one
-	ViewManager->CheckoutTextureStyle(OriginalTextureStyle);
+	TextureStyleManager->CheckoutTextureStyle(OriginalTextureStyle);
 
 	bCurrentlyRendering = false;
 	RenderingFinishedEvent.Broadcast(bSuccess);
