@@ -124,9 +124,6 @@ private:
 	/** Clears the existing job queue and adds a fresh job */
 	bool PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem);
 
-	/** Dumps camera poses to the file */
-	bool ExportCameraPoses() const;
-
 	/** Finalizes rendering and broadcasts the event */
 	void BroadcastRenderingFinished(const bool bSuccess);
 

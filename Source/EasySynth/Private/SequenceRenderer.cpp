@@ -8,6 +8,7 @@
 #include "MovieRenderPipelineSettings.h"
 
 #include "PathUtils.h"
+#include "RendererTargets/CameraPoseExporter.h"
 #include "RendererTargets/RendererTarget.h"
 
 
@@ -127,7 +128,8 @@ bool USequenceRenderer::RenderSequence(
 	// Export camera poses if requested
 	if (RenderingTargets.ExportCameraPoses())
 	{
-		if (!ExportCameraPoses())
+		FCameraPoseExporter CameraPoseExporter;
+		if (!CameraPoseExporter.ExportCameraPoses(RenderingSequence))
 		{
 			ErrorMessage = "Could not export camera poses";
 			UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
@@ -307,12 +309,6 @@ bool USequenceRenderer::PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipel
 	// The SetConfiguration method creates and assigns the copy of the provided config
 	NewJob->SetConfiguration(EasySynthMoviePipelineConfig);
 
-	return true;
-}
-
-bool USequenceRenderer::ExportCameraPoses() const
-{
-	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
 	return true;
 }
 

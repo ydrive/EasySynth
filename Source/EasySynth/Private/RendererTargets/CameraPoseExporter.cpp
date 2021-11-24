@@ -1,26 +1,30 @@
 // Copyright (c) YDrive Inc. All rights reserved.
 // Licensed under the MIT License.
 
-#include "RendererTargets/RendererTarget.h"
+#include "RendererTargets/CameraPoseExporter.h"
 
+#include "EntitySystem/Interrogation/MovieSceneInterrogationLinker.h"
+#include "EntitySystem/MovieSceneEntitySystemTypes.h"
 #include "ILevelSequenceEditorToolkit.h"
 #include "ISequencer.h"
 #include "LevelSequence.h"
 #include "MovieScene.h"
+#include "MovieSceneObjectBindingID.h"
 #include "Sections/MovieSceneCameraCutSection.h"
 #include "Subsystems/AssetEditorSubsystem.h"
+#include "Tracks/MovieScene3DTransformTrack.h"
 
 
-TArray<UCameraComponent*> FRendererTarget::GetCameras(ULevelSequence* LevelSequence)
+bool FCameraPoseExporter::ExportCameraPoses(ULevelSequence* LevelSequence)
 {
-	TArray<UCameraComponent*> Cameras;
+    UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
 
 	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
 	if (MovieScene == nullptr)
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not get the movie scene from the level sequence"),
 			*FString(__FUNCTION__))
-		return Cameras;
+		return false;
 	}
 
 	UMovieSceneTrack* CameraCutTrack = MovieScene->GetCameraCutTrack();
@@ -28,14 +32,14 @@ TArray<UCameraComponent*> FRendererTarget::GetCameras(ULevelSequence* LevelSeque
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not get the camera cut track from the movie scene"),
 			*FString(__FUNCTION__))
-		return Cameras;
+		return false;
 	}
 
 	TArray<UMovieSceneSection*> MovieSceneSections = CameraCutTrack->GetAllSections();
 	if (MovieSceneSections.Num() == 0)
 	{
 		UE_LOG(LogEasySynth, Warning, TEXT("%s: No sections inside the camera cut track"), *FString(__FUNCTION__))
-		return Cameras;
+		return false;
 	}
 
 	// Open sequencer editor for the level sequence asset
@@ -44,7 +48,7 @@ TArray<UCameraComponent*> FRendererTarget::GetCameras(ULevelSequence* LevelSeque
 	if (!GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAssets(Assets))
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not open the level sequence editor"), *FString(__FUNCTION__))
-		return Cameras;
+		return false;
 	}
 
 	// Get the LevelSequenceEditor
@@ -53,13 +57,13 @@ TArray<UCameraComponent*> FRendererTarget::GetCameras(ULevelSequence* LevelSeque
 	if (AssetEditor == nullptr)
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not find the asset editor"), *FString(__FUNCTION__))
-		return Cameras;
+		return false;
 	}
 	ILevelSequenceEditorToolkit* LevelSequenceEditor = static_cast<ILevelSequenceEditorToolkit*>(AssetEditor);
 	if (LevelSequenceEditor == nullptr)
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not find the level sequence editor"), *FString(__FUNCTION__))
-		return Cameras;
+		return false;
 	}
 
 	// Get the Sequencer
@@ -67,10 +71,11 @@ TArray<UCameraComponent*> FRendererTarget::GetCameras(ULevelSequence* LevelSeque
 	if (!WeakSequencer.IsValid())
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not get the sequencer"), *FString(__FUNCTION__))
-		return Cameras;
+		return false;
 	}
 
 	// Get the camera from each section
+	TArray<FTransform> CameraTransforms;
 	for (UMovieSceneSection* MovieSceneSection : MovieSceneSections)
 	{
 		// Convert UMovieSceneSection to UMovieSceneCameraCutSection
@@ -79,9 +84,10 @@ TArray<UCameraComponent*> FRendererTarget::GetCameras(ULevelSequence* LevelSeque
 		{
 			UE_LOG(LogEasySynth, Error, TEXT("%s: Could not convert MovieSceneSection into a CutSection"),
 				*FString(__FUNCTION__));
-			Cameras.Empty();
-			return Cameras;
+			return false;
 		}
+
+		const FMovieSceneObjectBindingID& CameraBindingID = CutSection->GetCameraBindingID();
 
 		// Get the camera componenet
 		UCameraComponent* Camera =
@@ -89,34 +95,62 @@ TArray<UCameraComponent*> FRendererTarget::GetCameras(ULevelSequence* LevelSeque
 		if (Camera == nullptr)
 		{
 			UE_LOG(LogEasySynth, Error, TEXT("%s: Cut section camera component is null"), *FString(__FUNCTION__))
-			Cameras.Empty();
-			return Cameras;
-		}
-		Cameras.Add(Camera);
-	}
-
-	return Cameras;
-}
-
-bool FRendererTarget::ClearCameraPostProcess(ULevelSequence* LevelSequence)
-{
-	// Get all camera components bound to the level sequence
-	TArray<UCameraComponent*> Cameras = GetCameras(LevelSequence);
-	if (Cameras.Num() == 0)
-	{
-		UE_LOG(LogEasySynth, Warning, TEXT("%s: No cameras bound to the level sequence found"), *FString(__FUNCTION__))
-		return false;
-	}
-
-	// Clear post process materials
-	for (UCameraComponent* Camera : Cameras)
-	{
-		if (Camera == nullptr)
-		{
-			UE_LOG(LogEasySynth, Error, TEXT("%s: Found camera is null"), *FString(__FUNCTION__))
 			return false;
 		}
-		Camera->PostProcessSettings.WeightedBlendables.Array.Empty();
+
+		// Find the transform track for our bound camera.
+		UMovieScene3DTransformTrack* CameraTransformTrack = nullptr;
+		for (const FMovieSceneBinding& Binding : MovieScene->GetBindings())
+		{
+			if (Binding.GetObjectGuid() == CameraBindingID.GetGuid())
+			{
+				for (UMovieSceneTrack* Track : Binding.GetTracks())
+				{
+					CameraTransformTrack = Cast<UMovieScene3DTransformTrack>(Track);
+					if (CameraTransformTrack)
+					{
+						break;
+					}
+				}
+			}
+		}
+		if (CameraTransformTrack == nullptr)
+		{
+			UE_LOG(LogEasySynth, Error, TEXT("%s: Could not find camera transform track"), *FString(__FUNCTION__))
+			return false;
+		}
+
+		// Get camera positions
+		UE::MovieScene::FSystemInterrogator Interrogator;
+
+		TGuardValue<UE::MovieScene::FEntityManager*> DebugVizGuard(
+            UE::MovieScene::GEntityManagerForDebuggingVisualizers, &Interrogator.GetLinker()->EntityManager);
+
+		Interrogator.ImportTrack(CameraTransformTrack, UE::MovieScene::FInterrogationChannel::Default());
+
+		Interrogator.AddInterrogation(CutSection->GetTrueRange().GetLowerBoundValue());
+
+		Interrogator.Update();
+
+		TArray<FTransform> TempTransforms;
+		Interrogator.QueryWorldSpaceTransforms(UE::MovieScene::FInterrogationChannel::Default(), TempTransforms);
+
+		if (TempTransforms.Num() == 0)
+		{
+			UE_LOG(LogEasySynth, Error, TEXT("%s: No camera transforms found"), *FString(__FUNCTION__))
+			return false;
+		}
+
+		UE_LOG(LogEasySynth, Log, TEXT("%s: Transform found %f %f %f"), *FString(__FUNCTION__),
+			TempTransforms[0].GetLocation()[0], TempTransforms[0].GetLocation()[1], TempTransforms[0].GetLocation()[2])
+
+		CameraTransforms.Append(TempTransforms);
+	}
+
+	// Store to file
+	for (const FTransform& Transform : CameraTransforms)
+	{
+		// TODO:
 	}
 
 	return true;
