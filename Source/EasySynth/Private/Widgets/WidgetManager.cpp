@@ -132,6 +132,18 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			.Padding(2)
 			[
 				SNew(SCheckBox)
+				.OnCheckStateChanged_Lambda(
+					[this](ECheckBoxState NewState)
+					{ SequenceRendererTargets.SetExportCameraPoses(NewState == ECheckBoxState::Checked); })
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString("Camera poses"))
+				]
+			]
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(SCheckBox)
 				.OnCheckStateChanged_Raw(
 					this, &FWidgetManager::OnRenderTargetsChanged, FRendererTargetOptions::COLOR_IMAGE)
 				[

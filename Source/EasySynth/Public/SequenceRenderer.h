@@ -40,6 +40,12 @@ public:
 	/** Checks if any of the available options is selected */
 	bool AnyOptionSelected() const;
 
+	/** Updates should camera poses be exported */
+	void SetExportCameraPoses(const bool bValue) { bExportCameraPoses = bValue; }
+
+	/** Return should camera poses be exported */
+	bool ExportCameraPoses() const { return bExportCameraPoses; }
+
 	/** DepthRangeMetersValue getter */
 	void SetDepthRangeMeters(const float DepthRangeMeters) { DepthRangeMetersValue = DepthRangeMeters; }
 
@@ -57,6 +63,9 @@ private:
 
 	/** Is the default color image rendering requested */
 	TArray<bool> SelectedTargets;
+
+	/** Whether to export camera poses */
+	bool bExportCameraPoses;
 
 	/**
 	 * The clipping range when rendering the depth target
@@ -114,6 +123,9 @@ private:
 
 	/** Clears the existing job queue and adds a fresh job */
 	bool PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem);
+
+	/** Dumps camera poses to the file */
+	bool ExportCameraPoses() const;
 
 	/** Finalizes rendering and broadcasts the event */
 	void BroadcastRenderingFinished(const bool bSuccess);

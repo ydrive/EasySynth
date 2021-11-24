@@ -14,6 +14,7 @@
 const float FRendererTargetOptions::DefaultDepthRangeMetersValue = 100.0f;
 
 FRendererTargetOptions::FRendererTargetOptions() :
+	bExportCameraPoses(false),
 	DepthRangeMetersValue(DefaultDepthRangeMetersValue)
 {
 	SelectedTargets.Init(false, TargetType::COUNT);
@@ -121,6 +122,17 @@ bool USequenceRenderer::RenderSequence(
 		ErrorMessage = "No rendering targets selected";
 		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 		return false;
+	}
+
+	// Export camera poses if requested
+	if (RenderingTargets.ExportCameraPoses())
+	{
+		if (!ExportCameraPoses())
+		{
+			ErrorMessage = "Could not export camera poses";
+			UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+			return false;
+		}
 	}
 
 	// Prepare the targets queue
@@ -295,6 +307,12 @@ bool USequenceRenderer::PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipel
 	// The SetConfiguration method creates and assigns the copy of the provided config
 	NewJob->SetConfiguration(EasySynthMoviePipelineConfig);
 
+	return true;
+}
+
+bool USequenceRenderer::ExportCameraPoses() const
+{
+	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
 	return true;
 }
 
