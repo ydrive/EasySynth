@@ -45,6 +45,7 @@ public class EasySynth : ModuleRules
 				"Slate",
 				"SlateCore",
 				// Editor bindings
+				"EditorScriptingUtilities",
 				"UnrealEd",
 				// Sequencer module
 				"LevelSequence",
@@ -55,7 +56,9 @@ public class EasySynth : ModuleRules
 				"MovieSceneTracks",
 				"Sequencer",
 				// Editor tab functionality
+				"AppFramework",
 				"DesktopWidgets",
+				"MainFrame",
 				"PropertyEditor",
 				// ... add private dependencies that you statically link with here ...
 			}

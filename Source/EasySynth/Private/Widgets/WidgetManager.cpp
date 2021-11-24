@@ -1,7 +1,7 @@
 // Copyright (c) YDrive Inc. All rights reserved.
 // Licensed under the MIT License.
 
-#include "WidgetManager.h"
+#include "Widgets/WidgetManager.h"
 
 #include "LevelSequence.h"
 #include "PropertyCustomizationHelpers.h"
@@ -12,18 +12,41 @@
 #include "Widgets/Text/STextBlock.h"
 
 
+const FString FWidgetManager::TextureStyleColorName(TEXT("Original color textures"));
+const FString FWidgetManager::TextureStyleSemanticName(TEXT("Semantic color textures"));
+
 const FText FWidgetManager::StartRenderingErrorMessageBoxTitle = FText::FromString(TEXT("Could not start rendering"));
 const FText FWidgetManager::RenderingErrorMessageBoxTitle = FText::FromString(TEXT("Rendering failed"));
 const FText FWidgetManager::SuccessfulRenderingMessageBoxTitle = FText::FromString(TEXT("Successful rendering"));
 
 FWidgetManager::FWidgetManager()
 {
+	// Create the texture style manager and add it to the root to avoid garbage collection
+	TextureStyleManager = NewObject<UTextureStyleManager>();
+	check(TextureStyleManager);
+	TextureStyleManager->AddToRoot();
+	// Add some dummy sematic classes
+	TextureStyleManager->NewSemanticClass(TEXT("Drivable"), FColor(255, 0, 0, 255), false);
+	TextureStyleManager->NewSemanticClass(TEXT("Marking"), FColor(0, 255, 0, 255), false);
+	TextureStyleManager->NewSemanticClass(TEXT("Sidewalk"), FColor(0, 0, 255, 255), false);
+
 	// Create the sequence renderer and add it to the root to avoid garbage collection
 	SequenceRenderer = NewObject<USequenceRenderer>();
 	check(SequenceRenderer)
 	SequenceRenderer->AddToRoot();
 	// Register the rendering finished callback
 	SequenceRenderer->OnRenderingFinished().AddRaw(this, &FWidgetManager::OnRenderingFinished);
+	SequenceRenderer->SetTextureStyleManager(TextureStyleManager);
+
+	// No need to ever release the TextureStyleManager and the SequenceRenderer,
+	// as the FWidgetManager lives as long as the plugin inside the editor
+
+	// Prepare content of the texture style checkout combo box
+	TextureStyleNames.Add(MakeShared<FString>(TextureStyleColorName));
+	TextureStyleNames.Add(MakeShared<FString>(TextureStyleSemanticName));
+
+	// Initialize SemanticClassesWidgetManager
+	SemanticsWidget.SetTextureStyleManager(TextureStyleManager);
 
 	// Define the default output directory
 	// TODO: remember the last one used
@@ -32,16 +55,64 @@ FWidgetManager::FWidgetManager()
 
 TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
+	// Bind events now that the editor has finished starting up
+	TextureStyleManager->BindEvents();
+
 	return SNew(SDockTab)
 		.TabRole(ETabRole::NomadTab)
+		.ContentPadding(2)
 		[
 			SNew(SScrollBox)
 			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(SButton)
+				.OnClicked_Raw(&SemanticsWidget, &FSemanticClassesWidgetManager::OnManageSemanticClassesClicked)
+				.Content()
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString("Manage Semantic Classes"))
+				]
+			]
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SAssignNew(SemanticClassComboBox, SComboBox<TSharedPtr<FString>>)
+				.OptionsSource(&SemanticClassNames)
+				.ContentPadding(2)
+				.OnGenerateWidget_Lambda(
+					[](TSharedPtr<FString> StringItem)
+					{ return SNew(STextBlock).Text(FText::FromString(*StringItem)); })
+				.OnSelectionChanged_Raw(this, &FWidgetManager::OnSemanticClassComboBoxSelectionChanged)
+				.OnComboBoxOpening_Raw(this, &FWidgetManager::OnSemanticClassComboBoxOpened)
+				.Content()
+				[
+					SNew(STextBlock).Text(FText::FromString(TEXT("Pick a semantic class")))
+				]
+			]
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(SComboBox<TSharedPtr<FString>>)
+				.OptionsSource(&TextureStyleNames)
+				.ContentPadding(2)
+				.OnGenerateWidget_Lambda(
+					[](TSharedPtr<FString> StringItem)
+					{ return SNew(STextBlock).Text(FText::FromString(*StringItem)); })
+				.OnSelectionChanged_Raw(this, &FWidgetManager::OnTextureStyleComboBoxSelectionChanged)
+				.Content()
+				[
+					SNew(STextBlock).Text(FText::FromString(TEXT("Pick a mesh texture style")))
+				]
+			]
+			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(STextBlock)
 				.Text(FText::FromString("Pick sequencer"))
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(SObjectPropertyEntryBox)
 				.AllowedClass(ULevelSequence::StaticClass())
@@ -52,11 +123,13 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				.DisplayBrowse(true)
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(STextBlock)
 				.Text(FText::FromString("Chose targets to be rendered"))
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(SCheckBox)
 				.OnCheckStateChanged_Raw(
@@ -67,6 +140,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				]
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(SCheckBox)
 				.OnCheckStateChanged_Raw(
@@ -77,6 +151,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				]
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(SCheckBox)
 				.OnCheckStateChanged_Raw(
@@ -87,6 +162,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				]
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(SCheckBox)
 				.OnCheckStateChanged_Raw(
@@ -97,11 +173,13 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				]
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(STextBlock)
 				.Text(FText::FromString("Depth range [m]"))
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(SSpinBox<float>)
 				.Value_Raw(this, &FWidgetManager::GetDepthRangeValue)
@@ -110,17 +188,20 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				.MaxValue(10000.0f)
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(STextBlock)
 				.Text(FText::FromString("Ouput directory"))
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(SDirectoryPicker)
 				.Directory(OutputDirectory)
 				.OnDirectoryChanged_Raw(this, &FWidgetManager::OnOutputDirectoryChanged)
 			]
 			+SScrollBox::Slot()
+			.Padding(2)
 			[
 				SNew(SButton)
 				.IsEnabled_Raw(this, &FWidgetManager::GetIsRenderImagesEnabled)
@@ -132,6 +213,62 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				]
 			]
 		];
+}
+
+void FWidgetManager::OnSemanticClassComboBoxSelectionChanged(
+	TSharedPtr<FString> StringItem,
+	ESelectInfo::Type SelectInfo)
+{
+	if (StringItem.IsValid())
+	{
+		UE_LOG(LogEasySynth, Log, TEXT("%s: Semantic class selected: %s"), *FString(__FUNCTION__), **StringItem)
+		TextureStyleManager->ApplySemanticClassToSelectedActors(*StringItem);
+	}
+}
+
+void FWidgetManager::OnSemanticClassComboBoxOpened()
+{
+	// Refresh the list of semantic classes
+	SemanticClassNames.Reset();
+	TArray<FString> ClassNames = TextureStyleManager->SemanticClassNames();
+	for (const FString& ClassName : ClassNames)
+	{
+		SemanticClassNames.Add(MakeShared<FString>(ClassName));
+	}
+
+	// Refresh the combo box
+	if (SemanticClassComboBox.IsValid())
+	{
+		SemanticClassComboBox->RefreshOptions();
+	}
+	else
+	{
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Semantic class picker is invalid, could not refresh"),
+			*FString(__FUNCTION__));
+	}
+}
+
+void FWidgetManager::OnTextureStyleComboBoxSelectionChanged(
+	TSharedPtr<FString> StringItem,
+	ESelectInfo::Type SelectInfo)
+{
+	if (StringItem.IsValid())
+	{
+		UE_LOG(LogEasySynth, Log, TEXT("%s: Texture style selected: %s"), *FString(__FUNCTION__), **StringItem)
+		if (*StringItem == TextureStyleColorName)
+		{
+			TextureStyleManager->CheckoutTextureStyle(ETextureStyle::COLOR);
+		}
+		else if (*StringItem == TextureStyleSemanticName)
+		{
+			TextureStyleManager->CheckoutTextureStyle(ETextureStyle::SEMANTIC);
+		}
+		else
+		{
+			UE_LOG(LogEasySynth, Error, TEXT("%s: Got unexpected texture style: %s"),
+				*FString(__FUNCTION__), **StringItem);
+		}
+	}
 }
 
 FString FWidgetManager::GetSequencerPath() const

@@ -5,8 +5,12 @@
 
 #include "CoreMinimal.h"
 
+#include "PathUtils.h"
+
 class UCameraComponent;
 class ULevelSequence;
+
+class UTextureStyleManager;
 
 
 /**
@@ -17,6 +21,8 @@ class ULevelSequence;
 class FRendererTarget
 {
 public:
+	explicit FRendererTarget(UTextureStyleManager* Value) : TextureStyleManager(Value) {}
+
 	/** Returns a name of a specific target */
 	virtual FString Name() const = 0;
 
@@ -34,9 +40,11 @@ protected:
 	bool ClearCameraPostProcess(ULevelSequence* LevelSequence);
 
 	/** Returns the path to the specific target post process material */
-	inline UMaterial* LoadPostProcessMatrial() const {
-		return LoadObject<UMaterial>(
-			nullptr,
-			*(FString::Printf(TEXT("/EasySynth/PostProcessMaterials/M_PP%s"), *Name())));
+	inline UMaterial* LoadPostProcessMatrial() const
+	{
+		return LoadObject<UMaterial>(nullptr, *FPathUtils::PostProcessMaterialPath(Name()));
 	}
+
+	/** Handle for managing texture style in the level */
+	UTextureStyleManager* TextureStyleManager;
 };

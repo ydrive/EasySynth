@@ -7,6 +7,7 @@
 #include "MoviePipelineQueueSubsystem.h"
 #include "MovieRenderPipelineSettings.h"
 
+#include "PathUtils.h"
 #include "RendererTargets/RendererTarget.h"
 
 
@@ -30,14 +31,16 @@ bool FRendererTargetOptions::AnyOptionSelected() const
 	return false;
 }
 
-void FRendererTargetOptions::GetSelectedTargets(TQueue<TSharedPtr<FRendererTarget>>& OutTargetsQueue) const
+void FRendererTargetOptions::GetSelectedTargets(
+	UTextureStyleManager* TextureStyleManager,
+	TQueue<TSharedPtr<FRendererTarget>>& OutTargetsQueue) const
 {
 	OutTargetsQueue.Empty();
 	for (int i = 0; i < TargetType::COUNT; i++)
 	{
 		if (SelectedTargets[i])
 		{
-			TSharedPtr<FRendererTarget> Target = RendererTarget(i);
+			TSharedPtr<FRendererTarget> Target = RendererTarget(i, TextureStyleManager);
 			if (Target != nullptr)
 			{
 				OutTargetsQueue.Enqueue(Target);
@@ -53,23 +56,23 @@ void FRendererTargetOptions::GetSelectedTargets(TQueue<TSharedPtr<FRendererTarge
 	}
 }
 
-TSharedPtr<FRendererTarget> FRendererTargetOptions::RendererTarget(const int TargetType) const
+TSharedPtr<FRendererTarget> FRendererTargetOptions::RendererTarget(
+	const int TargetType,
+	UTextureStyleManager* TextureStyleManager) const
 {
 	switch (TargetType)
 	{
-	case COLOR_IMAGE: return MakeShared<FColorImageTarget>(); break;
-	case DEPTH_IMAGE: return MakeShared<FDepthImageTarget>(DepthRangeMetersValue); break;
-	case NORMAL_IMAGE: return MakeShared<FNormalImageTarget>(); break;
-	case SEMANTIC_IMAGE: return MakeShared<FSemanticImageTarget>(); break;
+	case COLOR_IMAGE: return MakeShared<FColorImageTarget>(TextureStyleManager); break;
+	case DEPTH_IMAGE: return MakeShared<FDepthImageTarget>(TextureStyleManager, DepthRangeMetersValue); break;
+	case NORMAL_IMAGE: return MakeShared<FNormalImageTarget>(TextureStyleManager); break;
+	case SEMANTIC_IMAGE: return MakeShared<FSemanticImageTarget>(TextureStyleManager); break;
 	default: return nullptr;
 	}
 }
 
-
-const FString USequenceRenderer::EasySynthMoviePipelineConfigPath("/EasySynth/EasySynthMoviePipelineConfig");
-
 USequenceRenderer::USequenceRenderer() :
-	EasySynthMoviePipelineConfig(LoadObject<UMoviePipelineMasterConfig>(nullptr, *EasySynthMoviePipelineConfigPath)),
+	EasySynthMoviePipelineConfig(
+		LoadObject<UMoviePipelineMasterConfig>(nullptr, *FPathUtils::DefaultMoviePipelineConfigPath())),
 	bCurrentlyRendering(false),
 	ErrorMessage("")
 {
@@ -88,6 +91,12 @@ bool USequenceRenderer::RenderSequence(
 	const FString& OutputDirectory)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
+
+	if (TextureStyleManager == nullptr)
+	{
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Texture style manager is null"), *FString(__FUNCTION__))
+		check(TextureStyleManager)
+	}
 
 	// Check if rendering is already in progress
 	if (bCurrentlyRendering)
@@ -115,7 +124,8 @@ bool USequenceRenderer::RenderSequence(
 	}
 
 	// Prepare the targets queue
-	RenderingTargets.GetSelectedTargets(TargetsQueue);
+	RenderingTargets.GetSelectedTargets(TextureStyleManager, TargetsQueue);
+	OriginalTextureStyle = TextureStyleManager->SelectedTextureStyle();
 	CurrentTarget = nullptr;
 
 	// Store the output directory
@@ -294,7 +304,10 @@ void USequenceRenderer::BroadcastRenderingFinished(const bool bSuccess)
 	{
 		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 	}
-	// TODO: Revert world state to the original one (remove semantic textures)
+
+	// Revert world state to the original one
+	TextureStyleManager->CheckoutTextureStyle(OriginalTextureStyle);
+
 	bCurrentlyRendering = false;
 	RenderingFinishedEvent.Broadcast(bSuccess);
 }

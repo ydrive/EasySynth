@@ -10,6 +10,7 @@
 #include "RendererTargets/DepthImageTarget.h"
 #include "RendererTargets/NormalImageTarget.h"
 #include "RendererTargets/SemanticImageTarget.h"
+#include "TextureStyles/TextureStyleManager.h"
 
 #include "SequenceRenderer.generated.h"
 
@@ -46,11 +47,13 @@ public:
 	float DepthRangeMeters() const { return DepthRangeMetersValue; }
 
 	/** Populate provided queue with selected renderer targets */
-	void GetSelectedTargets(TQueue<TSharedPtr<FRendererTarget>>& OutTargetsQueue) const;
+	void GetSelectedTargets(
+		UTextureStyleManager* TextureStyleManager,
+		TQueue<TSharedPtr<FRendererTarget>>& OutTargetsQueue) const;
 
 private:
 	/** Get the renderer target object from the target type id */
-	TSharedPtr<FRendererTarget> RendererTarget(const int TargetType) const;
+	TSharedPtr<FRendererTarget> RendererTarget(const int TargetType, UTextureStyleManager* TextureStyleManager) const;
 
 	/** Is the default color image rendering requested */
 	TArray<bool> SelectedTargets;
@@ -77,6 +80,9 @@ class USequenceRenderer : public UObject
 public:
 	/** Initialize the SequenceRenderer */
 	USequenceRenderer();
+
+	/** Sets TextureStyleManager */
+	void SetTextureStyleManager(UTextureStyleManager* Value) { TextureStyleManager = Value; }
 
 	/** Runs sequence rendering, returns false if rendering could not start */
 	bool RenderSequence(
@@ -123,6 +129,12 @@ private:
 	UPROPERTY()
 	ULevelSequence* RenderingSequence;
 
+	/** TextureStyleManager needed to be finalize the rendering */
+	UTextureStyleManager* TextureStyleManager;
+
+	/** Used to revert to this style after finishing the rendering */
+	ETextureStyle OriginalTextureStyle;
+
 	/** Queue of targets to be rendered */
 	TQueue<TSharedPtr<FRendererTarget>> TargetsQueue;
 
@@ -140,7 +152,4 @@ private:
 
 	/** Stores the latest error message */
 	FString ErrorMessage;
-
-	/** Movie pipeline configuration asset path */
-	static const FString EasySynthMoviePipelineConfigPath;
 };
