@@ -8,6 +8,7 @@ The plugin works by automatically starting the rendering of a user-defined level
 - Depth images, representing the depth of a pixel by a grayscale value
 - Normal images, representing the pixel normal using X, Y and Z color values
 - Semantic images, with every object rendered using the user-defined semantic color
+- Camera poses, including location and rotation
 
 ## Installation
 
@@ -60,3 +61,20 @@ Setting up rendering options inside the EasySynth widget:
 - Choose the output directory
 
 Start the rendering by clicking the `Render Images` button.
+
+### Camera pose output
+
+If requested, camera poses are saved inside the same output directory as rendered images.
+
+Output is the `CameraPoses.csv` file, in which the first line contains column names and the rest contain camera poses for each frame. Columns are the following:
+
+|Column |Name |Description          |
+|-------|-----|---------------------|
+|1      |id   |0-indexed frame id   |
+|2      |tx   |X position in meters |
+|3      |ty   |Y position in meters |
+|4      |tz   |Z position in meters |
+|5      |qw   |Rotation quaternion W|
+|6      |qx   |Rotation quaternion X|
+|7      |qy   |Rotation quaternion Y|
+|8      |qz   |Rotation quaternion Z|
