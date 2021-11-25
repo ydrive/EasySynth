@@ -125,11 +125,14 @@ bool USequenceRenderer::RenderSequence(
 		return false;
 	}
 
+	// Store the output directory
+	RenderingDirectory = OutputDirectory;
+
 	// Export camera poses if requested
 	if (RenderingTargets.ExportCameraPoses())
 	{
 		FCameraPoseExporter CameraPoseExporter;
-		if (!CameraPoseExporter.ExportCameraPoses(RenderingSequence))
+		if (!CameraPoseExporter.ExportCameraPoses(RenderingSequence, RenderingDirectory))
 		{
 			ErrorMessage = "Could not export camera poses";
 			UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
@@ -141,9 +144,6 @@ bool USequenceRenderer::RenderSequence(
 	RenderingTargets.GetSelectedTargets(TextureStyleManager, TargetsQueue);
 	OriginalTextureStyle = TextureStyleManager->SelectedTextureStyle();
 	CurrentTarget = nullptr;
-
-	// Store the output directory
-	RenderingDirectory = OutputDirectory;
 
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering..."), *FString(__FUNCTION__))
 	bCurrentlyRendering = true;

@@ -8,6 +8,7 @@
 #include "ILevelSequenceEditorToolkit.h"
 #include "ISequencer.h"
 #include "LevelSequence.h"
+#include "Misc/FileHelper.h"
 #include "MovieScene.h"
 #include "MovieSceneObjectBindingID.h"
 #include "Sections/MovieSceneCameraCutSection.h"
@@ -15,7 +16,9 @@
 #include "Tracks/MovieScene3DTransformTrack.h"
 
 
-bool FCameraPoseExporter::ExportCameraPoses(ULevelSequence* LevelSequence)
+const FString FCameraPoseExporter::CameraPosesFileName(TEXT("CameraPoses.csv"));
+
+bool FCameraPoseExporter::ExportCameraPoses(ULevelSequence* LevelSequence, const FString& OutputDir)
 {
 	// Open the received level sequence inside the sequencer wrapper
 	if (!SequencerWrapper.OpenSequence(LevelSequence))
@@ -32,11 +35,10 @@ bool FCameraPoseExporter::ExportCameraPoses(ULevelSequence* LevelSequence)
 	}
 
 	// Store to file
-    for (int i = 0; i < CameraTransforms.Num(); i++)
+	if (!SavePosesToFile(OutputDir))
 	{
-        const FTransform& Transform = CameraTransforms[i];
-		UE_LOG(LogEasySynth, Log, TEXT("%s: Transform found: %d  %f %f %f"), *FString(__FUNCTION__),
-			i, Transform.GetLocation()[0], Transform.GetLocation()[1], Transform.GetLocation()[2])
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed while saving camera poses to the file"), *FString(__FUNCTION__))
+		return false;
 	}
 
 	return true;
@@ -101,7 +103,7 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
 		// Inclusive lower bound of the movie scene ticks that belong to this cut section
 		FFrameNumber StartTickNumber = CutSection->GetTrueRange().GetLowerBoundValue();
 		// Exclusive upper bound of the movie scene ticks that belong to this cut section
-		FFrameNumber EndTickNumber = CutSection->GetTrueRange().GetLowerBoundValue();
+		FFrameNumber EndTickNumber = CutSection->GetTrueRange().GetUpperBoundValue();
         for (FFrameNumber TickNumber = StartTickNumber; TickNumber < EndTickNumber; TickNumber += TicksPerFrame)
         {
 			// Reinitialize the interrogator for each frame
@@ -130,6 +132,40 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
 
 		    CameraTransforms.Append(TempTransforms);
         }
+	}
+
+	return true;
+}
+
+bool FCameraPoseExporter::SavePosesToFile(const FString& OutputDir)
+{
+	// Create the file content
+	TArray<FString> Lines;
+	Lines.Add("id, tx, ty, tz, qw, qx, qy, qz");
+
+    for (int i = 0; i < CameraTransforms.Num(); i++)
+	{
+		UE_LOG(LogEasySynth, Error, TEXT("%s: pose %d"), *FString(__FUNCTION__), i)
+        const FTransform& Transform = CameraTransforms[i];
+		const FVector& Location = Transform.GetLocation();
+		const FQuat& Rotation = Transform.GetRotation();
+		Lines.Add(FString::Printf(TEXT("%d, %f, %f, %f, %f, %f, %f, %f"),
+			i,
+			Location.X, Location.Y, Location.Z,
+			Rotation.W, Rotation.X, Rotation.Y, Rotation.Z));
+	}
+
+	// Save the file
+	const FString SaveFilePath = FPaths::Combine(OutputDir, CameraPosesFileName);
+	if (!FFileHelper::SaveStringArrayToFile(
+		Lines,
+		*SaveFilePath,
+		FFileHelper::EEncodingOptions::AutoDetect,
+		&IFileManager::Get(),
+		EFileWrite::FILEWRITE_None))
+	{
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed while saving the file %s"), *FString(__FUNCTION__), *SaveFilePath)
+        return false;
 	}
 
 	return true;

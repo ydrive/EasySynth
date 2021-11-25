@@ -18,15 +18,21 @@ class FCameraPoseExporter
 {
 public:
 	/** Export camera poses from the sequence to a file */
-	bool ExportCameraPoses(ULevelSequence* LevelSequence);
+	bool ExportCameraPoses(ULevelSequence* LevelSequence, const FString& OutputDir);
 
 private:
 	/** Extract camera transforms using the sequencer wrapper */
 	bool ExtractCameraTransforms();
+
+	/** Saves the estracted camera poses to a file */
+	bool SavePosesToFile(const FString& OutputDir);
 
 	/** Sequencer wrapper needed to acces the level sequence properties */
 	FSequencerWrapper SequencerWrapper;
 
 	/** Extracted camera pose transforms */
 	TArray<FTransform> CameraTransforms;
+
+	/** Name of the file to store the camera poses */
+	static const FString CameraPosesFileName;
 };
