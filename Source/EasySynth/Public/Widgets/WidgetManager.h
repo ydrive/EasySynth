@@ -49,8 +49,11 @@ private:
 	/** Callback funcion providing the path to the selected sequencer asset */
 	FString GetSequencerPath() const;
 
+	/** Checks whether renderer terget check box should be checked */
+	ECheckBoxState RenderTargetsCheckedState(const FRendererTargetOptions::TargetType TargetType) const;
+
 	/** Target render images checkbox handling */
-	void OnRenderTargetsChanged(ECheckBoxState NewState, FRendererTargetOptions::TargetType TargetType);
+	void OnRenderTargetsChanged(ECheckBoxState NewState, const FRendererTargetOptions::TargetType TargetType);
 
 	/** Get the currently selected depth range value */
 	float GetDepthRangeValue() const { return SequenceRendererTargets.DepthRangeMeters(); }

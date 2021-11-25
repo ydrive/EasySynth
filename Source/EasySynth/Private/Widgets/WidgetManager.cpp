@@ -135,6 +135,12 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			.Padding(2)
 			[
 				SNew(SCheckBox)
+				.IsChecked_Lambda(
+					[this]()
+					{
+						const bool bChecked = SequenceRendererTargets.ExportCameraPoses();
+						return bChecked ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
+					})
 				.OnCheckStateChanged_Lambda(
 					[this](ECheckBoxState NewState)
 					{ SequenceRendererTargets.SetExportCameraPoses(NewState == ECheckBoxState::Checked); })
@@ -147,6 +153,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			.Padding(2)
 			[
 				SNew(SCheckBox)
+				.IsChecked_Raw(this, &FWidgetManager::RenderTargetsCheckedState, FRendererTargetOptions::COLOR_IMAGE)
 				.OnCheckStateChanged_Raw(
 					this, &FWidgetManager::OnRenderTargetsChanged, FRendererTargetOptions::COLOR_IMAGE)
 				[
@@ -158,6 +165,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			.Padding(2)
 			[
 				SNew(SCheckBox)
+				.IsChecked_Raw(this, &FWidgetManager::RenderTargetsCheckedState, FRendererTargetOptions::DEPTH_IMAGE)
 				.OnCheckStateChanged_Raw(
 					this, &FWidgetManager::OnRenderTargetsChanged, FRendererTargetOptions::DEPTH_IMAGE)
 				[
@@ -169,6 +177,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			.Padding(2)
 			[
 				SNew(SCheckBox)
+				.IsChecked_Raw(this, &FWidgetManager::RenderTargetsCheckedState, FRendererTargetOptions::NORMAL_IMAGE)
 				.OnCheckStateChanged_Raw(
 					this, &FWidgetManager::OnRenderTargetsChanged, FRendererTargetOptions::NORMAL_IMAGE)
 				[
@@ -180,6 +189,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			.Padding(2)
 			[
 				SNew(SCheckBox)
+				.IsChecked_Raw(this, &FWidgetManager::RenderTargetsCheckedState, FRendererTargetOptions::SEMANTIC_IMAGE)
 				.OnCheckStateChanged_Raw(
 					this, &FWidgetManager::OnRenderTargetsChanged, FRendererTargetOptions::SEMANTIC_IMAGE)
 				[
@@ -295,7 +305,15 @@ FString FWidgetManager::GetSequencerPath() const
 	return "";
 }
 
-void FWidgetManager::OnRenderTargetsChanged(ECheckBoxState NewState, FRendererTargetOptions::TargetType TargetType)
+ECheckBoxState FWidgetManager::RenderTargetsCheckedState(const FRendererTargetOptions::TargetType TargetType) const
+{
+	const bool bChecked = SequenceRendererTargets.TargetSelected(TargetType);
+	return bChecked ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
+}
+
+void FWidgetManager::OnRenderTargetsChanged(
+	ECheckBoxState NewState,
+	const FRendererTargetOptions::TargetType TargetType)
 {
 	SequenceRendererTargets.SetSelectedTarget(TargetType, (NewState == ECheckBoxState::Checked));
 }
