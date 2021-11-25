@@ -11,6 +11,8 @@ class ULevelSequence;
 class FCameraPoseExporter
 {
 public:
-    /** Export camera poses from the sequence to a file */
-    bool ExportCameraPoses(ULevelSequence* LevelSequence);
+	/** Export camera poses from the sequence to a file */
+	bool ExportCameraPoses(ULevelSequence* LevelSequence);
+
+private:
 };
