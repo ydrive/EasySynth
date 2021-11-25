@@ -146,9 +146,11 @@ bool FCameraPoseExporter::SavePosesToFile(const FString& OutputDir)
         const FTransform& Transform = CameraTransforms[i];
 		const FVector& Location = Transform.GetLocation();
 		const FQuat& Rotation = Transform.GetRotation();
+		// A constant for converting centimeters to meters
+		const float Conv = 1.0e-2f;
 		Lines.Add(FString::Printf(TEXT("%d, %f, %f, %f, %f, %f, %f, %f"),
 			i,
-			Location.X, Location.Y, Location.Z,
+			Location.X * Conv, Location.Y * Conv, Location.Z * Conv,
 			Rotation.W, Rotation.X, Rotation.Y, Rotation.Z));
 	}
 
