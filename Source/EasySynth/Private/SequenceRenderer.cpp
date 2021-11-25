@@ -178,7 +178,6 @@ void USequenceRenderer::FindNextTarget()
 	// Check if the end is reached
 	if (TargetsQueue.IsEmpty())
 	{
-		// TODO: Check if there is an equal number of rendered images for each target and storead camera poses
 		return BroadcastRenderingFinished(true);
 	}
 
