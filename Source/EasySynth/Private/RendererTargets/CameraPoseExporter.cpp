@@ -143,7 +143,6 @@ bool FCameraPoseExporter::SavePosesToFile(const FString& OutputDir)
 
     for (int i = 0; i < CameraTransforms.Num(); i++)
 	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: pose %d"), *FString(__FUNCTION__), i)
         const FTransform& Transform = CameraTransforms[i];
 		const FVector& Location = Transform.GetLocation();
 		const FQuat& Rotation = Transform.GetRotation();

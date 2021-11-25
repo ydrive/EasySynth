@@ -21,7 +21,8 @@ const FText FWidgetManager::StartRenderingErrorMessageBoxTitle = FText::FromStri
 const FText FWidgetManager::RenderingErrorMessageBoxTitle = FText::FromString(TEXT("Rendering failed"));
 const FText FWidgetManager::SuccessfulRenderingMessageBoxTitle = FText::FromString(TEXT("Successful rendering"));
 
-FWidgetManager::FWidgetManager()
+FWidgetManager::FWidgetManager() :
+	OutputDirectory(FPathUtils::DefaultRenderingOutputPath())
 {
 	// Create the texture style manager and add it to the root to avoid garbage collection
 	TextureStyleManager = NewObject<UTextureStyleManager>();
@@ -319,6 +320,10 @@ FReply FWidgetManager::OnRenderImagesClicked()
 			FText::FromString(*SequenceRenderer->GetErrorMessage()),
 			&StartRenderingErrorMessageBoxTitle);
 	}
+
+	// Save the current widget options
+	SaveWidgetOptionStates();
+
 	return FReply::Handled();
 }
 
@@ -367,19 +372,8 @@ void FWidgetManager::LoadWidgetOptionStates()
 			EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
 		check(WidgetStateAsset)
 
-		// Set defaults
-		WidgetStateAsset->LevelSequence = FAssetData();
-		WidgetStateAsset->bCameraPosesSelected = false;
-		WidgetStateAsset->bColorImagesSelected = false;
-		WidgetStateAsset->bDepthImagesSelected = false;
-		WidgetStateAsset->bNormalImagesSelected = false;
-		WidgetStateAsset->bSematicImagesSelected = false;
-		WidgetStateAsset->DepthRange = SequenceRendererTargets.DepthRangeMeters();
-		WidgetStateAsset->OutputDirectory = FPathUtils::DefaultRenderingOutputPath();
-
-		// Save the new asset
-		const bool bOnlyIfIsDirty = false;
-		UEditorAssetLibrary::SaveLoadedAsset(WidgetStateAsset, bOnlyIfIsDirty);
+		// Set defaults and save
+		SaveWidgetOptionStates(WidgetStateAsset);
 	}
 
 	// Initialize the widget members using loaded options
@@ -393,18 +387,31 @@ void FWidgetManager::LoadWidgetOptionStates()
 	OutputDirectory = WidgetStateAsset->OutputDirectory;
 }
 
-void FWidgetManager::SaveWidgetOptionStates()
+void FWidgetManager::SaveWidgetOptionStates(UWidgetStateAsset* WidgetStateAsset)
 {
-	// Get the asset
-	UWidgetStateAsset* WidgetStateAsset =
-		LoadObject<UWidgetStateAsset>(nullptr, *FPathUtils::WidgetStateAssetPath());
+	// Get the asset if not provided
 	if (WidgetStateAsset == nullptr)
 	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Widget state asset expected but not found, cannot save the widget state"),
-			*FString(__FUNCTION__));
-		return;
+		WidgetStateAsset = LoadObject<UWidgetStateAsset>(nullptr, *FPathUtils::WidgetStateAssetPath());
+		if (WidgetStateAsset == nullptr)
+		{
+			UE_LOG(LogEasySynth, Error, TEXT("%s: Widget state asset expected but not found, cannot save the widget state"),
+				*FString(__FUNCTION__));
+			return;
+		}
 	}
 
-	// Update asset values and save
-	// TODO:
+	// Update asset values
+	WidgetStateAsset->LevelSequence = LevelSequenceAssetData;
+	WidgetStateAsset->bCameraPosesSelected = SequenceRendererTargets.ExportCameraPoses();
+	WidgetStateAsset->bColorImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::COLOR_IMAGE);
+	WidgetStateAsset->bDepthImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::DEPTH_IMAGE);
+	WidgetStateAsset->bNormalImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::NORMAL_IMAGE);
+	WidgetStateAsset->bSematicImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::SEMANTIC_IMAGE);
+	WidgetStateAsset->DepthRange = SequenceRendererTargets.DepthRangeMeters();
+	WidgetStateAsset->OutputDirectory = OutputDirectory;
+
+	// Save the asset
+	const bool bOnlyIfIsDirty = false;
+	UEditorAssetLibrary::SaveLoadedAsset(WidgetStateAsset, bOnlyIfIsDirty);
 }

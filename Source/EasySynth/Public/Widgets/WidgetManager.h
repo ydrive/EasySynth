@@ -12,6 +12,7 @@
 class ULevelSequence;
 
 class UTextureStyleManager;
+class UWidgetStateAsset;
 
 
 /**
@@ -77,7 +78,7 @@ private:
 	void LoadWidgetOptionStates();
 
 	/** Save widget options states */
-	void SaveWidgetOptionStates();
+	void SaveWidgetOptionStates(UWidgetStateAsset* WidgetStateAsset = nullptr);
 
 	/** Manager that handles semantic class widget */
 	FSemanticClassesWidgetManager SemanticsWidget;
