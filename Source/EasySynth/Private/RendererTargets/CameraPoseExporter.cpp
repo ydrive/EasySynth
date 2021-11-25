@@ -74,6 +74,13 @@ bool FCameraPoseExporter::ExportCameraPoses(ULevelSequence* LevelSequence)
 		return false;
 	}
 
+	// FPS
+	FFrameRate DisplayRate = MovieScene->GetDisplayRate();
+	// TicksPS
+	FFrameRate TickResolutions = MovieScene->GetTickResolution();
+	// TPF
+	const int TicksPerFrame = TickResolutions.AsDecimal() / DisplayRate.AsDecimal();
+
 	// Get the camera from each section
 	TArray<FTransform> CameraTransforms;
 	for (UMovieSceneSection* MovieSceneSection : MovieSceneSections)
@@ -123,34 +130,51 @@ bool FCameraPoseExporter::ExportCameraPoses(ULevelSequence* LevelSequence)
 		// Get camera positions
 		UE::MovieScene::FSystemInterrogator Interrogator;
 
-		TGuardValue<UE::MovieScene::FEntityManager*> DebugVizGuard(
-            UE::MovieScene::GEntityManagerForDebuggingVisualizers, &Interrogator.GetLinker()->EntityManager);
+		UE_LOG(LogEasySynth, Error, TEXT("%s: %d %d"), *FString(__FUNCTION__),
+			CutSection->GetTrueRange().GetLowerBoundValue().Value, CutSection->GetTrueRange().GetUpperBoundValue().Value)
 
-		Interrogator.ImportTrack(CameraTransformTrack, UE::MovieScene::FInterrogationChannel::Default());
+        for (
+			FFrameNumber FrameNumber = CutSection->GetTrueRange().GetLowerBoundValue();
+			FrameNumber < CutSection->GetTrueRange().GetUpperBoundValue();
+            FrameNumber += TicksPerFrame)
+        {
+            Interrogator.Reset();
+            TGuardValue<UE::MovieScene::FEntityManager*> DebugVizGuard(
+                UE::MovieScene::GEntityManagerForDebuggingVisualizers, &Interrogator.GetLinker()->EntityManager);
+		    Interrogator.ImportTrack(CameraTransformTrack, UE::MovieScene::FInterrogationChannel::Default());
 
-		Interrogator.AddInterrogation(CutSection->GetTrueRange().GetLowerBoundValue());
+            // Add interrogations
+            if (Interrogator.AddInterrogation(FrameNumber) == INDEX_NONE)
+            {
+                UE_LOG(LogEasySynth, Error, TEXT("%s: Adding interrogation failed"), *FString(__FUNCTION__))
+                return false;
+            }
+		    Interrogator.Update();
 
-		Interrogator.Update();
+            TArray<FTransform> TempTransforms;
+            Interrogator.QueryWorldSpaceTransforms(UE::MovieScene::FInterrogationChannel::Default(), TempTransforms);
 
-		TArray<FTransform> TempTransforms;
-		Interrogator.QueryWorldSpaceTransforms(UE::MovieScene::FInterrogationChannel::Default(), TempTransforms);
+            if (TempTransforms.Num() == 0)
+            {
+                UE_LOG(LogEasySynth, Error, TEXT("%s: No camera transforms found"), *FString(__FUNCTION__))
+                return false;
+            }
 
-		if (TempTransforms.Num() == 0)
-		{
-			UE_LOG(LogEasySynth, Error, TEXT("%s: No camera transforms found"), *FString(__FUNCTION__))
-			return false;
-		}
-
-		UE_LOG(LogEasySynth, Log, TEXT("%s: Transform found %f %f %f"), *FString(__FUNCTION__),
-			TempTransforms[0].GetLocation()[0], TempTransforms[0].GetLocation()[1], TempTransforms[0].GetLocation()[2])
-
-		CameraTransforms.Append(TempTransforms);
+		    CameraTransforms.Append(TempTransforms);
+        }
+		const int Num = CameraTransforms.Num() - 1;
+		UE_LOG(LogEasySynth, Log, TEXT("%s: %d between %d %d Transform found %f %f %f - %f %f %f"), *FString(__FUNCTION__),
+			Num + 1, CutSection->GetTrueRange().GetLowerBoundValue().Value, CutSection->GetTrueRange().GetUpperBoundValue().Value,
+			CameraTransforms[0].GetLocation()[0], CameraTransforms[0].GetLocation()[1], CameraTransforms[0].GetLocation()[2],
+			CameraTransforms[Num].GetLocation()[0], CameraTransforms[Num].GetLocation()[1], CameraTransforms[Num].GetLocation()[2])
 	}
 
 	// Store to file
-	for (const FTransform& Transform : CameraTransforms)
+    for (int i = 0; i < CameraTransforms.Num(); i++)
 	{
-		// TODO:
+        const FTransform& Transform = CameraTransforms[i];
+		UE_LOG(LogEasySynth, Log, TEXT("%s: Transform found: %d  %f %f %f"), *FString(__FUNCTION__),
+			i, Transform.GetLocation()[0], Transform.GetLocation()[1], Transform.GetLocation()[2])
 	}
 
 	return true;
