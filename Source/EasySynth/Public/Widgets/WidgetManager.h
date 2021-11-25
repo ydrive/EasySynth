@@ -73,6 +73,12 @@ private:
 	 * Local members
 	*/
 
+	/** Load widget options states on startup */
+	void LoadWidgetOptionStates();
+
+	/** Save widget options states */
+	void SaveWidgetOptionStates();
+
 	/** Manager that handles semantic class widget */
 	FSemanticClassesWidgetManager SemanticsWidget;
 

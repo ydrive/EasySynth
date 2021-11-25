@@ -11,6 +11,8 @@
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Text/STextBlock.h"
 
+#include "Widgets/WidgetStateAsset.h"
+
 
 const FString FWidgetManager::TextureStyleColorName(TEXT("Original color textures"));
 const FString FWidgetManager::TextureStyleSemanticName(TEXT("Semantic color textures"));
@@ -47,10 +49,6 @@ FWidgetManager::FWidgetManager()
 
 	// Initialize SemanticClassesWidgetManager
 	SemanticsWidget.SetTextureStyleManager(TextureStyleManager);
-
-	// Define the default output directory
-	// TODO: remember the last one used
-	OutputDirectory = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("RenderingOutput"));
 }
 
 TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
@@ -58,6 +56,10 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 	// Bind events now that the editor has finished starting up
 	TextureStyleManager->BindEvents();
 
+	// Load saved optsion states now, also to make sure editor is ready
+	LoadWidgetOptionStates();
+
+	// Generate the UI
 	return SNew(SDockTab)
 		.TabRole(ETabRole::NomadTab)
 		.ContentPadding(2)
@@ -336,4 +338,73 @@ void FWidgetManager::OnRenderingFinished(bool bSuccess)
 			FText::FromString(*SequenceRenderer->GetErrorMessage()),
 			&RenderingErrorMessageBoxTitle);
 	}
+}
+
+void FWidgetManager::LoadWidgetOptionStates()
+{
+	// Try to load
+	UWidgetStateAsset* WidgetStateAsset =
+		LoadObject<UWidgetStateAsset>(nullptr, *FPathUtils::WidgetStateAssetPath());
+
+	// Initialize with defaults if not found
+	if (WidgetStateAsset == nullptr)
+	{
+		UE_LOG(LogEasySynth, Log, TEXT("%s: Texture mapping asset not found, creating a new one"),
+			*FString(__FUNCTION__));
+
+		// Register the plugin directroy with the editor
+		FAssetRegistryModule& AssetRegistryModule =
+			FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+		AssetRegistryModule.Get().AddPath(FPathUtils::ProjectPluginContentDir());
+
+		// Create and populate the asset
+		UPackage *WidgetStatePackage = CreatePackage(*FPathUtils::WidgetStateAssetPath());
+		check(WidgetStatePackage)
+		WidgetStateAsset = NewObject<UWidgetStateAsset>(
+			WidgetStatePackage,
+			UWidgetStateAsset::StaticClass(),
+			*FPathUtils::WidgetStateAssetName,
+			EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
+		check(WidgetStateAsset)
+
+		// Set defaults
+		WidgetStateAsset->LevelSequence = FAssetData();
+		WidgetStateAsset->bCameraPosesSelected = false;
+		WidgetStateAsset->bColorImagesSelected = false;
+		WidgetStateAsset->bDepthImagesSelected = false;
+		WidgetStateAsset->bNormalImagesSelected = false;
+		WidgetStateAsset->bSematicImagesSelected = false;
+		WidgetStateAsset->DepthRange = SequenceRendererTargets.DepthRangeMeters();
+		WidgetStateAsset->OutputDirectory = FPathUtils::DefaultRenderingOutputPath();
+
+		// Save the new asset
+		const bool bOnlyIfIsDirty = false;
+		UEditorAssetLibrary::SaveLoadedAsset(WidgetStateAsset, bOnlyIfIsDirty);
+	}
+
+	// Initialize the widget members using loaded options
+	LevelSequenceAssetData = WidgetStateAsset->LevelSequence;
+	SequenceRendererTargets.SetExportCameraPoses(WidgetStateAsset->bCameraPosesSelected);
+	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::COLOR_IMAGE, WidgetStateAsset->bColorImagesSelected);
+	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::DEPTH_IMAGE, WidgetStateAsset->bDepthImagesSelected);
+	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::NORMAL_IMAGE, WidgetStateAsset->bNormalImagesSelected);
+	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::SEMANTIC_IMAGE, WidgetStateAsset->bSematicImagesSelected);
+	SequenceRendererTargets.SetDepthRangeMeters(WidgetStateAsset->DepthRange);
+	OutputDirectory = WidgetStateAsset->OutputDirectory;
+}
+
+void FWidgetManager::SaveWidgetOptionStates()
+{
+	// Get the asset
+	UWidgetStateAsset* WidgetStateAsset =
+		LoadObject<UWidgetStateAsset>(nullptr, *FPathUtils::WidgetStateAssetPath());
+	if (WidgetStateAsset == nullptr)
+	{
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Widget state asset expected but not found, cannot save the widget state"),
+			*FString(__FUNCTION__));
+		return;
+	}
+
+	// Update asset values and save
+	// TODO:
 }

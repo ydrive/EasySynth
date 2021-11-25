@@ -32,7 +32,4 @@ private:
 
 	/** Extracted camera pose transforms */
 	TArray<FTransform> CameraTransforms;
-
-	/** Name of the file to store the camera poses */
-	static const FString CameraPosesFileName;
 };

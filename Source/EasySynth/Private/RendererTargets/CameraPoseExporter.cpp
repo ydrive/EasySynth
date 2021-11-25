@@ -16,8 +16,6 @@
 #include "Tracks/MovieScene3DTransformTrack.h"
 
 
-const FString FCameraPoseExporter::CameraPosesFileName(TEXT("CameraPoses.csv"));
-
 bool FCameraPoseExporter::ExportCameraPoses(ULevelSequence* LevelSequence, const FString& OutputDir)
 {
 	// Open the received level sequence inside the sequencer wrapper
@@ -156,7 +154,7 @@ bool FCameraPoseExporter::SavePosesToFile(const FString& OutputDir)
 	}
 
 	// Save the file
-	const FString SaveFilePath = FPaths::Combine(OutputDir, CameraPosesFileName);
+	const FString SaveFilePath = FPathUtils::CameraPosesFilePath(OutputDir);
 	if (!FFileHelper::SaveStringArrayToFile(
 		Lines,
 		*SaveFilePath,
