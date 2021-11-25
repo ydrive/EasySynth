@@ -68,13 +68,13 @@ If requested, camera poses are saved inside the same output directory as rendere
 
 Output is the `CameraPoses.csv` file, in which the first line contains column names and the rest contain camera poses for each frame. Columns are the following:
 
-|Column |Name |Description          |
-|-------|-----|---------------------|
-|1      |id   |0-indexed frame id   |
-|2      |tx   |X position in meters |
-|3      |ty   |Y position in meters |
-|4      |tz   |Z position in meters |
-|5      |qw   |Rotation quaternion W|
-|6      |qx   |Rotation quaternion X|
-|7      |qy   |Rotation quaternion Y|
-|8      |qz   |Rotation quaternion Z|
+| Column | Name | Description           |
+| ------ | ---- | --------------------- |
+| 1      | id   | 0-indexed frame id    |
+| 2      | tx   | X position in meters  |
+| 3      | ty   | Y position in meters  |
+| 4      | tz   | Z position in meters  |
+| 5      | qw   | Rotation quaternion W |
+| 6      | qx   | Rotation quaternion X |
+| 7      | qy   | Rotation quaternion Y |
+| 8      | qz   | Rotation quaternion Z |
