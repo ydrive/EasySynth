@@ -17,104 +17,72 @@
 
 bool FCameraPoseExporter::ExportCameraPoses(ULevelSequence* LevelSequence)
 {
-    UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
-
-	UMovieScene* MovieScene = LevelSequence->GetMovieScene();
-	if (MovieScene == nullptr)
+	// Open the received level sequence inside the sequencer wrapper
+	if (!SequencerWrapper.OpenSequence(LevelSequence))
 	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not get the movie scene from the level sequence"),
-			*FString(__FUNCTION__))
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Sequencer wrapper opening failed"), *FString(__FUNCTION__))
 		return false;
 	}
 
-	UMovieSceneTrack* CameraCutTrack = MovieScene->GetCameraCutTrack();
-	if (CameraCutTrack == nullptr)
+	// Extract the camera pose transforms
+	if (!ExtractCameraTransforms())
 	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not get the camera cut track from the movie scene"),
-			*FString(__FUNCTION__))
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Camera pose extaction failed"), *FString(__FUNCTION__))
 		return false;
 	}
 
-	TArray<UMovieSceneSection*> MovieSceneSections = CameraCutTrack->GetAllSections();
-	if (MovieSceneSections.Num() == 0)
+	// Store to file
+    for (int i = 0; i < CameraTransforms.Num(); i++)
 	{
-		UE_LOG(LogEasySynth, Warning, TEXT("%s: No sections inside the camera cut track"), *FString(__FUNCTION__))
-		return false;
+        const FTransform& Transform = CameraTransforms[i];
+		UE_LOG(LogEasySynth, Log, TEXT("%s: Transform found: %d  %f %f %f"), *FString(__FUNCTION__),
+			i, Transform.GetLocation()[0], Transform.GetLocation()[1], Transform.GetLocation()[2])
 	}
 
-	// Open sequencer editor for the level sequence asset
-	TArray<UObject*> Assets;
-	Assets.Add(LevelSequence);
-	if (!GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAssets(Assets))
-	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not open the level sequence editor"), *FString(__FUNCTION__))
-		return false;
-	}
+	return true;
+}
 
-	// Get the LevelSequenceEditor
-	IAssetEditorInstance* AssetEditor =
-		GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->FindEditorForAsset(LevelSequence, false);
-	if (AssetEditor == nullptr)
-	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not find the asset editor"), *FString(__FUNCTION__))
-		return false;
-	}
-	ILevelSequenceEditorToolkit* LevelSequenceEditor = static_cast<ILevelSequenceEditorToolkit*>(AssetEditor);
-	if (LevelSequenceEditor == nullptr)
-	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not find the level sequence editor"), *FString(__FUNCTION__))
-		return false;
-	}
+bool FCameraPoseExporter::ExtractCameraTransforms()
+{
+	// Get level sequence fps
+	const FFrameRate DisplayRate = SequencerWrapper.GetMovieScene()->GetDisplayRate();
 
-	// Get the Sequencer
-	TWeakPtr<ISequencer> WeakSequencer = LevelSequenceEditor ? LevelSequenceEditor->GetSequencer() : nullptr;
-	if (!WeakSequencer.IsValid())
-	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not get the sequencer"), *FString(__FUNCTION__))
-		return false;
-	}
+	// Get level sequence ticks per second
+	// Engine likes to update much more often than the video frame rate,
+	// so this is needed to calculate engine ticks that corespond to frames
+	const FFrameRate TickResolutions = SequencerWrapper.GetMovieScene()->GetTickResolution();
 
-	// FPS
-	FFrameRate DisplayRate = MovieScene->GetDisplayRate();
-	// TicksPS
-	FFrameRate TickResolutions = MovieScene->GetTickResolution();
-	// TPF
+	// Calculate ticks per frame
 	const int TicksPerFrame = TickResolutions.AsDecimal() / DisplayRate.AsDecimal();
 
-	// Get the camera from each section
-	TArray<FTransform> CameraTransforms;
-	for (UMovieSceneSection* MovieSceneSection : MovieSceneSections)
+	// Get the camera poses from each cut section
+	TArray<UMovieSceneCameraCutSection*>& CutSections = SequencerWrapper.GetMovieSceneCutSections();
+	for (auto CutSection : CutSections)
 	{
-		// Convert UMovieSceneSection to UMovieSceneCameraCutSection
-		auto CutSection = Cast<UMovieSceneCameraCutSection>(MovieSceneSection);
-		if (CutSection == nullptr)
-		{
-			UE_LOG(LogEasySynth, Error, TEXT("%s: Could not convert MovieSceneSection into a CutSection"),
-				*FString(__FUNCTION__));
-			return false;
-		}
-
+		// Get the current cut section camera binding id
 		const FMovieSceneObjectBindingID& CameraBindingID = CutSection->GetCameraBindingID();
 
 		// Get the camera componenet
-		UCameraComponent* Camera =
-			CutSection->GetFirstCamera(*WeakSequencer.Pin(), WeakSequencer.Pin()->GetFocusedTemplateID());
+		UCameraComponent* Camera = CutSection->GetFirstCamera(
+			*SequencerWrapper.GetSequencer(),
+			SequencerWrapper.GetSequencer()->GetFocusedTemplateID());
 		if (Camera == nullptr)
 		{
 			UE_LOG(LogEasySynth, Error, TEXT("%s: Cut section camera component is null"), *FString(__FUNCTION__))
 			return false;
 		}
 
-		// Find the transform track for our bound camera.
+		// Find the track inside the level sequence that coresponds to the
+		// pose transformation of the camera
 		UMovieScene3DTransformTrack* CameraTransformTrack = nullptr;
-		for (const FMovieSceneBinding& Binding : MovieScene->GetBindings())
+		for (const FMovieSceneBinding& Binding : SequencerWrapper.GetMovieScene()->GetBindings())
 		{
 			if (Binding.GetObjectGuid() == CameraBindingID.GetGuid())
 			{
 				for (UMovieSceneTrack* Track : Binding.GetTracks())
 				{
 					CameraTransformTrack = Cast<UMovieScene3DTransformTrack>(Track);
-					if (CameraTransformTrack)
+					if (CameraTransformTrack != nullptr)
 					{
 						break;
 					}
@@ -127,33 +95,33 @@ bool FCameraPoseExporter::ExportCameraPoses(ULevelSequence* LevelSequence)
 			return false;
 		}
 
-		// Get camera positions
+		// Interrogator object that queries the transformation track for camera poses
 		UE::MovieScene::FSystemInterrogator Interrogator;
 
-		UE_LOG(LogEasySynth, Error, TEXT("%s: %d %d"), *FString(__FUNCTION__),
-			CutSection->GetTrueRange().GetLowerBoundValue().Value, CutSection->GetTrueRange().GetUpperBoundValue().Value)
-
-        for (
-			FFrameNumber FrameNumber = CutSection->GetTrueRange().GetLowerBoundValue();
-			FrameNumber < CutSection->GetTrueRange().GetUpperBoundValue();
-            FrameNumber += TicksPerFrame)
+		// Inclusive lower bound of the movie scene ticks that belong to this cut section
+		FFrameNumber StartTickNumber = CutSection->GetTrueRange().GetLowerBoundValue();
+		// Exclusive upper bound of the movie scene ticks that belong to this cut section
+		FFrameNumber EndTickNumber = CutSection->GetTrueRange().GetLowerBoundValue();
+        for (FFrameNumber TickNumber = StartTickNumber; TickNumber < EndTickNumber; TickNumber += TicksPerFrame)
         {
+			// Reinitialize the interrogator for each frame
             Interrogator.Reset();
             TGuardValue<UE::MovieScene::FEntityManager*> DebugVizGuard(
                 UE::MovieScene::GEntityManagerForDebuggingVisualizers, &Interrogator.GetLinker()->EntityManager);
 		    Interrogator.ImportTrack(CameraTransformTrack, UE::MovieScene::FInterrogationChannel::Default());
 
-            // Add interrogations
-            if (Interrogator.AddInterrogation(FrameNumber) == INDEX_NONE)
+            // Add frame interrogation
+            if (Interrogator.AddInterrogation(TickNumber) == INDEX_NONE)
             {
                 UE_LOG(LogEasySynth, Error, TEXT("%s: Adding interrogation failed"), *FString(__FUNCTION__))
                 return false;
             }
 		    Interrogator.Update();
 
+			// Get the camera pose transform for the frame
+			// Engine crashes in case multiple interrogations are added at once
             TArray<FTransform> TempTransforms;
             Interrogator.QueryWorldSpaceTransforms(UE::MovieScene::FInterrogationChannel::Default(), TempTransforms);
-
             if (TempTransforms.Num() == 0)
             {
                 UE_LOG(LogEasySynth, Error, TEXT("%s: No camera transforms found"), *FString(__FUNCTION__))
@@ -162,19 +130,6 @@ bool FCameraPoseExporter::ExportCameraPoses(ULevelSequence* LevelSequence)
 
 		    CameraTransforms.Append(TempTransforms);
         }
-		const int Num = CameraTransforms.Num() - 1;
-		UE_LOG(LogEasySynth, Log, TEXT("%s: %d between %d %d Transform found %f %f %f - %f %f %f"), *FString(__FUNCTION__),
-			Num + 1, CutSection->GetTrueRange().GetLowerBoundValue().Value, CutSection->GetTrueRange().GetUpperBoundValue().Value,
-			CameraTransforms[0].GetLocation()[0], CameraTransforms[0].GetLocation()[1], CameraTransforms[0].GetLocation()[2],
-			CameraTransforms[Num].GetLocation()[0], CameraTransforms[Num].GetLocation()[1], CameraTransforms[Num].GetLocation()[2])
-	}
-
-	// Store to file
-    for (int i = 0; i < CameraTransforms.Num(); i++)
-	{
-        const FTransform& Transform = CameraTransforms[i];
-		UE_LOG(LogEasySynth, Log, TEXT("%s: Transform found: %d  %f %f %f"), *FString(__FUNCTION__),
-			i, Transform.GetLocation()[0], Transform.GetLocation()[1], Transform.GetLocation()[2])
 	}
 
 	return true;

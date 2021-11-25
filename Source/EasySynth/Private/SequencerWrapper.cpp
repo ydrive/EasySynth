@@ -39,7 +39,7 @@ bool FSequencerWrapper::OpenSequence(ULevelSequence* LevelSequence)
 		return false;
 	}
 
-	// Convert camera track sections to camera cut sections
+	// Convert camera track sections to cut sections
 	for (UMovieSceneSection* MovieSceneSection : MovieSceneSections)
 	{
 		auto CutSection = Cast<UMovieSceneCameraCutSection>(MovieSceneSection);

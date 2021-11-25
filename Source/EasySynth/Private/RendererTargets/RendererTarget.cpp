@@ -20,7 +20,7 @@ TArray<UCameraComponent*> FRendererTarget::GetCameras(ULevelSequence* LevelSeque
 	FSequencerWrapper SequencerWrapper;
 	if (!SequencerWrapper.OpenSequence(LevelSequence))
 	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Sequence wrapper opening failed"), *FString(__FUNCTION__))
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Sequencer wrapper opening failed"), *FString(__FUNCTION__))
 		return Cameras;
 	}
 

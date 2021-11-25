@@ -5,6 +5,7 @@
 
 #include "CoreMinimal.h"
 
+class ISequencer;
 class ULevelSequence;
 class UMovieScene;
 class UMovieSceneCameraCutSection;
@@ -18,7 +19,7 @@ class UMovieSceneTrack;
  * It should be used locally during an action that requires the sequencer,
  * as it only holds weak references to its contents.
 */
-class FSequenceWrapper
+class FSequencerWrapper
 {
 public:
 	/** Opens the requested sequence */
