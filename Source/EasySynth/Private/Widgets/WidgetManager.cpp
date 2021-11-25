@@ -395,7 +395,7 @@ void FWidgetManager::LoadWidgetOptionStates()
 	}
 
 	// Initialize the widget members using loaded options
-	LevelSequenceAssetData = WidgetStateAsset->LevelSequence;
+	LevelSequenceAssetData = FAssetData(LoadObject<ULevelSequence>(nullptr, *WidgetStateAsset->LevelSequenceAssetPath));
 	SequenceRendererTargets.SetExportCameraPoses(WidgetStateAsset->bCameraPosesSelected);
 	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::COLOR_IMAGE, WidgetStateAsset->bColorImagesSelected);
 	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::DEPTH_IMAGE, WidgetStateAsset->bDepthImagesSelected);
@@ -420,7 +420,7 @@ void FWidgetManager::SaveWidgetOptionStates(UWidgetStateAsset* WidgetStateAsset)
 	}
 
 	// Update asset values
-	WidgetStateAsset->LevelSequence = LevelSequenceAssetData;
+	WidgetStateAsset->LevelSequenceAssetPath = LevelSequenceAssetData.GetFullName();
 	WidgetStateAsset->bCameraPosesSelected = SequenceRendererTargets.ExportCameraPoses();
 	WidgetStateAsset->bColorImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::COLOR_IMAGE);
 	WidgetStateAsset->bDepthImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::DEPTH_IMAGE);

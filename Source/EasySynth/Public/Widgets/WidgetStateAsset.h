@@ -22,7 +22,7 @@ class EASYSYNTH_API UWidgetStateAsset : public UDataAsset
 public:
 	/** Selected level sequence asset */
 	UPROPERTY(EditAnywhere, Category = "Level Sequence")
-	FAssetData LevelSequence;
+	FString LevelSequenceAssetPath;
 
 	/** Whether camera poses are selected */
 	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
