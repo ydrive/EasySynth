@@ -11,7 +11,7 @@
 #include "Subsystems/AssetEditorSubsystem.h"
 
 
-bool FSequenceWrapper::OpenSequence(ULevelSequence* LevelSequence)
+bool FSequencerWrapper::OpenSequence(ULevelSequence* LevelSequence)
 {
 	// Get the root level sequence movie scene
 	MovieScene = LevelSequence->GetMovieScene();
@@ -87,4 +87,14 @@ bool FSequenceWrapper::OpenSequence(ULevelSequence* LevelSequence)
 	}
 
 	return true;
+}
+
+TArray<UMovieSceneCameraCutSection*>& FSequencerWrapper::GetMovieSceneCutSections()
+{
+	check(MovieSceneCutSections.Num() > 0)
+	for (auto CutSection : MovieSceneCutSections)
+	{
+		check(CutSection)
+	}
+	return MovieSceneCutSections;
 }

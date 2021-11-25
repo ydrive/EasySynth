@@ -20,6 +20,7 @@ class UMovieSceneTrack;
 */
 class FSequenceWrapper
 {
+public:
 	/** Opens the requested sequence */
 	bool OpenSequence(ULevelSequence* LevelSequence);
 
@@ -38,10 +39,7 @@ class FSequenceWrapper
 	}
 
 	/** Access the movie scene cut sections */
-	TArray<UMovieSceneCameraCutSection*>& GetMovieSceneCutSections()
-	{
-		return MovieSceneCutSections;
-	}
+	TArray<UMovieSceneCameraCutSection*>& GetMovieSceneCutSections();
 
 	/** Access the sequencer */
 	ISequencer* GetSequencer()
