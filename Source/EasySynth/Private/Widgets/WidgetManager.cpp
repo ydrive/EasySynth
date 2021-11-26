@@ -229,7 +229,17 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				.MinValue(1)
 				.MaxValue(10000)
 			]
-			// TODO: Displat aspect ratio
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(STextBlock)
+				.Text_Lambda(
+					[this]()
+					{
+						return FText::FromString(FString::Printf(
+							TEXT("Output aspect ratio: %f"), 1.0f * OutputImageResolution.X / OutputImageResolution.Y));
+					})
+			]
 			+SScrollBox::Slot()
 			.Padding(2)
 			[
