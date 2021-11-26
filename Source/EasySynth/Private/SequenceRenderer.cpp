@@ -90,6 +90,8 @@ USequenceRenderer::USequenceRenderer() :
 bool USequenceRenderer::RenderSequence(
 	ULevelSequence* LevelSequence,
 	const FRendererTargetOptions RenderingTargets,
+	const int OutputWidth,
+	const int OutputHeight,
 	const FString& OutputDirectory)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
@@ -125,7 +127,9 @@ bool USequenceRenderer::RenderSequence(
 		return false;
 	}
 
-	// Store the output directory
+	// Store parameters
+	OutputImageWidth = OutputWidth;
+	OutputImageHeight = OutputHeight
 	RenderingDirectory = OutputDirectory;
 
 	// Export camera poses if requested
@@ -271,6 +275,7 @@ bool USequenceRenderer::PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipel
 	}
 	// Update the image output directory
 	OutputSetting->OutputDirectory.Path = FPaths::Combine(RenderingDirectory, CurrentTarget->Name());
+	// TODO: Set output resolution
 
 	// Get the queue of sequences to be renderer
 	UMoviePipelineQueue* MoviePipelineQueue = MoviePipelineQueueSubsystem->GetQueue();
