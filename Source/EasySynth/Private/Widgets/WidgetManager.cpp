@@ -16,12 +16,16 @@
 
 const FString FWidgetManager::TextureStyleColorName(TEXT("Original color textures"));
 const FString FWidgetManager::TextureStyleSemanticName(TEXT("Semantic color textures"));
+const int FWidgetManager::DefaultOutputImageWidth(1920);
+const int FWidgetManager::DefaultOutputImageHeight(1080);
 
 const FText FWidgetManager::StartRenderingErrorMessageBoxTitle = FText::FromString(TEXT("Could not start rendering"));
 const FText FWidgetManager::RenderingErrorMessageBoxTitle = FText::FromString(TEXT("Rendering failed"));
 const FText FWidgetManager::SuccessfulRenderingMessageBoxTitle = FText::FromString(TEXT("Successful rendering"));
 
 FWidgetManager::FWidgetManager() :
+	OutputImageWidth(DefaultOutputImageWidth),
+	OutputImageHeight(DefaultOutputImageHeight),
 	OutputDirectory(FPathUtils::DefaultRenderingOutputPath())
 {
 	// Create the texture style manager and add it to the root to avoid garbage collection
@@ -201,14 +205,45 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			.Padding(2)
 			[
 				SNew(STextBlock)
+				.Text(FText::FromString("Output image width [px]"))
+			]
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(SSpinBox<int>)
+				.Value_Lambda([this](){ return OutputImageWidth; })
+				.OnValueChanged_Lambda([this](const int NewValue){ OutputImageWidth = NewValue; })
+				.MinValue(1)
+				.MaxValue(10000)
+			]
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString("Output image height [px]"))
+			]
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(SSpinBox<int>)
+				.Value_Lambda([this](){ return OutputImageHeight; })
+				.OnValueChanged_Lambda([this](const int NewValue){ OutputImageHeight = NewValue; })
+				.MinValue(1)
+				.MaxValue(10000)
+			]
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(STextBlock)
 				.Text(FText::FromString("Depth range [m]"))
 			]
 			+SScrollBox::Slot()
 			.Padding(2)
 			[
 				SNew(SSpinBox<float>)
-				.Value_Raw(this, &FWidgetManager::GetDepthRangeValue)
-				.OnValueChanged_Raw(this, &FWidgetManager::OnDepthRangeValueChanged)
+				.Value_Lambda([this](){ return SequenceRendererTargets.DepthRangeMeters(); })
+				.OnValueChanged_Lambda(
+					[this](const float NewValue){ SequenceRendererTargets.SetDepthRangeMeters(NewValue); })
 				.MinValue(0.01f)
 				.MaxValue(10000.0f)
 			]
@@ -401,6 +436,8 @@ void FWidgetManager::LoadWidgetOptionStates()
 	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::DEPTH_IMAGE, WidgetStateAsset->bDepthImagesSelected);
 	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::NORMAL_IMAGE, WidgetStateAsset->bNormalImagesSelected);
 	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::SEMANTIC_IMAGE, WidgetStateAsset->bSematicImagesSelected);
+	OutputImageWidth = WidgetStateAsset->OutputImageWidth;
+	OutputImageHeight = WidgetStateAsset->OutputImageHeight;
 	SequenceRendererTargets.SetDepthRangeMeters(WidgetStateAsset->DepthRange);
 	OutputDirectory = WidgetStateAsset->OutputDirectory;
 }
@@ -426,6 +463,8 @@ void FWidgetManager::SaveWidgetOptionStates(UWidgetStateAsset* WidgetStateAsset)
 	WidgetStateAsset->bDepthImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::DEPTH_IMAGE);
 	WidgetStateAsset->bNormalImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::NORMAL_IMAGE);
 	WidgetStateAsset->bSematicImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::SEMANTIC_IMAGE);
+	WidgetStateAsset->OutputImageWidth = OutputImageWidth;
+	WidgetStateAsset->OutputImageHeight = OutputImageHeight;
 	WidgetStateAsset->DepthRange = SequenceRendererTargets.DepthRangeMeters();
 	WidgetStateAsset->OutputDirectory = OutputDirectory;
 

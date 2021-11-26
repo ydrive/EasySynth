@@ -55,12 +55,6 @@ private:
 	/** Target render images checkbox handling */
 	void OnRenderTargetsChanged(ECheckBoxState NewState, const FRendererTargetOptions::TargetType TargetType);
 
-	/** Get the currently selected depth range value */
-	float GetDepthRangeValue() const { return SequenceRendererTargets.DepthRangeMeters(); }
-
-	/** Callback function handling the update of the depth range value */
-	void OnDepthRangeValueChanged(float NewValue) { SequenceRendererTargets.SetDepthRangeMeters(NewValue); }
-
 	/** Callback function handling the update of the output directory */
 	void OnOutputDirectoryChanged(const FString& Directory) { OutputDirectory = Directory; }
 
@@ -101,6 +95,12 @@ private:
 	/** Widget's copy of the chosen renderer targets set */
 	FRendererTargetOptions SequenceRendererTargets;
 
+	/** Output image width */
+	int OutputImageWidth;
+
+	/** Output image height */
+	int OutputImageHeight;
+
 	/** Currently selected output directory */
 	FString OutputDirectory;
 
@@ -121,6 +121,12 @@ private:
 
 	/** The name of the texture style representing semantic colors */
 	static const FString TextureStyleSemanticName;
+
+	/** Default output image width */
+	static const int DefaultOutputImageWidth;
+
+	/** Default output image height */
+	static const int DefaultOutputImageHeight;
 
 	/** Error message box title for failed rendering start */
 	static const FText StartRenderingErrorMessageBoxTitle;

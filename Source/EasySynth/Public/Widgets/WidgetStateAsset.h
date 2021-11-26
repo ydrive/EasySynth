@@ -48,6 +48,14 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Additional parameters")
 	float DepthRange;
 
+	/** Selected output image width */
+	UPROPERTY(EditAnywhere, Category = "Additional parameters")
+	int OutputImageWidth;
+
+	/** Selected output image height */
+	UPROPERTY(EditAnywhere, Category = "Additional parameters")
+	int OutputImageHeight;
+
 	/** Selected output directory */
 	UPROPERTY(EditAnywhere, Category = "Additional parameters")
 	FString OutputDirectory;
