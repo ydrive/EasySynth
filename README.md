@@ -8,7 +8,7 @@ The plugin works by automatically starting the rendering of a user-defined level
 - Depth images, representing the depth of a pixel by a grayscale value
 - Normal images, representing the pixel normal using X, Y and Z color values
 - Semantic images, with every object rendered using the user-defined semantic color
-- Camera poses, including location and rotation
+- Camera poses, including position and rotation
 
 ## Installation
 
@@ -62,6 +62,10 @@ Setting up rendering options inside the EasySynth widget:
 
 Start the rendering by clicking the `Render Images` button.
 
+### Level sequence tips
+
+- If you want images to be more spaced out (instead of being very close to provide a smooth video), you can set the custom level sequence FPS to a small value (1 FPS or lower) inside the Sequencer editor
+
 ### Camera pose output
 
 If requested, camera poses are saved inside the same output directory as rendered images.
@@ -78,3 +82,5 @@ Output is the `CameraPoses.csv` file, in which the first line contains column na
 | 6      | qx   | Rotation quaternion X |
 | 7      | qy   | Rotation quaternion Y |
 | 8      | qz   | Rotation quaternion Z |
+
+Camera positions and rotation quaternions are exported in the right-handed, Z-up coordinate system, which is the most common approach. This is in contrast to Unreal Engine and its editor which work with the left-handed, Z-up coordinate system.

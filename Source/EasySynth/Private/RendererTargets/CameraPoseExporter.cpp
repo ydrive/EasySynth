@@ -144,13 +144,13 @@ bool FCameraPoseExporter::SavePosesToFile(const FString& OutputDir)
     for (int i = 0; i < CameraTransforms.Num(); i++)
 	{
         const FTransform& Transform = CameraTransforms[i];
-		const FVector& Location = Transform.GetLocation();
+		// Get right handed location in meters
+		const FVector& Location = Transform.GetLocation() * FVector(1.0f, -1.0f, 1.0f) * 1.0e-2f;
+		// TODO: Check if quaternion rotations if fine as is, or requires coordinate system conversion
 		const FQuat& Rotation = Transform.GetRotation();
-		// A constant for converting centimeters to meters
-		const float Conv = 1.0e-2f;
 		Lines.Add(FString::Printf(TEXT("%d, %f, %f, %f, %f, %f, %f, %f"),
 			i,
-			Location.X * Conv, Location.Y * Conv, Location.Z * Conv,
+			Location.X , Location.Y, Location.Z,
 			Rotation.W, Rotation.X, Rotation.Y, Rotation.Z));
 	}
 
