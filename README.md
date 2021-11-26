@@ -89,4 +89,4 @@ Output is the `CameraPoses.csv` file, in which the first line contains column na
 | 11     | int   | cx   | Halved image width         |
 | 12     | int   | cy   | Halved image height        |
 
-The coordinate system for saving camera positions and rotation quaternions is the usual right-handed Z-up coordinate system. Note that this differs from Unreal Engine, which internally uses the left-handed Z-upp coordinate system.
+The coordinate system for saving camera positions and rotation quaternions is the usual right-handed Z-up coordinate system. Note that this differs from Unreal Engine, which internally uses the left-handed Z-up coordinate system.
