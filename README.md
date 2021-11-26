@@ -75,7 +75,7 @@ If requested, the plugin exports camera poses to the same output directory as re
 Output is the `CameraPoses.csv` file, in which the first line contains column names and the rest contain camera poses for each frame. Columns are the following:
 
 | Column | Type  | Name | Description                |
-| ------ | ----- | ---- | -------------------------  |
+| ------ | ----- | ---- | -------------------------- |
 | 1      | int   | id   | 0-indexed frame id         |
 | 2      | float | tx   | X position in meters       |
 | 3      | float | ty   | Y position in meters       |
