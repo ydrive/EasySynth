@@ -97,8 +97,7 @@ public:
 	bool RenderSequence(
 		ULevelSequence* LevelSequence,
 		const FRendererTargetOptions RenderingTargets,
-		const int OutputWidth,
-		const int OutputHeight,
+		const FIntPoint OutputImageResolution,
 		const FString& OutputDirectory);
 
 	/** Checks if the rendering is currently in progress */
@@ -152,11 +151,8 @@ private:
 	/** Target currently being rendered */
 	TSharedPtr<FRendererTarget> CurrentTarget;
 
-	/** Output image width */
-	int OutputImageWidth;
-
-	/** Output image height */
-	int OutputImageHeight;
+	/** Output image resolution */
+	FIntPoint OutputResolution;
 
 	/** Currently selected output directory */
 	FString RenderingDirectory;

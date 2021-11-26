@@ -95,11 +95,8 @@ private:
 	/** Widget's copy of the chosen renderer targets set */
 	FRendererTargetOptions SequenceRendererTargets;
 
-	/** Output image width */
-	int OutputImageWidth;
-
-	/** Output image height */
-	int OutputImageHeight;
+	/** Output image resolution */
+	FIntPoint OutputImageResolution;
 
 	/** Currently selected output directory */
 	FString OutputDirectory;
@@ -122,11 +119,8 @@ private:
 	/** The name of the texture style representing semantic colors */
 	static const FString TextureStyleSemanticName;
 
-	/** Default output image width */
-	static const int DefaultOutputImageWidth;
-
-	/** Default output image height */
-	static const int DefaultOutputImageHeight;
+	/** Default output image resolution */
+	static const FIntPoint DefaultOutputImageResolution;
 
 	/** Error message box title for failed rendering start */
 	static const FText StartRenderingErrorMessageBoxTitle;

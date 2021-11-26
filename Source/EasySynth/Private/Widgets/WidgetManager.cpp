@@ -16,16 +16,14 @@
 
 const FString FWidgetManager::TextureStyleColorName(TEXT("Original color textures"));
 const FString FWidgetManager::TextureStyleSemanticName(TEXT("Semantic color textures"));
-const int FWidgetManager::DefaultOutputImageWidth(1920);
-const int FWidgetManager::DefaultOutputImageHeight(1080);
+const FIntPoint FWidgetManager::DefaultOutputImageResolution(1920, 1080);
 
 const FText FWidgetManager::StartRenderingErrorMessageBoxTitle = FText::FromString(TEXT("Could not start rendering"));
 const FText FWidgetManager::RenderingErrorMessageBoxTitle = FText::FromString(TEXT("Rendering failed"));
 const FText FWidgetManager::SuccessfulRenderingMessageBoxTitle = FText::FromString(TEXT("Successful rendering"));
 
 FWidgetManager::FWidgetManager() :
-	OutputImageWidth(DefaultOutputImageWidth),
-	OutputImageHeight(DefaultOutputImageHeight),
+	OutputImageResolution(DefaultOutputImageResolution),
 	OutputDirectory(FPathUtils::DefaultRenderingOutputPath())
 {
 	// Create the texture style manager and add it to the root to avoid garbage collection
@@ -210,9 +208,9 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			+SScrollBox::Slot()
 			.Padding(2)
 			[
-				SNew(SSpinBox<int>)
-				.Value_Lambda([this](){ return OutputImageWidth; })
-				.OnValueChanged_Lambda([this](const int NewValue){ OutputImageWidth = NewValue; })
+				SNew(SSpinBox<int32>)
+				.Value_Lambda([this](){ return OutputImageResolution.X; })
+				.OnValueChanged_Lambda([this](const int32 NewValue){ OutputImageResolution.X = NewValue; })
 				.MinValue(1)
 				.MaxValue(10000)
 			]
@@ -225,9 +223,9 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			+SScrollBox::Slot()
 			.Padding(2)
 			[
-				SNew(SSpinBox<int>)
-				.Value_Lambda([this](){ return OutputImageHeight; })
-				.OnValueChanged_Lambda([this](const int NewValue){ OutputImageHeight = NewValue; })
+				SNew(SSpinBox<int32>)
+				.Value_Lambda([this](){ return OutputImageResolution.Y; })
+				.OnValueChanged_Lambda([this](const int32 NewValue){ OutputImageResolution.Y = NewValue; })
 				.MinValue(1)
 				.MaxValue(10000)
 			]
@@ -366,7 +364,11 @@ FReply FWidgetManager::OnRenderImagesClicked()
 	ULevelSequence* LevelSequence = Cast<ULevelSequence>(LevelSequenceAssetData.GetAsset());
 	// Make a copy of the SequenceRendererTargets to avoid
 	// them being changed through the UI during rendering
-	if (!SequenceRenderer->RenderSequence(LevelSequence, SequenceRendererTargets, OutputDirectory))
+	if (!SequenceRenderer->RenderSequence(
+		LevelSequence,
+		SequenceRendererTargets,
+		OutputImageResolution,
+		OutputDirectory))
 	{
 		FMessageDialog::Open(
 			EAppMsgType::Ok,
@@ -436,8 +438,7 @@ void FWidgetManager::LoadWidgetOptionStates()
 	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::DEPTH_IMAGE, WidgetStateAsset->bDepthImagesSelected);
 	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::NORMAL_IMAGE, WidgetStateAsset->bNormalImagesSelected);
 	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::SEMANTIC_IMAGE, WidgetStateAsset->bSematicImagesSelected);
-	OutputImageWidth = WidgetStateAsset->OutputImageWidth;
-	OutputImageHeight = WidgetStateAsset->OutputImageHeight;
+	OutputImageResolution = WidgetStateAsset->OutputImageResolution;
 	SequenceRendererTargets.SetDepthRangeMeters(WidgetStateAsset->DepthRange);
 	OutputDirectory = WidgetStateAsset->OutputDirectory;
 }
@@ -463,8 +464,7 @@ void FWidgetManager::SaveWidgetOptionStates(UWidgetStateAsset* WidgetStateAsset)
 	WidgetStateAsset->bDepthImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::DEPTH_IMAGE);
 	WidgetStateAsset->bNormalImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::NORMAL_IMAGE);
 	WidgetStateAsset->bSematicImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::SEMANTIC_IMAGE);
-	WidgetStateAsset->OutputImageWidth = OutputImageWidth;
-	WidgetStateAsset->OutputImageHeight = OutputImageHeight;
+	WidgetStateAsset->OutputImageResolution = OutputImageResolution;
 	WidgetStateAsset->DepthRange = SequenceRendererTargets.DepthRangeMeters();
 	WidgetStateAsset->OutputDirectory = OutputDirectory;
 
