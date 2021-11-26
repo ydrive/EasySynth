@@ -32,4 +32,7 @@ private:
 
 	/** Extracted camera pose transforms */
 	TArray<FTransform> CameraTransforms;
+
+	/** Camera focal lengths for each image, expressed in pixel units */
+	TArray<FVector2D> PixelFocalLengths;
 };

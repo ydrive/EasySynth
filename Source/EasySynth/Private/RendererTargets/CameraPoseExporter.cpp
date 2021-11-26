@@ -72,6 +72,10 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
 			return false;
 		}
 
+		// TODO: Record camera focal length
+		const float FocalLength = 0.0f;
+		PixelFocalLengths.Add(FVector2D(FocalLength, FocalLength));
+
 		// Find the track inside the level sequence that coresponds to the
 		// pose transformation of the camera
 		UMovieScene3DTransformTrack* CameraTransformTrack = nullptr;
@@ -139,19 +143,21 @@ bool FCameraPoseExporter::SavePosesToFile(const FString& OutputDir)
 {
 	// Create the file content
 	TArray<FString> Lines;
-	Lines.Add("id, tx, ty, tz, qw, qx, qy, qz");
+	Lines.Add("id, tx, ty, tz, qw, qx, qy, qz, fx, fy");
 
     for (int i = 0; i < CameraTransforms.Num(); i++)
 	{
         const FTransform& Transform = CameraTransforms[i];
 		// Get right handed location in meters
 		const FVector& Location = Transform.GetLocation() * FVector(1.0f, -1.0f, 1.0f) * 1.0e-2f;
-		// TODO: Check if quaternion rotations if fine as is, or requires coordinate system conversion
+		// TODO: Check if quaternion rotations are fine as is, or require coordinate system conversion
 		const FQuat& Rotation = Transform.GetRotation();
-		Lines.Add(FString::Printf(TEXT("%d, %f, %f, %f, %f, %f, %f, %f"),
+		const FVector2D& FocalLength = PixelFocalLengths[i];
+		Lines.Add(FString::Printf(TEXT("%d, %f, %f, %f, %f, %f, %f, %f, %f, %f"),
 			i,
 			Location.X , Location.Y, Location.Z,
-			Rotation.W, Rotation.X, Rotation.Y, Rotation.Z));
+			Rotation.W, Rotation.X, Rotation.Y, Rotation.Z,
+			FocalLength.X, FocalLength.Y));
 	}
 
 	// Save the file
