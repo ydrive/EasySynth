@@ -8,6 +8,7 @@
 #include "EntitySystem/MovieSceneEntitySystemTypes.h"
 #include "ILevelSequenceEditorToolkit.h"
 #include "ISequencer.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "LevelSequence.h"
 #include "Misc/FileHelper.h"
 #include "MovieScene.h"
@@ -139,7 +140,7 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
 			// Record the camera focal length using the unit of output image pixels
 			// These units are chosen to enable the easiest work with generated output images
 			const float FoVDegrees = Camera->FieldOfView;
-			const float FocalLengthPixels = OutputResolution.X / 2 / tan(FoVDegrees / 2.0f);
+			const float FocalLengthPixels = OutputResolution.X / 2 / UKismetMathLibrary::DegTan(FoVDegrees / 2.0f);
 			PixelFocalLengths.Add(FVector2D(FocalLengthPixels, FocalLengthPixels));
         }
 	}
