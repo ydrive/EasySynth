@@ -72,10 +72,6 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
 			return false;
 		}
 
-		// TODO: Record camera focal length
-		const float FocalLength = 0.0f;
-		PixelFocalLengths.Add(FVector2D(FocalLength, FocalLength));
-
 		// Find the track inside the level sequence that coresponds to the
 		// pose transformation of the camera
 		UMovieScene3DTransformTrack* CameraTransformTrack = nullptr;
@@ -133,6 +129,10 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
             }
 
 		    CameraTransforms.Append(TempTransforms);
+
+			// TODO: Record camera focal length
+			const float FocalLength = 0.0f;
+			PixelFocalLengths.Add(FVector2D(FocalLength, FocalLength));
         }
 	}
 
