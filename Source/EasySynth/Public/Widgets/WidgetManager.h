@@ -95,7 +95,7 @@ private:
 	/** Widget's copy of the chosen renderer targets set */
 	FRendererTargetOptions SequenceRendererTargets;
 
-	/** Output image resolution */
+	/** Output image resolution, with the image size always being an even number */
 	FIntPoint OutputImageResolution;
 
 	/** Currently selected output directory */

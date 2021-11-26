@@ -18,7 +18,10 @@ class FCameraPoseExporter
 {
 public:
 	/** Export camera poses from the sequence to a file */
-	bool ExportCameraPoses(ULevelSequence* LevelSequence, const FString& OutputDir);
+	bool ExportCameraPoses(
+		ULevelSequence* LevelSequence,
+		const FIntPoint OutputImageResolution,
+		const FString& OutputDir);
 
 private:
 	/** Extract camera transforms using the sequencer wrapper */
@@ -29,6 +32,9 @@ private:
 
 	/** Sequencer wrapper needed to acces the level sequence properties */
 	FSequencerWrapper SequencerWrapper;
+
+	/** Resolution of output images */
+	FIntPoint OutputResolution;
 
 	/** Extracted camera pose transforms */
 	TArray<FTransform> CameraTransforms;

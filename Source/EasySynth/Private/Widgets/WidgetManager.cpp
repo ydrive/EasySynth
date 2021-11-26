@@ -210,7 +210,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			[
 				SNew(SSpinBox<int32>)
 				.Value_Lambda([this](){ return OutputImageResolution.X; })
-				.OnValueChanged_Lambda([this](const int32 NewValue){ OutputImageResolution.X = NewValue; })
+				.OnValueChanged_Lambda([this](const int32 NewValue){ OutputImageResolution.X = NewValue / 2 * 2; })
 				.MinValue(1)
 				.MaxValue(10000)
 			]
@@ -225,10 +225,11 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			[
 				SNew(SSpinBox<int32>)
 				.Value_Lambda([this](){ return OutputImageResolution.Y; })
-				.OnValueChanged_Lambda([this](const int32 NewValue){ OutputImageResolution.Y = NewValue; })
+				.OnValueChanged_Lambda([this](const int32 NewValue){ OutputImageResolution.Y = NewValue / 2 * 2; })
 				.MinValue(1)
 				.MaxValue(10000)
 			]
+			// TODO: Displat aspect ratio
 			+SScrollBox::Slot()
 			.Padding(2)
 			[

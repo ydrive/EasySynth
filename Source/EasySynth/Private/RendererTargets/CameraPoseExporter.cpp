@@ -16,7 +16,10 @@
 #include "Tracks/MovieScene3DTransformTrack.h"
 
 
-bool FCameraPoseExporter::ExportCameraPoses(ULevelSequence* LevelSequence, const FString& OutputDir)
+bool FCameraPoseExporter::ExportCameraPoses(
+	ULevelSequence* LevelSequence,
+	const FIntPoint OutputImageResolution,
+	const FString& OutputDir)
 {
 	// Open the received level sequence inside the sequencer wrapper
 	if (!SequencerWrapper.OpenSequence(LevelSequence))
@@ -24,6 +27,8 @@ bool FCameraPoseExporter::ExportCameraPoses(ULevelSequence* LevelSequence, const
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Sequencer wrapper opening failed"), *FString(__FUNCTION__))
 		return false;
 	}
+
+	OutputResolution = OutputImageResolution;
 
 	// Extract the camera pose transforms
 	if (!ExtractCameraTransforms())
@@ -143,7 +148,7 @@ bool FCameraPoseExporter::SavePosesToFile(const FString& OutputDir)
 {
 	// Create the file content
 	TArray<FString> Lines;
-	Lines.Add("id, tx, ty, tz, qw, qx, qy, qz, fx, fy");
+	Lines.Add("id, tx, ty, tz, qw, qx, qy, qz, fx, fy, cx, cy");
 
     for (int i = 0; i < CameraTransforms.Num(); i++)
 	{
@@ -153,11 +158,12 @@ bool FCameraPoseExporter::SavePosesToFile(const FString& OutputDir)
 		// TODO: Check if quaternion rotations are fine as is, or require coordinate system conversion
 		const FQuat& Rotation = Transform.GetRotation();
 		const FVector2D& FocalLength = PixelFocalLengths[i];
-		Lines.Add(FString::Printf(TEXT("%d, %f, %f, %f, %f, %f, %f, %f, %f, %f"),
+		Lines.Add(FString::Printf(TEXT("%d, %f, %f, %f, %f, %f, %f, %f, %f, %f, %d, %d"),
 			i,
 			Location.X , Location.Y, Location.Z,
 			Rotation.W, Rotation.X, Rotation.Y, Rotation.Z,
-			FocalLength.X, FocalLength.Y));
+			FocalLength.X, FocalLength.Y,
+			OutputResolution.X, OutputResolution.Y));
 	}
 
 	// Save the file

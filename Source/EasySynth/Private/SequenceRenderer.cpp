@@ -134,7 +134,7 @@ bool USequenceRenderer::RenderSequence(
 	if (RenderingTargets.ExportCameraPoses())
 	{
 		FCameraPoseExporter CameraPoseExporter;
-		if (!CameraPoseExporter.ExportCameraPoses(RenderingSequence, RenderingDirectory))
+		if (!CameraPoseExporter.ExportCameraPoses(RenderingSequence, OutputResolution, RenderingDirectory))
 		{
 			ErrorMessage = "Could not export camera poses";
 			UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
