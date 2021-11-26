@@ -163,7 +163,7 @@ bool FCameraPoseExporter::SavePosesToFile(const FString& OutputDir)
 			Location.X , Location.Y, Location.Z,
 			Rotation.W, Rotation.X, Rotation.Y, Rotation.Z,
 			FocalLength.X, FocalLength.Y,
-			OutputResolution.X, OutputResolution.Y));
+			OutputResolution.X / 2, OutputResolution.Y / 2));
 	}
 
 	// Save the file
