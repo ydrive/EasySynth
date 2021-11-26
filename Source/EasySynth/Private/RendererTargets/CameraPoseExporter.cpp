@@ -3,6 +3,7 @@
 
 #include "RendererTargets/CameraPoseExporter.h"
 
+#include "Camera/CameraComponent.h"
 #include "EntitySystem/Interrogation/MovieSceneInterrogationLinker.h"
 #include "EntitySystem/MovieSceneEntitySystemTypes.h"
 #include "ILevelSequenceEditorToolkit.h"
@@ -135,9 +136,11 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
 
 		    CameraTransforms.Append(TempTransforms);
 
-			// TODO: Record camera focal length
-			const float FocalLength = 0.0f;
-			PixelFocalLengths.Add(FVector2D(FocalLength, FocalLength));
+			// Record the camera focal length using the unit of output image pixels
+			// These units are chosen to enable the easiest work with generated output images
+			const float FoVDegrees = Camera->FieldOfView;
+			const float FocalLengthPixels = OutputResolution.X / 2 / tan(FoVDegrees / 2.0f);
+			PixelFocalLengths.Add(FVector2D(FocalLengthPixels, FocalLengthPixels));
         }
 	}
 
