@@ -57,6 +57,8 @@ Image rendering relies on a user-defined `Level Sequence`, which represents a mo
 Setting up rendering options inside the EasySynth widget:
 - Pick the created level sequence
 - Choose the desired rendering targets using checkboxes
+- Choose the output images width and height
+  - Choosing a different aspect ratio than the selected camera actor aspect ratio can result in an unexpected field of view in the output images
 - Choose the depth infinity threshold for depth rendering
 - Choose the output directory
 
