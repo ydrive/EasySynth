@@ -121,13 +121,4 @@ private:
 
 	/** Default output image resolution */
 	static const FIntPoint DefaultOutputImageResolution;
-
-	/** Error message box title for failed rendering start */
-	static const FText StartRenderingErrorMessageBoxTitle;
-
-	/** Error message box title for failure during the rendering */
-	static const FText RenderingErrorMessageBoxTitle;
-
-	/** Message box title for successful rendering */
-	static const FText SuccessfulRenderingMessageBoxTitle;
 };

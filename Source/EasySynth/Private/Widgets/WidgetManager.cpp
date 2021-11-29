@@ -18,9 +18,7 @@ const FString FWidgetManager::TextureStyleColorName(TEXT("Original color texture
 const FString FWidgetManager::TextureStyleSemanticName(TEXT("Semantic color textures"));
 const FIntPoint FWidgetManager::DefaultOutputImageResolution(1920, 1080);
 
-const FText FWidgetManager::StartRenderingErrorMessageBoxTitle = FText::FromString(TEXT("Could not start rendering"));
-const FText FWidgetManager::RenderingErrorMessageBoxTitle = FText::FromString(TEXT("Rendering failed"));
-const FText FWidgetManager::SuccessfulRenderingMessageBoxTitle = FText::FromString(TEXT("Successful rendering"));
+#define LOCTEXT_NAMESPACE "FWidgetManager"
 
 FWidgetManager::FWidgetManager() :
 	OutputImageResolution(DefaultOutputImageResolution),
@@ -76,7 +74,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				.Content()
 				[
 					SNew(STextBlock)
-					.Text(FText::FromString("Manage Semantic Classes"))
+					.Text(LOCTEXT("ManageSemanticClassesButtonText", "Manage Semantic Classes"))
 				]
 			]
 			+SScrollBox::Slot()
@@ -92,7 +90,8 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				.OnComboBoxOpening_Raw(this, &FWidgetManager::OnSemanticClassComboBoxOpened)
 				.Content()
 				[
-					SNew(STextBlock).Text(FText::FromString(TEXT("Pick a semantic class")))
+					SNew(STextBlock)
+					.Text(LOCTEXT("PickSemanticClassComboBoxText", "Pick a semantic class"))
 				]
 			]
 			+SScrollBox::Slot()
@@ -107,14 +106,15 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				.OnSelectionChanged_Raw(this, &FWidgetManager::OnTextureStyleComboBoxSelectionChanged)
 				.Content()
 				[
-					SNew(STextBlock).Text(FText::FromString(TEXT("Pick a mesh texture style")))
+					SNew(STextBlock)
+					.Text(LOCTEXT("PickMeshTextureStyleComboBoxText", "Pick a mesh texture style"))
 				]
 			]
 			+SScrollBox::Slot()
 			.Padding(2)
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString("Pick sequencer"))
+				.Text(LOCTEXT("PickSequencerSectionTitle", "Pick sequencer"))
 			]
 			+SScrollBox::Slot()
 			.Padding(2)
@@ -131,7 +131,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			.Padding(2)
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString("Chose targets to be rendered"))
+				.Text(LOCTEXT("ChoseTargesSectionTitle", "Chose targets to be rendered"))
 			]
 			+SScrollBox::Slot()
 			.Padding(2)
@@ -148,7 +148,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 					{ SequenceRendererTargets.SetExportCameraPoses(NewState == ECheckBoxState::Checked); })
 				[
 					SNew(STextBlock)
-					.Text(FText::FromString("Camera poses"))
+					.Text(LOCTEXT("CameraPosesCheckBoxText", "Camera poses"))
 				]
 			]
 			+SScrollBox::Slot()
@@ -203,7 +203,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			.Padding(2)
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString("Output image width [px]"))
+				.Text(LOCTEXT("OutputWidthText", "Output image width [px]"))
 			]
 			+SScrollBox::Slot()
 			.Padding(2)
@@ -218,7 +218,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			.Padding(2)
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString("Output image height [px]"))
+				.Text(LOCTEXT("OutputHeightText", "Output image height [px]"))
 			]
 			+SScrollBox::Slot()
 			.Padding(2)
@@ -236,15 +236,16 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				.Text_Lambda(
 					[this]()
 					{
-						return FText::FromString(FString::Printf(
-							TEXT("Output aspect ratio: %f"), 1.0f * OutputImageResolution.X / OutputImageResolution.Y));
+						return FText::Format(
+							LOCTEXT("OutputAspectRatioText", "Output aspect ratio: {0}"),
+							FText::AsNumber(1.0f * OutputImageResolution.X / OutputImageResolution.Y));
 					})
 			]
 			+SScrollBox::Slot()
 			.Padding(2)
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString("Depth range [m]"))
+				.Text(LOCTEXT("DepthRangeText", "Depth range [m]"))
 			]
 			+SScrollBox::Slot()
 			.Padding(2)
@@ -260,7 +261,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			.Padding(2)
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString("Ouput directory"))
+				.Text(LOCTEXT("OuputDirectoryText", "Ouput directory"))
 			]
 			+SScrollBox::Slot()
 			.Padding(2)
@@ -278,7 +279,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				.Content()
 				[
 					SNew(STextBlock)
-					.Text(FText::FromString("Render Images"))
+					.Text(LOCTEXT("RenderImagesButtonText", "Render Images"))
 				]
 			]
 		];
@@ -381,10 +382,11 @@ FReply FWidgetManager::OnRenderImagesClicked()
 		OutputImageResolution,
 		OutputDirectory))
 	{
+		const FText MessageBoxTitle = LOCTEXT("StartRenderingErrorMessageBoxTitle", "Could not start rendering");
 		FMessageDialog::Open(
 			EAppMsgType::Ok,
 			FText::FromString(*SequenceRenderer->GetErrorMessage()),
-			&StartRenderingErrorMessageBoxTitle);
+			&MessageBoxTitle);
 	}
 
 	// Save the current widget options
@@ -397,17 +399,19 @@ void FWidgetManager::OnRenderingFinished(bool bSuccess)
 {
 	if (bSuccess)
 	{
+		const FText MessageBoxTitle = LOCTEXT("SuccessfulRenderingMessageBoxTitle", "Successful rendering");
 		FMessageDialog::Open(
 			EAppMsgType::Ok,
-			FText::FromString(TEXT("Rendering finished successfully")),
-			&SuccessfulRenderingMessageBoxTitle);
+			LOCTEXT("SuccessfulRenderingMessageBoxText", "Rendering finished successfully"),
+			&MessageBoxTitle);
 	}
 	else
 	{
+		const FText MessageBoxTitle = LOCTEXT("RenderingErrorMessageBoxTitle", "Rendering failed");
 		FMessageDialog::Open(
 			EAppMsgType::Ok,
 			FText::FromString(*SequenceRenderer->GetErrorMessage()),
-			&RenderingErrorMessageBoxTitle);
+			&MessageBoxTitle);
 	}
 }
 
@@ -483,3 +487,5 @@ void FWidgetManager::SaveWidgetOptionStates(UWidgetStateAsset* WidgetStateAsset)
 	const bool bOnlyIfIsDirty = false;
 	UEditorAssetLibrary::SaveLoadedAsset(WidgetStateAsset, bOnlyIfIsDirty);
 }
+
+#undef LOCTEXT_NAMESPACE
