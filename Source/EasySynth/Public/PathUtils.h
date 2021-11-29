@@ -78,6 +78,37 @@ public:
 		return FPaths::Combine(ProjectPluginContentDir(), TextureMappingAssetName);
 	}
 
+	/** Path to the project-specific widget state asset */
+	static FString WidgetStateAssetPath()
+	{
+		return FPaths::Combine(ProjectPluginContentDir(), WidgetStateAssetName);
+	}
+
 	/** Clean name of the texture mapping asset */
 	static const FString TextureMappingAssetName;
+
+	/** Clean name of the widget state asset */
+	static const FString WidgetStateAssetName;
+
+	/**
+	 * Project output file saving utils
+	*/
+
+	/** Path to the default rendering output directory */
+	static FString DefaultRenderingOutputPath()
+	{
+		return FPaths::Combine(FPaths::ProjectSavedDir(), RenderingOutputDirName);
+	}
+
+	/** Full path to the camera poses output file */
+	static FString CameraPosesFilePath(const FString& Directory)
+	{
+		return FPaths::Combine(Directory, CameraPosesFileName);
+	}
+
+	/** Clean name of the rendering output directory */
+	static const FString RenderingOutputDirName;
+
+	/** Clean name of the camera poses output file */
+	static const FString CameraPosesFileName;
 };

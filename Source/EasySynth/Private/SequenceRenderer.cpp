@@ -8,12 +8,14 @@
 #include "MovieRenderPipelineSettings.h"
 
 #include "PathUtils.h"
+#include "RendererTargets/CameraPoseExporter.h"
 #include "RendererTargets/RendererTarget.h"
 
 
 const float FRendererTargetOptions::DefaultDepthRangeMetersValue = 100.0f;
 
 FRendererTargetOptions::FRendererTargetOptions() :
+	bExportCameraPoses(false),
 	DepthRangeMetersValue(DefaultDepthRangeMetersValue)
 {
 	SelectedTargets.Init(false, TargetType::COUNT);
@@ -88,6 +90,7 @@ USequenceRenderer::USequenceRenderer() :
 bool USequenceRenderer::RenderSequence(
 	ULevelSequence* LevelSequence,
 	const FRendererTargetOptions RenderingTargets,
+	const FIntPoint OutputImageResolution,
 	const FString& OutputDirectory)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
@@ -123,13 +126,26 @@ bool USequenceRenderer::RenderSequence(
 		return false;
 	}
 
+	// Store parameters
+	OutputResolution = OutputImageResolution;
+	RenderingDirectory = OutputDirectory;
+
+	// Export camera poses if requested
+	if (RenderingTargets.ExportCameraPoses())
+	{
+		FCameraPoseExporter CameraPoseExporter;
+		if (!CameraPoseExporter.ExportCameraPoses(RenderingSequence, OutputResolution, RenderingDirectory))
+		{
+			ErrorMessage = "Could not export camera poses";
+			UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+			return false;
+		}
+	}
+
 	// Prepare the targets queue
 	RenderingTargets.GetSelectedTargets(TextureStyleManager, TargetsQueue);
 	OriginalTextureStyle = TextureStyleManager->SelectedTextureStyle();
 	CurrentTarget = nullptr;
-
-	// Store the output directory
-	RenderingDirectory = OutputDirectory;
 
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering..."), *FString(__FUNCTION__))
 	bCurrentlyRendering = true;
@@ -257,6 +273,7 @@ bool USequenceRenderer::PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipel
 	}
 	// Update the image output directory
 	OutputSetting->OutputDirectory.Path = FPaths::Combine(RenderingDirectory, CurrentTarget->Name());
+	OutputSetting->OutputResolution = OutputResolution;
 
 	// Get the queue of sequences to be renderer
 	UMoviePipelineQueue* MoviePipelineQueue = MoviePipelineQueueSubsystem->GetQueue();

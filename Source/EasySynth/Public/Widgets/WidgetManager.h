@@ -12,6 +12,7 @@
 class ULevelSequence;
 
 class UTextureStyleManager;
+class UWidgetStateAsset;
 
 
 /**
@@ -48,14 +49,11 @@ private:
 	/** Callback funcion providing the path to the selected sequencer asset */
 	FString GetSequencerPath() const;
 
+	/** Checks whether renderer terget check box should be checked */
+	ECheckBoxState RenderTargetsCheckedState(const FRendererTargetOptions::TargetType TargetType) const;
+
 	/** Target render images checkbox handling */
-	void OnRenderTargetsChanged(ECheckBoxState NewState, FRendererTargetOptions::TargetType TargetType);
-
-	/** Get the currently selected depth range value */
-	float GetDepthRangeValue() const { return SequenceRendererTargets.DepthRangeMeters(); }
-
-	/** Callback function handling the update of the depth range value */
-	void OnDepthRangeValueChanged(float NewValue) { SequenceRendererTargets.SetDepthRangeMeters(NewValue); }
+	void OnRenderTargetsChanged(ECheckBoxState NewState, const FRendererTargetOptions::TargetType TargetType);
 
 	/** Callback function handling the update of the output directory */
 	void OnOutputDirectoryChanged(const FString& Directory) { OutputDirectory = Directory; }
@@ -72,6 +70,12 @@ private:
 	/**
 	 * Local members
 	*/
+
+	/** Load widget options states on startup */
+	void LoadWidgetOptionStates();
+
+	/** Save widget options states */
+	void SaveWidgetOptionStates(UWidgetStateAsset* WidgetStateAsset = nullptr);
 
 	/** Manager that handles semantic class widget */
 	FSemanticClassesWidgetManager SemanticsWidget;
@@ -90,6 +94,9 @@ private:
 
 	/** Widget's copy of the chosen renderer targets set */
 	FRendererTargetOptions SequenceRendererTargets;
+
+	/** Output image resolution, with the image size always being an even number */
+	FIntPoint OutputImageResolution;
 
 	/** Currently selected output directory */
 	FString OutputDirectory;
@@ -111,6 +118,9 @@ private:
 
 	/** The name of the texture style representing semantic colors */
 	static const FString TextureStyleSemanticName;
+
+	/** Default output image resolution */
+	static const FIntPoint DefaultOutputImageResolution;
 
 	/** Error message box title for failed rendering start */
 	static const FText StartRenderingErrorMessageBoxTitle;

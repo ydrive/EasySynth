@@ -40,6 +40,12 @@ public:
 	/** Checks if any of the available options is selected */
 	bool AnyOptionSelected() const;
 
+	/** Updates should camera poses be exported */
+	void SetExportCameraPoses(const bool bValue) { bExportCameraPoses = bValue; }
+
+	/** Return should camera poses be exported */
+	bool ExportCameraPoses() const { return bExportCameraPoses; }
+
 	/** DepthRangeMetersValue getter */
 	void SetDepthRangeMeters(const float DepthRangeMeters) { DepthRangeMetersValue = DepthRangeMeters; }
 
@@ -57,6 +63,9 @@ private:
 
 	/** Is the default color image rendering requested */
 	TArray<bool> SelectedTargets;
+
+	/** Whether to export camera poses */
+	bool bExportCameraPoses;
 
 	/**
 	 * The clipping range when rendering the depth target
@@ -88,6 +97,7 @@ public:
 	bool RenderSequence(
 		ULevelSequence* LevelSequence,
 		const FRendererTargetOptions RenderingTargets,
+		const FIntPoint OutputImageResolution,
 		const FString& OutputDirectory);
 
 	/** Checks if the rendering is currently in progress */
@@ -140,6 +150,9 @@ private:
 
 	/** Target currently being rendered */
 	TSharedPtr<FRendererTarget> CurrentTarget;
+
+	/** Output image resolution */
+	FIntPoint OutputResolution;
 
 	/** Currently selected output directory */
 	FString RenderingDirectory;
