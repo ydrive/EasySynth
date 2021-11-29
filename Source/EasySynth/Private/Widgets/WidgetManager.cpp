@@ -60,6 +60,30 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 	// Load saved optsion states now, also to make sure editor is ready
 	LoadWidgetOptionStates();
 
+	// Dynamically generate renderer target checkboxes
+	TSharedRef<SScrollBox> TargetsScrollBoxes = SNew(SScrollBox);
+	TMap<FRendererTargetOptions::TargetType, FText> TargetCheckBoxNames;
+	TargetCheckBoxNames.Add(FRendererTargetOptions::COLOR_IMAGE, LOCTEXT("ColorImagesCheckBoxText", "Color images"));
+	TargetCheckBoxNames.Add(FRendererTargetOptions::DEPTH_IMAGE, LOCTEXT("DepthImagesCheckBoxText", "Depth images"));
+	TargetCheckBoxNames.Add(FRendererTargetOptions::NORMAL_IMAGE, LOCTEXT("NormalImagesCheckBoxText", "Normal images"));
+	TargetCheckBoxNames.Add(FRendererTargetOptions::SEMANTIC_IMAGE, LOCTEXT("SemanticImagesCheckBoxText", "Semantic images"));
+	for (auto Element : TargetCheckBoxNames)
+	{
+		const FRendererTargetOptions::TargetType TargetType = Element.Key;
+		const FText CheckBoxText = Element.Value;
+		TargetsScrollBoxes->AddSlot()
+			.Padding(2)
+			[
+				SNew(SCheckBox)
+				.IsChecked_Raw(this, &FWidgetManager::RenderTargetsCheckedState, TargetType)
+				.OnCheckStateChanged_Raw(this, &FWidgetManager::OnRenderTargetsChanged, TargetType)
+				[
+					SNew(STextBlock)
+					.Text(CheckBoxText)
+				]
+			];
+	}
+
 	// Generate the UI
 	return SNew(SDockTab)
 		.TabRole(ETabRole::NomadTab)
@@ -152,52 +176,8 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				]
 			]
 			+SScrollBox::Slot()
-			.Padding(2)
 			[
-				SNew(SCheckBox)
-				.IsChecked_Raw(this, &FWidgetManager::RenderTargetsCheckedState, FRendererTargetOptions::COLOR_IMAGE)
-				.OnCheckStateChanged_Raw(
-					this, &FWidgetManager::OnRenderTargetsChanged, FRendererTargetOptions::COLOR_IMAGE)
-				[
-					SNew(STextBlock)
-					.Text(FText::FromString("Color images"))
-				]
-			]
-			+SScrollBox::Slot()
-			.Padding(2)
-			[
-				SNew(SCheckBox)
-				.IsChecked_Raw(this, &FWidgetManager::RenderTargetsCheckedState, FRendererTargetOptions::DEPTH_IMAGE)
-				.OnCheckStateChanged_Raw(
-					this, &FWidgetManager::OnRenderTargetsChanged, FRendererTargetOptions::DEPTH_IMAGE)
-				[
-					SNew(STextBlock)
-					.Text(FText::FromString("Depth images"))
-				]
-			]
-			+SScrollBox::Slot()
-			.Padding(2)
-			[
-				SNew(SCheckBox)
-				.IsChecked_Raw(this, &FWidgetManager::RenderTargetsCheckedState, FRendererTargetOptions::NORMAL_IMAGE)
-				.OnCheckStateChanged_Raw(
-					this, &FWidgetManager::OnRenderTargetsChanged, FRendererTargetOptions::NORMAL_IMAGE)
-				[
-					SNew(STextBlock)
-					.Text(FText::FromString("Normal images"))
-				]
-			]
-			+SScrollBox::Slot()
-			.Padding(2)
-			[
-				SNew(SCheckBox)
-				.IsChecked_Raw(this, &FWidgetManager::RenderTargetsCheckedState, FRendererTargetOptions::SEMANTIC_IMAGE)
-				.OnCheckStateChanged_Raw(
-					this, &FWidgetManager::OnRenderTargetsChanged, FRendererTargetOptions::SEMANTIC_IMAGE)
-				[
-					SNew(STextBlock)
-					.Text(FText::FromString("Semantic images"))
-				]
+				TargetsScrollBoxes
 			]
 			+SScrollBox::Slot()
 			.Padding(2)
