@@ -57,6 +57,10 @@ Image rendering relies on a user-defined `Level Sequence`, which represents a mo
 Setting up rendering options inside the EasySynth widget:
 - Pick the created level sequence
 - Choose the desired rendering targets using checkboxes
+- Choose the output image format for each target
+  - jpg - 8-bit image output with lossy jpeg compression
+  - png - 8-bit image output with lossless png compression, but with zero alpha, making the images appear transparent when previewed
+  - exr - 16-bit image output with lossless exr compression, to open them with OpenCV in Python use `cv2.imread(img_path, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)`
 - Choose the output images width and height
   - Choosing a different aspect ratio than the selected camera actor aspect ratio can result in an unexpected field of view in the output images
 - Choose the depth infinity threshold for depth rendering
