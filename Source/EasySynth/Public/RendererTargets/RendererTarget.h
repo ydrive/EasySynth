@@ -21,7 +21,10 @@ class UTextureStyleManager;
 class FRendererTarget
 {
 public:
-	explicit FRendererTarget(UTextureStyleManager* Value) : TextureStyleManager(Value) {}
+	explicit FRendererTarget(UTextureStyleManager* TextureStyleManager, const bool bUseExr) :
+		TextureStyleManager(TextureStyleManager),
+		bUseExr(bUseExr)
+	{}
 
 	/** Returns a name of a specific target */
 	virtual FString Name() const = 0;
@@ -31,6 +34,9 @@ public:
 
 	/** Reverts changes made to the sequence by the PrepareSequence */
 	virtual bool FinalizeSequence(ULevelSequence* LevelSequence) = 0;
+
+	/** Returns the EXR selection state */
+	bool UseExr() const { return bUseExr; }
 
 protected:
 	/** Extracts camera components used by the level sequence */
@@ -47,4 +53,7 @@ protected:
 
 	/** Handle for managing texture style in the level */
 	UTextureStyleManager* TextureStyleManager;
+
+	/** Is the EXR export selected for this target */
+	const bool bUseExr;
 };

@@ -17,8 +17,8 @@ class UTextureStyleManager;
 class FDepthImageTarget : public FRendererTarget
 {
 public:
-	explicit FDepthImageTarget(UTextureStyleManager* TextureStyleManager, const float DepthRangeMeters) :
-		FRendererTarget(TextureStyleManager),
+	explicit FDepthImageTarget(UTextureStyleManager* TextureStyleManager, const bool bUseExr, const float DepthRangeMeters) :
+		FRendererTarget(TextureStyleManager, bUseExr),
 		DepthRange(DepthRangeMeters)
 	{}
 

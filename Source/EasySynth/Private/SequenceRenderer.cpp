@@ -3,10 +3,12 @@
 
 #include "SequenceRenderer.h"
 
+#include "MoviePipelineImageSequenceOutput.h"
 #include "MoviePipelineOutputSetting.h"
 #include "MoviePipelineQueueSubsystem.h"
 #include "MovieRenderPipelineSettings.h"
 
+#include "EXROutput/MoviePipelineEXROutputLocal.h"
 #include "PathUtils.h"
 #include "RendererTargets/CameraPoseExporter.h"
 #include "RendererTargets/RendererTarget.h"
@@ -63,12 +65,14 @@ TSharedPtr<FRendererTarget> FRendererTargetOptions::RendererTarget(
 	const int TargetType,
 	UTextureStyleManager* TextureStyleManager) const
 {
+	const bool bExrSelected = UseExr[TargetType];
 	switch (TargetType)
 	{
-	case COLOR_IMAGE: return MakeShared<FColorImageTarget>(TextureStyleManager); break;
-	case DEPTH_IMAGE: return MakeShared<FDepthImageTarget>(TextureStyleManager, DepthRangeMetersValue); break;
-	case NORMAL_IMAGE: return MakeShared<FNormalImageTarget>(TextureStyleManager); break;
-	case SEMANTIC_IMAGE: return MakeShared<FSemanticImageTarget>(TextureStyleManager); break;
+	case COLOR_IMAGE: return MakeShared<FColorImageTarget>(TextureStyleManager, bExrSelected); break;
+	case DEPTH_IMAGE: return MakeShared<FDepthImageTarget>(
+		TextureStyleManager, bExrSelected, DepthRangeMetersValue); break;
+	case NORMAL_IMAGE: return MakeShared<FNormalImageTarget>(TextureStyleManager, bExrSelected); break;
+	case SEMANTIC_IMAGE: return MakeShared<FSemanticImageTarget>(TextureStyleManager, bExrSelected); break;
 	default: return nullptr;
 	}
 }
@@ -263,6 +267,19 @@ void USequenceRenderer::StartRendering()
 bool USequenceRenderer::PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem)
 {
 	check(MoviePipelineQueueSubsystem)
+
+	// Update export image format
+	UMoviePipelineSetting* PngSetting = EasySynthMoviePipelineConfig->FindSettingByClass(
+		UMoviePipelineImageSequenceOutput_PNG::StaticClass(), true);
+	UMoviePipelineSetting* ExrSetting = EasySynthMoviePipelineConfig->FindOrAddSettingByClass(
+		UMoviePipelineImageSequenceOutput_EXRLocal::StaticClass(), true);
+	if (PngSetting == nullptr || ExrSetting == nullptr)
+	{
+		ErrorMessage = "PNG or EXR settings not found";
+		return false;
+	}
+	PngSetting->SetIsEnabled(!CurrentTarget->UseExr());
+	ExrSetting->SetIsEnabled(CurrentTarget->UseExr());
 
 	// Update pipeline output settings for the current target
 	UMoviePipelineOutputSetting* OutputSetting =

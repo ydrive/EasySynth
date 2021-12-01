@@ -52,6 +52,7 @@ public class EasySynth : ModuleRules
 				"LevelSequenceEditor",
 				"MovieRenderPipelineCore",
 				"MovieRenderPipelineEditor",
+				"MovieRenderPipelineRenderPasses",
 				"MovieScene",
 				"MovieSceneTracks",
 				"Sequencer",
@@ -60,6 +61,8 @@ public class EasySynth : ModuleRules
 				"DesktopWidgets",
 				"MainFrame",
 				"PropertyEditor",
+				// Image formats
+				"UEOpenExrRTTI",
 				// ... add private dependencies that you statically link with here ...
 			}
 			);
@@ -71,5 +74,7 @@ public class EasySynth : ModuleRules
 				// ... add any modules that your module loads dynamically here ...
 			}
 			);
+
+		AddEngineThirdPartyPrivateStaticDependencies(Target, "UEOpenExr");
 	}
 }
