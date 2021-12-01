@@ -32,17 +32,33 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
 	bool bColorImagesSelected;
 
+	/** Whether EXR is selected for color images */
+	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
+	bool bColorImagesExrSelected;
+
 	/** Whether depth images are selected */
 	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
 	bool bDepthImagesSelected;
+
+	/** Whether EXR is selected for depth images */
+	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
+	bool bDepthImagesExrSelected;
 
 	/** Whether normal images are selected */
 	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
 	bool bNormalImagesSelected;
 
+	/** Whether EXR is selected for normal images */
+	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
+	bool bNormalImagesExrSelected;
+
 	/** Whether semantic images are selected */
 	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
-	bool bSematicImagesSelected;
+	bool bSemanticImagesSelected;
+
+	/** Whether EXR is selected for rendering images */
+	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
+	bool bSemanticImagesExrSelected;
 
 	/** Selected depth threashold range */
 	UPROPERTY(EditAnywhere, Category = "Additional parameters")

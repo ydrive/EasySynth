@@ -457,7 +457,11 @@ void FWidgetManager::LoadWidgetOptionStates()
 	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::COLOR_IMAGE, WidgetStateAsset->bColorImagesSelected);
 	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::DEPTH_IMAGE, WidgetStateAsset->bDepthImagesSelected);
 	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::NORMAL_IMAGE, WidgetStateAsset->bNormalImagesSelected);
-	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::SEMANTIC_IMAGE, WidgetStateAsset->bSematicImagesSelected);
+	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::SEMANTIC_IMAGE, WidgetStateAsset->bSemanticImagesSelected);
+	SequenceRendererTargets.SetExrUsage(FRendererTargetOptions::COLOR_IMAGE, WidgetStateAsset->bColorImagesExrSelected);
+	SequenceRendererTargets.SetExrUsage(FRendererTargetOptions::DEPTH_IMAGE, WidgetStateAsset->bDepthImagesExrSelected);
+	SequenceRendererTargets.SetExrUsage(FRendererTargetOptions::NORMAL_IMAGE, WidgetStateAsset->bNormalImagesExrSelected);
+	SequenceRendererTargets.SetExrUsage(FRendererTargetOptions::SEMANTIC_IMAGE, WidgetStateAsset->bSemanticImagesExrSelected);
 	OutputImageResolution = WidgetStateAsset->OutputImageResolution;
 	SequenceRendererTargets.SetDepthRangeMeters(WidgetStateAsset->DepthRange);
 	OutputDirectory = WidgetStateAsset->OutputDirectory;
@@ -483,7 +487,11 @@ void FWidgetManager::SaveWidgetOptionStates(UWidgetStateAsset* WidgetStateAsset)
 	WidgetStateAsset->bColorImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::COLOR_IMAGE);
 	WidgetStateAsset->bDepthImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::DEPTH_IMAGE);
 	WidgetStateAsset->bNormalImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::NORMAL_IMAGE);
-	WidgetStateAsset->bSematicImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::SEMANTIC_IMAGE);
+	WidgetStateAsset->bSemanticImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::SEMANTIC_IMAGE);
+	WidgetStateAsset->bColorImagesExrSelected = SequenceRendererTargets.ExrSelected(FRendererTargetOptions::COLOR_IMAGE);
+	WidgetStateAsset->bDepthImagesExrSelected = SequenceRendererTargets.ExrSelected(FRendererTargetOptions::DEPTH_IMAGE);
+	WidgetStateAsset->bNormalImagesExrSelected = SequenceRendererTargets.ExrSelected(FRendererTargetOptions::NORMAL_IMAGE);
+	WidgetStateAsset->bSemanticImagesExrSelected = SequenceRendererTargets.ExrSelected(FRendererTargetOptions::SEMANTIC_IMAGE);
 	WidgetStateAsset->OutputImageResolution = OutputImageResolution;
 	WidgetStateAsset->DepthRange = SequenceRendererTargets.DepthRangeMeters();
 	WidgetStateAsset->OutputDirectory = OutputDirectory;
