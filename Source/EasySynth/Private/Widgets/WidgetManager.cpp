@@ -74,12 +74,26 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 		TargetsScrollBoxes->AddSlot()
 			.Padding(2)
 			[
-				SNew(SCheckBox)
-				.IsChecked_Raw(this, &FWidgetManager::RenderTargetsCheckedState, TargetType)
-				.OnCheckStateChanged_Raw(this, &FWidgetManager::OnRenderTargetsChanged, TargetType)
+				SNew(SHorizontalBox)
+				+SHorizontalBox::Slot()
 				[
-					SNew(STextBlock)
-					.Text(CheckBoxText)
+					SNew(SCheckBox)
+					.IsChecked_Raw(this, &FWidgetManager::RenderTargetsCheckedState, TargetType)
+					.OnCheckStateChanged_Raw(this, &FWidgetManager::OnRenderTargetsChanged, TargetType)
+					[
+						SNew(STextBlock)
+						.Text(CheckBoxText)
+					]
+				]
+				+SHorizontalBox::Slot()
+				[
+					SNew(SCheckBox)
+					.IsChecked_Raw(this, &FWidgetManager::UseExrCheckedState, TargetType)
+					.OnCheckStateChanged_Raw(this, &FWidgetManager::OnUseExrChanged, TargetType)
+					[
+						SNew(STextBlock)
+						.Text(LOCTEXT("RxrCheckBoxText", "Use EXR"))
+					]
 				]
 			];
 	}
@@ -341,6 +355,17 @@ void FWidgetManager::OnRenderTargetsChanged(
 	const FRendererTargetOptions::TargetType TargetType)
 {
 	SequenceRendererTargets.SetSelectedTarget(TargetType, (NewState == ECheckBoxState::Checked));
+}
+
+ECheckBoxState FWidgetManager::UseExrCheckedState(const FRendererTargetOptions::TargetType TargetType) const
+{
+	const bool bChecked = SequenceRendererTargets.ExrSelected(TargetType);
+	return bChecked ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
+}
+
+void FWidgetManager::OnUseExrChanged(ECheckBoxState NewState, const FRendererTargetOptions::TargetType TargetType)
+{
+	SequenceRendererTargets.SetExrUsage(TargetType, (NewState == ECheckBoxState::Checked));
 }
 
 bool FWidgetManager::GetIsRenderImagesEnabled() const

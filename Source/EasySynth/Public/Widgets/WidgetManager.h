@@ -55,6 +55,12 @@ private:
 	/** Target render images checkbox handling */
 	void OnRenderTargetsChanged(ECheckBoxState NewState, const FRendererTargetOptions::TargetType TargetType);
 
+	/** Checks whether use EXR check box should be checked */
+	ECheckBoxState UseExrCheckedState(const FRendererTargetOptions::TargetType TargetType) const;
+
+	/** Use EXR checkbox handling */
+	void OnUseExrChanged(ECheckBoxState NewState, const FRendererTargetOptions::TargetType TargetType);
+
 	/** Callback function handling the update of the output directory */
 	void OnOutputDirectoryChanged(const FString& Directory) { OutputDirectory = Directory; }
 

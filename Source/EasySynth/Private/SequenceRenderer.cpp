@@ -19,6 +19,7 @@ FRendererTargetOptions::FRendererTargetOptions() :
 	DepthRangeMetersValue(DefaultDepthRangeMetersValue)
 {
 	SelectedTargets.Init(false, TargetType::COUNT);
+	UseExr.Init(false, TargetType::COUNT);
 }
 
 bool FRendererTargetOptions::AnyOptionSelected() const

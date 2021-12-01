@@ -40,6 +40,12 @@ public:
 	/** Checks if any of the available options is selected */
 	bool AnyOptionSelected() const;
 
+	/** Set EXR usage for the target */
+	void SetExrUsage(const int TargetType, const bool Selected) { UseExr[TargetType] = Selected; }
+
+	/** Check if EXR usage is selected for the target */
+	bool ExrSelected(const int TargetType) const { return UseExr[TargetType]; }
+
 	/** Updates should camera poses be exported */
 	void SetExportCameraPoses(const bool bValue) { bExportCameraPoses = bValue; }
 
@@ -63,6 +69,9 @@ private:
 
 	/** Is the default color image rendering requested */
 	TArray<bool> SelectedTargets;
+
+	/** Is the EXR output requested for the target */
+	TArray<bool> UseExr;
 
 	/** Whether to export camera poses */
 	bool bExportCameraPoses;
