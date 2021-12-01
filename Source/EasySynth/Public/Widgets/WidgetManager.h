@@ -55,11 +55,14 @@ private:
 	/** Target render images checkbox handling */
 	void OnRenderTargetsChanged(ECheckBoxState NewState, const FRendererTargetOptions::TargetType TargetType);
 
-	/** Checks whether use EXR check box should be checked */
-	ECheckBoxState UseExrCheckedState(const FRendererTargetOptions::TargetType TargetType) const;
+	// Callback function handling the choosing of the output format inside the combo box
+	void OnOutputFormatSelectionChanged(
+		TSharedPtr<FString> StringItem,
+		ESelectInfo::Type SelectInfo,
+		const FRendererTargetOptions::TargetType TargetType);
 
-	/** Use EXR checkbox handling */
-	void OnUseExrChanged(ECheckBoxState NewState, const FRendererTargetOptions::TargetType TargetType);
+	/** Returns the selected output format of the target */
+	FText SelectedOutputFormat(const FRendererTargetOptions::TargetType TargetType) const;
 
 	/** Callback function handling the update of the output directory */
 	void OnOutputDirectoryChanged(const FString& Directory) { OutputDirectory = Directory; }
@@ -95,6 +98,9 @@ private:
 	/** FStrings texture style names referenced by the combo box */
 	TArray<TSharedPtr<FString>> TextureStyleNames;
 
+	/** FStrings output image format names referenced by the combo box */
+	TArray<TSharedPtr<FString>> OutputFormatNames;
+
 	/** Currently selected sequencer asset data */
 	FAssetData LevelSequenceAssetData;
 
@@ -124,6 +130,15 @@ private:
 
 	/** The name of the texture style representing semantic colors */
 	static const FString TextureStyleSemanticName;
+
+	/** The name of the JPG output format */
+	static const FString JpgFormatName;
+
+	/** The name of the PNG output format */
+	static const FString PngFormatName;
+
+	/** The name of the EXR output format */
+	static const FString ExrFormatName;
 
 	/** Default output image resolution */
 	static const FIntPoint DefaultOutputImageResolution;

@@ -17,8 +17,8 @@ class UTextureStyleManager;
 class FColorImageTarget : public FRendererTarget
 {
 public:
-	explicit FColorImageTarget(UTextureStyleManager* TextureStyleManager, const bool bUseExr) :
-		FRendererTarget(TextureStyleManager, bUseExr)
+	explicit FColorImageTarget(UTextureStyleManager* TextureStyleManager, const EImageFormat ImageFormat) :
+		FRendererTarget(TextureStyleManager, ImageFormat)
 	{}
 
 	/** Returns the name of the target */

@@ -21,7 +21,7 @@ FRendererTargetOptions::FRendererTargetOptions() :
 	DepthRangeMetersValue(DefaultDepthRangeMetersValue)
 {
 	SelectedTargets.Init(false, TargetType::COUNT);
-	UseExr.Init(false, TargetType::COUNT);
+	OutputFormats.Init(EImageFormat::JPEG, TargetType::COUNT);
 }
 
 bool FRendererTargetOptions::AnyOptionSelected() const
@@ -65,14 +65,14 @@ TSharedPtr<FRendererTarget> FRendererTargetOptions::RendererTarget(
 	const int TargetType,
 	UTextureStyleManager* TextureStyleManager) const
 {
-	const bool bExrSelected = UseExr[TargetType];
+	const EImageFormat OutputFormat = OutputFormats[TargetType];
 	switch (TargetType)
 	{
-	case COLOR_IMAGE: return MakeShared<FColorImageTarget>(TextureStyleManager, bExrSelected); break;
+	case COLOR_IMAGE: return MakeShared<FColorImageTarget>(TextureStyleManager, OutputFormat); break;
 	case DEPTH_IMAGE: return MakeShared<FDepthImageTarget>(
-		TextureStyleManager, bExrSelected, DepthRangeMetersValue); break;
-	case NORMAL_IMAGE: return MakeShared<FNormalImageTarget>(TextureStyleManager, bExrSelected); break;
-	case SEMANTIC_IMAGE: return MakeShared<FSemanticImageTarget>(TextureStyleManager, bExrSelected); break;
+		TextureStyleManager, OutputFormat, DepthRangeMetersValue); break;
+	case NORMAL_IMAGE: return MakeShared<FNormalImageTarget>(TextureStyleManager, OutputFormat); break;
+	case SEMANTIC_IMAGE: return MakeShared<FSemanticImageTarget>(TextureStyleManager, OutputFormat); break;
 	default: return nullptr;
 	}
 }
@@ -269,17 +269,20 @@ bool USequenceRenderer::PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipel
 	check(MoviePipelineQueueSubsystem)
 
 	// Update export image format
+	UMoviePipelineSetting* JpgSetting = EasySynthMoviePipelineConfig->FindOrAddSettingByClass(
+		UMoviePipelineImageSequenceOutput_JPG::StaticClass(), true);
 	UMoviePipelineSetting* PngSetting = EasySynthMoviePipelineConfig->FindSettingByClass(
 		UMoviePipelineImageSequenceOutput_PNG::StaticClass(), true);
 	UMoviePipelineSetting* ExrSetting = EasySynthMoviePipelineConfig->FindOrAddSettingByClass(
 		UMoviePipelineImageSequenceOutput_EXRLocal::StaticClass(), true);
-	if (PngSetting == nullptr || ExrSetting == nullptr)
+	if (JpgSetting == nullptr || PngSetting == nullptr || ExrSetting == nullptr)
 	{
-		ErrorMessage = "PNG or EXR settings not found";
+		ErrorMessage = "JPG, PNG or EXR settings not found";
 		return false;
 	}
-	PngSetting->SetIsEnabled(!CurrentTarget->UseExr());
-	ExrSetting->SetIsEnabled(CurrentTarget->UseExr());
+	JpgSetting->SetIsEnabled(CurrentTarget->OutputFormat() == EImageFormat::JPEG);
+	PngSetting->SetIsEnabled(CurrentTarget->OutputFormat() == EImageFormat::PNG);
+	ExrSetting->SetIsEnabled(CurrentTarget->OutputFormat() == EImageFormat::EXR);
 
 	// Update pipeline output settings for the current target
 	UMoviePipelineOutputSetting* OutputSetting =

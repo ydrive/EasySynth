@@ -17,8 +17,8 @@ class UTextureStyleManager;
 class FNormalImageTarget : public FRendererTarget
 {
 public:
-	explicit FNormalImageTarget(UTextureStyleManager* TextureStyleManager, const bool bUseExr) :
-		FRendererTarget(TextureStyleManager, bUseExr)
+	explicit FNormalImageTarget(UTextureStyleManager* TextureStyleManager, const EImageFormat ImageFormat) :
+		FRendererTarget(TextureStyleManager, ImageFormat)
 	{}
 
 	/** Returns the name of the target */

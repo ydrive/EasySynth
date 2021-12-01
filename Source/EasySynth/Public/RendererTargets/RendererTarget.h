@@ -4,6 +4,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "IImageWrapper.h"
 
 #include "PathUtils.h"
 
@@ -21,9 +22,9 @@ class UTextureStyleManager;
 class FRendererTarget
 {
 public:
-	explicit FRendererTarget(UTextureStyleManager* TextureStyleManager, const bool bUseExr) :
+	explicit FRendererTarget(UTextureStyleManager* TextureStyleManager, const EImageFormat ImageFormat) :
 		TextureStyleManager(TextureStyleManager),
-		bUseExr(bUseExr)
+		ImageFormat(ImageFormat)
 	{}
 
 	/** Returns a name of a specific target */
@@ -35,8 +36,8 @@ public:
 	/** Reverts changes made to the sequence by the PrepareSequence */
 	virtual bool FinalizeSequence(ULevelSequence* LevelSequence) = 0;
 
-	/** Returns the EXR selection state */
-	bool UseExr() const { return bUseExr; }
+	/** Returns the selected output format */
+	EImageFormat OutputFormat() const { return ImageFormat; }
 
 protected:
 	/** Extracts camera components used by the level sequence */
@@ -54,6 +55,6 @@ protected:
 	/** Handle for managing texture style in the level */
 	UTextureStyleManager* TextureStyleManager;
 
-	/** Is the EXR export selected for this target */
-	const bool bUseExr;
+	/** Output image format selected for this target */
+	const EImageFormat ImageFormat;
 };

@@ -16,6 +16,9 @@
 
 const FString FWidgetManager::TextureStyleColorName(TEXT("Original color textures"));
 const FString FWidgetManager::TextureStyleSemanticName(TEXT("Semantic color textures"));
+const FString FWidgetManager::JpgFormatName(TEXT("jpg"));
+const FString FWidgetManager::PngFormatName(TEXT("png"));
+const FString FWidgetManager::ExrFormatName(TEXT("exr"));
 const FIntPoint FWidgetManager::DefaultOutputImageResolution(1920, 1080);
 
 #define LOCTEXT_NAMESPACE "FWidgetManager"
@@ -47,6 +50,11 @@ FWidgetManager::FWidgetManager() :
 	// Prepare content of the texture style checkout combo box
 	TextureStyleNames.Add(MakeShared<FString>(TextureStyleColorName));
 	TextureStyleNames.Add(MakeShared<FString>(TextureStyleSemanticName));
+
+	// Prepare content of the outut image format combo box
+	OutputFormatNames.Add(MakeShared<FString>(JpgFormatName));
+	OutputFormatNames.Add(MakeShared<FString>(PngFormatName));
+	OutputFormatNames.Add(MakeShared<FString>(ExrFormatName));
 
 	// Initialize SemanticClassesWidgetManager
 	SemanticsWidget.SetTextureStyleManager(TextureStyleManager);
@@ -87,12 +95,16 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				]
 				+SHorizontalBox::Slot()
 				[
-					SNew(SCheckBox)
-					.IsChecked_Raw(this, &FWidgetManager::UseExrCheckedState, TargetType)
-					.OnCheckStateChanged_Raw(this, &FWidgetManager::OnUseExrChanged, TargetType)
+					SNew(SComboBox<TSharedPtr<FString>>)
+					.OptionsSource(&OutputFormatNames)
+					.ContentPadding(2)
+					.OnGenerateWidget_Lambda(
+						[](TSharedPtr<FString> StringItem)
+						{ return SNew(STextBlock).Text(FText::FromString(*StringItem)); })
+					.OnSelectionChanged_Raw(this, &FWidgetManager::OnOutputFormatSelectionChanged, TargetType)
 					[
 						SNew(STextBlock)
-						.Text(LOCTEXT("RxrCheckBoxText", "Use EXR"))
+						.Text_Raw(this, &FWidgetManager::SelectedOutputFormat, TargetType)
 					]
 				]
 			];
@@ -357,15 +369,52 @@ void FWidgetManager::OnRenderTargetsChanged(
 	SequenceRendererTargets.SetSelectedTarget(TargetType, (NewState == ECheckBoxState::Checked));
 }
 
-ECheckBoxState FWidgetManager::UseExrCheckedState(const FRendererTargetOptions::TargetType TargetType) const
+void FWidgetManager::OnOutputFormatSelectionChanged(
+	TSharedPtr<FString> StringItem,
+	ESelectInfo::Type SelectInfo,
+	const FRendererTargetOptions::TargetType TargetType)
 {
-	const bool bChecked = SequenceRendererTargets.ExrSelected(TargetType);
-	return bChecked ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
+	if (*StringItem == JpgFormatName)
+	{
+		SequenceRendererTargets.SetOutputFormat(TargetType, EImageFormat::JPEG);
+	}
+	else if (*StringItem == PngFormatName)
+	{
+		SequenceRendererTargets.SetOutputFormat(TargetType, EImageFormat::PNG);
+	}
+	else if (*StringItem == ExrFormatName)
+	{
+		SequenceRendererTargets.SetOutputFormat(TargetType, EImageFormat::EXR);
+	}
+	else
+	{
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Invalid output format selection '%s'"),
+			*FString(__FUNCTION__), **StringItem);
+	}
 }
 
-void FWidgetManager::OnUseExrChanged(ECheckBoxState NewState, const FRendererTargetOptions::TargetType TargetType)
+FText FWidgetManager::SelectedOutputFormat(const FRendererTargetOptions::TargetType TargetType) const
 {
-	SequenceRendererTargets.SetExrUsage(TargetType, (NewState == ECheckBoxState::Checked));
+	EImageFormat OutputFormat = SequenceRendererTargets.OutputFormat(TargetType);
+
+	if (OutputFormat == EImageFormat::JPEG)
+	{
+		return FText::FromString(JpgFormatName);
+	}
+	else if (OutputFormat == EImageFormat::PNG)
+	{
+		return FText::FromString(PngFormatName);
+	}
+	else if (OutputFormat == EImageFormat::EXR)
+	{
+		return FText::FromString(ExrFormatName);
+	}
+	else
+	{
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Invalid target type '%d'"),
+			*FString(__FUNCTION__), TargetType);
+		return FText::GetEmpty();
+	}
 }
 
 bool FWidgetManager::GetIsRenderImagesEnabled() const
@@ -458,10 +507,18 @@ void FWidgetManager::LoadWidgetOptionStates()
 	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::DEPTH_IMAGE, WidgetStateAsset->bDepthImagesSelected);
 	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::NORMAL_IMAGE, WidgetStateAsset->bNormalImagesSelected);
 	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::SEMANTIC_IMAGE, WidgetStateAsset->bSemanticImagesSelected);
-	SequenceRendererTargets.SetExrUsage(FRendererTargetOptions::COLOR_IMAGE, WidgetStateAsset->bColorImagesExrSelected);
-	SequenceRendererTargets.SetExrUsage(FRendererTargetOptions::DEPTH_IMAGE, WidgetStateAsset->bDepthImagesExrSelected);
-	SequenceRendererTargets.SetExrUsage(FRendererTargetOptions::NORMAL_IMAGE, WidgetStateAsset->bNormalImagesExrSelected);
-	SequenceRendererTargets.SetExrUsage(FRendererTargetOptions::SEMANTIC_IMAGE, WidgetStateAsset->bSemanticImagesExrSelected);
+	SequenceRendererTargets.SetOutputFormat(
+		FRendererTargetOptions::COLOR_IMAGE,
+		static_cast<EImageFormat>(WidgetStateAsset->bColorImagesOutputFormat));
+	SequenceRendererTargets.SetOutputFormat(
+		FRendererTargetOptions::DEPTH_IMAGE,
+		static_cast<EImageFormat>(WidgetStateAsset->bDepthImagesOutputFormat));
+	SequenceRendererTargets.SetOutputFormat(
+		FRendererTargetOptions::NORMAL_IMAGE,
+		static_cast<EImageFormat>(WidgetStateAsset->bNormalImagesOutputFormat));
+	SequenceRendererTargets.SetOutputFormat(
+		FRendererTargetOptions::SEMANTIC_IMAGE,
+		static_cast<EImageFormat>(WidgetStateAsset->bSemanticImagesOutputFormat));
 	OutputImageResolution = WidgetStateAsset->OutputImageResolution;
 	SequenceRendererTargets.SetDepthRangeMeters(WidgetStateAsset->DepthRange);
 	OutputDirectory = WidgetStateAsset->OutputDirectory;
@@ -488,10 +545,14 @@ void FWidgetManager::SaveWidgetOptionStates(UWidgetStateAsset* WidgetStateAsset)
 	WidgetStateAsset->bDepthImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::DEPTH_IMAGE);
 	WidgetStateAsset->bNormalImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::NORMAL_IMAGE);
 	WidgetStateAsset->bSemanticImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::SEMANTIC_IMAGE);
-	WidgetStateAsset->bColorImagesExrSelected = SequenceRendererTargets.ExrSelected(FRendererTargetOptions::COLOR_IMAGE);
-	WidgetStateAsset->bDepthImagesExrSelected = SequenceRendererTargets.ExrSelected(FRendererTargetOptions::DEPTH_IMAGE);
-	WidgetStateAsset->bNormalImagesExrSelected = SequenceRendererTargets.ExrSelected(FRendererTargetOptions::NORMAL_IMAGE);
-	WidgetStateAsset->bSemanticImagesExrSelected = SequenceRendererTargets.ExrSelected(FRendererTargetOptions::SEMANTIC_IMAGE);
+	WidgetStateAsset->bColorImagesOutputFormat = static_cast<int8>(
+		SequenceRendererTargets.OutputFormat(FRendererTargetOptions::COLOR_IMAGE));
+	WidgetStateAsset->bDepthImagesOutputFormat = static_cast<int8>(
+		SequenceRendererTargets.OutputFormat(FRendererTargetOptions::DEPTH_IMAGE));
+	WidgetStateAsset->bNormalImagesOutputFormat = static_cast<int8>(
+		SequenceRendererTargets.OutputFormat(FRendererTargetOptions::NORMAL_IMAGE));
+	WidgetStateAsset->bSemanticImagesOutputFormat = static_cast<int8>(
+		SequenceRendererTargets.OutputFormat(FRendererTargetOptions::SEMANTIC_IMAGE));
 	WidgetStateAsset->OutputImageResolution = OutputImageResolution;
 	WidgetStateAsset->DepthRange = SequenceRendererTargets.DepthRangeMeters();
 	WidgetStateAsset->OutputDirectory = OutputDirectory;

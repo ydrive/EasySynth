@@ -17,8 +17,8 @@ class UTextureStyleManager;
 class FSemanticImageTarget : public FRendererTarget
 {
 public:
-	explicit FSemanticImageTarget(UTextureStyleManager* TextureStyleManager, const bool bUseExr) :
-		FRendererTarget(TextureStyleManager, bUseExr)
+	explicit FSemanticImageTarget(UTextureStyleManager* TextureStyleManager, const EImageFormat ImageFormat) :
+		FRendererTarget(TextureStyleManager, ImageFormat)
 	{}
 
 	/** Returns the name of the target */
