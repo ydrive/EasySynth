@@ -4,11 +4,12 @@ EasySynth is an Unreal Engine plugin for the easy creation of image datasets fro
 
 The plugin works by automatically starting the rendering of a user-defined level sequence, with different camera post-process settings, to produce:
 
+- Camera poses, including position and rotation, as well as calibration parameters
 - Standard color images, as seen while creating the sequence in the editor
 - Depth images, representing the depth of a pixel by a grayscale value
 - Normal images, representing pixel normals using X, Y, and Z color values
+- Optical flow images
 - Semantic images, with every object rendered using the user-defined semantic color
-- Camera poses, including position and rotation, as well as calibration parameters
 
 ## Installation
 

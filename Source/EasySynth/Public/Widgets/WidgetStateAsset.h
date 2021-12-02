@@ -52,6 +52,14 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
 	int8 bNormalImagesOutputFormat;
 
+	/** Whether optical flow images are selected */
+	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
+	bool bOpticalFlowImagesSelected;
+
+	/** Output format for optical flow images */
+	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
+	int8 bOpticalFlowImagesOutputFormat;
+
 	/** Whether semantic images are selected */
 	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
 	bool bSemanticImagesSelected;

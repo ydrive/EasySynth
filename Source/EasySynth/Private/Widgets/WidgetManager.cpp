@@ -74,6 +74,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 	TargetCheckBoxNames.Add(FRendererTargetOptions::COLOR_IMAGE, LOCTEXT("ColorImagesCheckBoxText", "Color images"));
 	TargetCheckBoxNames.Add(FRendererTargetOptions::DEPTH_IMAGE, LOCTEXT("DepthImagesCheckBoxText", "Depth images"));
 	TargetCheckBoxNames.Add(FRendererTargetOptions::NORMAL_IMAGE, LOCTEXT("NormalImagesCheckBoxText", "Normal images"));
+	TargetCheckBoxNames.Add(FRendererTargetOptions::OPTICAL_FLOW_IMAGE, LOCTEXT("OpticalFlowImagesCheckBoxText", "Optical flow images"));
 	TargetCheckBoxNames.Add(FRendererTargetOptions::SEMANTIC_IMAGE, LOCTEXT("SemanticImagesCheckBoxText", "Semantic images"));
 	for (auto Element : TargetCheckBoxNames)
 	{
@@ -262,6 +263,22 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 					[this](const float NewValue){ SequenceRendererTargets.SetDepthRangeMeters(NewValue); })
 				.MinValue(0.01f)
 				.MaxValue(10000.0f)
+			]
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(STextBlock)
+				.Text(LOCTEXT("OpticalFlowScaleText", "Optical flow scale coefficient"))
+			]
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(SSpinBox<float>)
+				.Value_Lambda([this](){ return SequenceRendererTargets.OpticalFlowScale(); })
+				.OnValueChanged_Lambda(
+					[this](const float NewValue){ SequenceRendererTargets.SetOpticalFlowScale(NewValue); })
+				.MinValue(1.0f)
+				.MaxValue(100.0f)
 			]
 			+SScrollBox::Slot()
 			.Padding(2)
@@ -506,6 +523,7 @@ void FWidgetManager::LoadWidgetOptionStates()
 	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::COLOR_IMAGE, WidgetStateAsset->bColorImagesSelected);
 	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::DEPTH_IMAGE, WidgetStateAsset->bDepthImagesSelected);
 	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::NORMAL_IMAGE, WidgetStateAsset->bNormalImagesSelected);
+	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::OPTICAL_FLOW_IMAGE, WidgetStateAsset->bOpticalFlowImagesSelected);
 	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::SEMANTIC_IMAGE, WidgetStateAsset->bSemanticImagesSelected);
 	SequenceRendererTargets.SetOutputFormat(
 		FRendererTargetOptions::COLOR_IMAGE,
@@ -516,6 +534,9 @@ void FWidgetManager::LoadWidgetOptionStates()
 	SequenceRendererTargets.SetOutputFormat(
 		FRendererTargetOptions::NORMAL_IMAGE,
 		static_cast<EImageFormat>(WidgetStateAsset->bNormalImagesOutputFormat));
+	SequenceRendererTargets.SetOutputFormat(
+		FRendererTargetOptions::OPTICAL_FLOW_IMAGE,
+		static_cast<EImageFormat>(WidgetStateAsset->bOpticalFlowImagesOutputFormat));
 	SequenceRendererTargets.SetOutputFormat(
 		FRendererTargetOptions::SEMANTIC_IMAGE,
 		static_cast<EImageFormat>(WidgetStateAsset->bSemanticImagesOutputFormat));
@@ -544,6 +565,7 @@ void FWidgetManager::SaveWidgetOptionStates(UWidgetStateAsset* WidgetStateAsset)
 	WidgetStateAsset->bColorImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::COLOR_IMAGE);
 	WidgetStateAsset->bDepthImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::DEPTH_IMAGE);
 	WidgetStateAsset->bNormalImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::NORMAL_IMAGE);
+	WidgetStateAsset->bOpticalFlowImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::OPTICAL_FLOW_IMAGE);
 	WidgetStateAsset->bSemanticImagesSelected = SequenceRendererTargets.TargetSelected(FRendererTargetOptions::SEMANTIC_IMAGE);
 	WidgetStateAsset->bColorImagesOutputFormat = static_cast<int8>(
 		SequenceRendererTargets.OutputFormat(FRendererTargetOptions::COLOR_IMAGE));
@@ -551,6 +573,8 @@ void FWidgetManager::SaveWidgetOptionStates(UWidgetStateAsset* WidgetStateAsset)
 		SequenceRendererTargets.OutputFormat(FRendererTargetOptions::DEPTH_IMAGE));
 	WidgetStateAsset->bNormalImagesOutputFormat = static_cast<int8>(
 		SequenceRendererTargets.OutputFormat(FRendererTargetOptions::NORMAL_IMAGE));
+	WidgetStateAsset->bOpticalFlowImagesOutputFormat = static_cast<int8>(
+		SequenceRendererTargets.OutputFormat(FRendererTargetOptions::OPTICAL_FLOW_IMAGE));
 	WidgetStateAsset->bSemanticImagesOutputFormat = static_cast<int8>(
 		SequenceRendererTargets.OutputFormat(FRendererTargetOptions::SEMANTIC_IMAGE));
 	WidgetStateAsset->OutputImageResolution = OutputImageResolution;

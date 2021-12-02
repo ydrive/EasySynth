@@ -12,21 +12,21 @@ class UTextureStyleManager;
 
 /**
  * Class responsible for updating the world properties before
- * the depth image target rendering and restoring them after the rendering
+ * the optical flow image target rendering and restoring them after the rendering
 */
-class FDepthImageTarget : public FRendererTarget
+class FOpticalFlowImageTarget : public FRendererTarget
 {
 public:
-	explicit FDepthImageTarget(
+	explicit FOpticalFlowImageTarget(
 		UTextureStyleManager* TextureStyleManager,
 		const EImageFormat ImageFormat,
-		const float DepthRangeMeters) :
+		const float OpticalFlowScale) :
 			FRendererTarget(TextureStyleManager, ImageFormat),
-			DepthRangeMeters(DepthRangeMeters)
+			OpticalFlowScale(OpticalFlowScale)
 	{}
 
 	/** Returns the name of the target */
-	virtual FString Name() const { return TEXT("DepthImage"); }
+	virtual FString Name() const { return TEXT("OpticalFlowImage"); }
 
 	/** Prepares the sequence for rendering the target */
 	bool PrepareSequence(ULevelSequence* LevelSequence) override;
@@ -36,8 +36,8 @@ public:
 
 private:
 	/** The clipping range meters when rendering the depth target */
-	const float DepthRangeMeters;
+	const float OpticalFlowScale;
 
 	/** The name of the depth range meters material parameter */
-	static const FString DepthRangeMetersParameter;
+	static const FString OpticalFlowScaleParameter;
 };

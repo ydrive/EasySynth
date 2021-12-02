@@ -1,21 +1,22 @@
 // Copyright (c) YDrive Inc. All rights reserved.
 // Licensed under the MIT License.
 
-#include "RendererTargets/DepthImageTarget.h"
+#include "RendererTargets/OpticalFlowImageTarget.h"
 
 #include "Camera/CameraComponent.h"
-#include "Materials/MaterialInstanceDynamic.h"
 
 #include "LevelSequence.h"
 #include "TextureStyles/TextureStyleManager.h"
 
 
-const FString FDepthImageTarget::DepthRangeMetersParameter("DepthRangeMeters");
+const FString FOpticalFlowImageTarget::OpticalFlowScaleParameter("OpticalFlowScale");
 
-bool FDepthImageTarget::PrepareSequence(ULevelSequence* LevelSequence)
+bool FOpticalFlowImageTarget::PrepareSequence(ULevelSequence* LevelSequence)
 {
 	// Update texture style inside the level
 	TextureStyleManager->CheckoutTextureStyle(ETextureStyle::COLOR);
+
+	// TODO: Set the optical flow material parameter
 
 	// Get all camera components bound to the level sequence
 	TArray<UCameraComponent*> Cameras = GetCameras(LevelSequence);
@@ -29,19 +30,9 @@ bool FDepthImageTarget::PrepareSequence(ULevelSequence* LevelSequence)
 	UMaterial* PostProcessMaterial = LoadPostProcessMatrial();
 	if (PostProcessMaterial == nullptr)
 	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not load depth post process material"), *FString(__FUNCTION__))
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not load optical flow post process material"), *FString(__FUNCTION__))
 		return false;
 	}
-
-	// Create the material instance and set the range parameter
-	UMaterialInstanceDynamic* PostProcessMaterialInstance =
-		UMaterialInstanceDynamic::Create(PostProcessMaterial, nullptr);
-	if (PostProcessMaterialInstance == nullptr)
-	{
-		UE_LOG(LogTemp, Error, TEXT("%s: Could not create the material instance dynamic"), *FString(__FUNCTION__))
-		return false;
-	}
-	PostProcessMaterialInstance->SetScalarParameterValue(*DepthRangeMetersParameter, DepthRangeMeters);
 
 	for (UCameraComponent* Camera : Cameras)
 	{
@@ -51,13 +42,13 @@ bool FDepthImageTarget::PrepareSequence(ULevelSequence* LevelSequence)
 			return false;
 		}
 		Camera->PostProcessSettings.WeightedBlendables.Array.Empty();
-		Camera->PostProcessSettings.WeightedBlendables.Array.Add(FWeightedBlendable(1.0f, PostProcessMaterialInstance));
+		Camera->PostProcessSettings.WeightedBlendables.Array.Add(FWeightedBlendable(1.0f, PostProcessMaterial));
 	}
 
 	return true;
 }
 
-bool FDepthImageTarget::FinalizeSequence(ULevelSequence* LevelSequence)
+bool FOpticalFlowImageTarget::FinalizeSequence(ULevelSequence* LevelSequence)
 {
 	return ClearCameraPostProcess(LevelSequence);
 }

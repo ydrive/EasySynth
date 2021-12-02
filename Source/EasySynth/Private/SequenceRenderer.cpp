@@ -15,10 +15,12 @@
 
 
 const float FRendererTargetOptions::DefaultDepthRangeMetersValue = 100.0f;
+const float FRendererTargetOptions::DefaultOpticalFlowScaleValue = 1.0f;
 
 FRendererTargetOptions::FRendererTargetOptions() :
 	bExportCameraPoses(false),
-	DepthRangeMetersValue(DefaultDepthRangeMetersValue)
+	DepthRangeMetersValue(DefaultDepthRangeMetersValue),
+	OpticalFlowScaleValue(DefaultOpticalFlowScaleValue)
 {
 	SelectedTargets.Init(false, TargetType::COUNT);
 	OutputFormats.Init(EImageFormat::JPEG, TargetType::COUNT);
@@ -72,6 +74,8 @@ TSharedPtr<FRendererTarget> FRendererTargetOptions::RendererTarget(
 	case DEPTH_IMAGE: return MakeShared<FDepthImageTarget>(
 		TextureStyleManager, OutputFormat, DepthRangeMetersValue); break;
 	case NORMAL_IMAGE: return MakeShared<FNormalImageTarget>(TextureStyleManager, OutputFormat); break;
+	case OPTICAL_FLOW_IMAGE: return MakeShared<FOpticalFlowImageTarget>(
+		TextureStyleManager, OutputFormat, OpticalFlowScaleValue); break;
 	case SEMANTIC_IMAGE: return MakeShared<FSemanticImageTarget>(TextureStyleManager, OutputFormat); break;
 	default: return nullptr;
 	}

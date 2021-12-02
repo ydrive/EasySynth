@@ -9,6 +9,7 @@
 #include "RendererTargets/ColorImageTarget.h"
 #include "RendererTargets/DepthImageTarget.h"
 #include "RendererTargets/NormalImageTarget.h"
+#include "RendererTargets/OpticalFlowImageTarget.h"
 #include "RendererTargets/SemanticImageTarget.h"
 #include "TextureStyles/TextureStyleManager.h"
 
@@ -27,7 +28,7 @@ class FRendererTargetOptions
 {
 public:
 	/** The enum containing all supported rendering targets */
-	enum TargetType { COLOR_IMAGE, DEPTH_IMAGE, NORMAL_IMAGE, SEMANTIC_IMAGE, COUNT };
+	enum TargetType { COLOR_IMAGE, DEPTH_IMAGE, NORMAL_IMAGE, OPTICAL_FLOW_IMAGE, SEMANTIC_IMAGE, COUNT };
 
 	FRendererTargetOptions();
 
@@ -58,6 +59,12 @@ public:
 	/** DepthRangeMetersValue setter */
 	float DepthRangeMeters() const { return DepthRangeMetersValue; }
 
+	/** OpticalFlowScaleValue getter */
+	void SetOpticalFlowScale(const float OpticalFlowScale) { OpticalFlowScaleValue = OpticalFlowScale; }
+
+	/** OpticalFlowScaleValue setter */
+	float OpticalFlowScale() const { return OpticalFlowScaleValue; }
+
 	/** Populate provided queue with selected renderer targets */
 	void GetSelectedTargets(
 		UTextureStyleManager* TextureStyleManager,
@@ -82,8 +89,17 @@ private:
 	*/
 	float DepthRangeMetersValue;
 
+	/**
+	 * Multiplying coefficient for optical flow
+	 * Larger waluse increase color intensity, but increase the chance of clipping
+	*/
+	float OpticalFlowScaleValue;
+
 	/** Default value for the depth range */
 	static const float DefaultDepthRangeMetersValue;
+
+	/** Default value for the optical flow scale */
+	static const float DefaultOpticalFlowScaleValue;
 };
 
 
