@@ -4,6 +4,7 @@
 #include "RendererTargets/OpticalFlowImageTarget.h"
 
 #include "Camera/CameraComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 #include "LevelSequence.h"
 #include "TextureStyles/TextureStyleManager.h"
@@ -15,8 +16,6 @@ bool FOpticalFlowImageTarget::PrepareSequence(ULevelSequence* LevelSequence)
 {
 	// Update texture style inside the level
 	TextureStyleManager->CheckoutTextureStyle(ETextureStyle::COLOR);
-
-	// TODO: Set the optical flow material parameter
 
 	// Get all camera components bound to the level sequence
 	TArray<UCameraComponent*> Cameras = GetCameras(LevelSequence);
@@ -34,6 +33,16 @@ bool FOpticalFlowImageTarget::PrepareSequence(ULevelSequence* LevelSequence)
 		return false;
 	}
 
+	// Create the material instance and set the scale parameter
+	UMaterialInstanceDynamic* PostProcessMaterialInstance =
+		UMaterialInstanceDynamic::Create(PostProcessMaterial, nullptr);
+	if (PostProcessMaterialInstance == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s: Could not create the material instance dynamic"), *FString(__FUNCTION__))
+		return false;
+	}
+	PostProcessMaterialInstance->SetScalarParameterValue(*OpticalFlowScaleParameter, OpticalFlowScale);
+
 	for (UCameraComponent* Camera : Cameras)
 	{
 		if (Camera == nullptr)
@@ -42,7 +51,7 @@ bool FOpticalFlowImageTarget::PrepareSequence(ULevelSequence* LevelSequence)
 			return false;
 		}
 		Camera->PostProcessSettings.WeightedBlendables.Array.Empty();
-		Camera->PostProcessSettings.WeightedBlendables.Array.Add(FWeightedBlendable(1.0f, PostProcessMaterial));
+		Camera->PostProcessSettings.WeightedBlendables.Array.Add(FWeightedBlendable(1.0f, PostProcessMaterialInstance));
 	}
 
 	return true;
