@@ -56,31 +56,17 @@ Image rendering relies on a user-defined `Level Sequence`, which represents a mo
 - https://youtu.be/-NmHXAFX-3M
 
 Setting up rendering options inside the EasySynth widget:
-
-<div class="container" style="display: flex">
-  <div style="width: 60%;">
-    <ul>
-      <li>Pick the created level sequence</li>
-      <li>Choose the desired rendering targets using checkboxes</li>
-      <li>Choose the output image format for each target</li>
-      <ul>
-          <li>jpg - 8-bit image output with lossy jpeg compression</li>
-          <li>png - 8-bit image output with lossless png compression, but with zero alpha, making the images appear transparent when previewed</li>
-          <li>exr - 16-bit image output with lossless exr compression, to open them with OpenCV in Python use `cv2.imread(img_path, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)`</li>
-      </ul>
-      <li>Choose the output images width and height</li>
-      <ul>
-          <li>Choosing a different aspect ratio than the selected camera actor aspect ratio can result in an unexpected field of view in the output images</li>
-      </ul>
-      <li>Choose the depth infinity threshold for depth rendering</li>
-      <li>Choose the appropriate scaling coefficient for increasing optical flow image color saturation</li>
-      <li>Choose the output directory</li>
-    </ul>
-  </div>
-  <div style="width: 40%;">
-    <img src="ReadmeContent/Widget.png"/>
-  </div>
-</div>
+- Pick the created level sequence
+- Choose the desired rendering targets using checkboxes
+- Choose the output image format for each target
+  - jpg - 8-bit image output with lossy jpeg compression
+  - png - 8-bit image output with lossless png compression, but with zero alpha, making the images appear transparent when previewed
+  - exr - 16-bit image output with lossless exr compression, to open them with OpenCV in Python use `cv2.imread(img_path, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)`
+- Choose the output images width and height
+  - Choosing a different aspect ratio than the selected camera actor aspect ratio can result in an unexpected field of view in the output images
+- Choose the depth infinity threshold for depth rendering
+- Choose the appropriate scaling coefficient for increasing optical flow image color saturation
+- Choose the output directory
 
 Start the rendering by clicking the `Render Images` button.
 
