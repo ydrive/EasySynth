@@ -31,13 +31,13 @@ public:
 	/** Prepares the sequence for rendering the target */
 	bool PrepareSequence(ULevelSequence* LevelSequence) override;
 
-	/** Reverts changes made to the sequence by the PrepareSequence */
+	/** Reverts changes made to the sequence by PrepareSequence */
 	bool FinalizeSequence(ULevelSequence* LevelSequence) override;
 
 private:
-	/** The clipping range meters when rendering the depth target */
+	/** The scaling coefficient for increasing the saturation of optical flow images */
 	const float OpticalFlowScale;
 
-	/** The name of the depth range meters material parameter */
+	/** The name of the optical flow scale material parameter */
 	static const FString OpticalFlowScaleParameter;
 };
