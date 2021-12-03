@@ -91,7 +91,7 @@ private:
 
 	/**
 	 * Multiplying coefficient for optical flow
-	 * Larger waluse increase color intensity, but increase the chance of clipping
+	 * Larger values increase color intensity, but also increase the chance of clipping
 	*/
 	float OpticalFlowScaleValue;
 
