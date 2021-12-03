@@ -152,7 +152,7 @@ bool FCameraPoseExporter::SavePosesToFile(const FString& OutputDir)
 {
 	// Create the file content
 	TArray<FString> Lines;
-	Lines.Add("id, tx, ty, tz, qw, qx, qy, qz, fx, fy, cx, cy");
+	Lines.Add("id,tx,ty,tz,qw,qx,qy,qz,fx,fy,cx,cy");
 
     for (int i = 0; i < CameraTransforms.Num(); i++)
 	{
@@ -162,7 +162,7 @@ bool FCameraPoseExporter::SavePosesToFile(const FString& OutputDir)
 		// TODO: Check if quaternion rotations are fine as is, or require coordinate system conversion
 		const FQuat& Rotation = Transform.GetRotation();
 		const FVector2D& FocalLength = PixelFocalLengths[i];
-		Lines.Add(FString::Printf(TEXT("%d, %f, %f, %f, %f, %f, %f, %f, %f, %f, %d, %d"),
+		Lines.Add(FString::Printf(TEXT("%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d"),
 			i,
 			Location.X , Location.Y, Location.Z,
 			Rotation.W, Rotation.X, Rotation.Y, Rotation.Z,
