@@ -97,14 +97,14 @@ Output is the `CameraPoses.csv` file, in which the first line contains column na
 | 11     | int   | cx   | Halved image width         |
 | 12     | int   | cy   | Halved image height        |
 
-The coordinate system for saving camera positions and rotation quaternions is the usual right-handed Z-up coordinate system. Note that this differs from Unreal Engine, which internally uses the left-handed Z-up coordinate system.
+The coordinate system for saving camera positions and rotation quaternions is the usual right-handed Z-up coordinate system (consistent with Blender and 3ds Max). Note that this differs from Unreal Engine, which internally uses the left-handed Z-up coordinate system.
 
 ### Optical flow images
 
-Optical flow images contain color-coded optical flow vectors for each pixel. An optical flow vector describes how the content of a pixel moved between frames. Specifically the vector points from the coordinates the pixel content was in the previous frame, to where the content is in the current frame. Coordinate system the vectors are represented in is the image pixel coordinates, with the image scaled to a 1.0 x 1.0 square.
+Optical flow images contain color-coded optical flow vectors for each pixel. An optical flow vector describes how the content of a pixel has moved between frames. Specifically, the vector spans from coordinates where the pixel content was in the previous frame to where the content is in the current frame. The coordinate system the vectors are represented in is the image pixel coordinates, with the image scaled to a 1.0 x 1.0 square.
 
-Optical flow vectors are color-ceded by picking a color from the HSC color wheel with the color angle matching the vector angle and the color saturation matching the vector intensity. If the scene in your sequence is moving slowly these vectors will be very small and the colors will be hard to see when previewed. If this is the case, use the `optical flow scale` parameter to proportionally increase the images saturation.
+Optical flow vectors are color-coded by picking a color from the HSV color wheel with the color angle matching the vector angle and the color saturation matching the vector intensity. If the scene in your sequence moves slowly, these vectors can be very short, and the colors can be hard to see when previewed. If this is the case, use the `optical flow scale` parameter to proportionally increase the images saturation.
 
-Our implementation was inspired by the [ProfFan's](https://github.com/ProfFan) [UnrealOpticalFlowDemo](https://github.com/ProfFan/UnrealOpticalFlowDemo), but we had to omit the engine patching in order to make this plugin as easy to use as possible (i.e. not requiring the engine to be manually built). The shader code that renders optical flow can be accessed by opening the optical flow post process material from the plugins's content inside the Unreal Engine editor.
+Our implementation was inspired by the [ProfFan's](https://github.com/ProfFan) [UnrealOpticalFlowDemo](https://github.com/ProfFan/UnrealOpticalFlowDemo), but we had to omit the engine patching to make this plugin as easy to use as possible (i.e. not requiring the engine to be manually built). The shader code that renders optical flow is baked inside the optical flow post-process material. It can be accessed by opening the post-process material from the plugin's content inside the Unreal Engine editor.
 
 <b>IMPORTANT:</b> Due to Unreal Engine [limitations](https://github.com/EpicGames/UnrealEngine/pull/6933) optical flow rendering assumes all objects other than the camera are stationary. If there are moving objects in the scene while rendering the sequence, the optical flow for these pixels will be incorrect.
