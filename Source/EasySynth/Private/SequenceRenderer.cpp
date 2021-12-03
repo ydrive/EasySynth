@@ -283,9 +283,9 @@ bool USequenceRenderer::PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipel
 		ErrorMessage = "JPG, PNG or EXR settings not found";
 		return false;
 	}
-	JpgSetting->SetIsEnabled(CurrentTarget->OutputFormat() == EImageFormat::JPEG);
-	PngSetting->SetIsEnabled(CurrentTarget->OutputFormat() == EImageFormat::PNG);
-	ExrSetting->SetIsEnabled(CurrentTarget->OutputFormat() == EImageFormat::EXR);
+	JpgSetting->SetIsEnabled(CurrentTarget->ImageFormat == EImageFormat::JPEG);
+	PngSetting->SetIsEnabled(CurrentTarget->ImageFormat == EImageFormat::PNG);
+	ExrSetting->SetIsEnabled(CurrentTarget->ImageFormat == EImageFormat::EXR);
 
 	// Update pipeline output settings for the current target
 	UMoviePipelineOutputSetting* OutputSetting =

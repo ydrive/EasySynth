@@ -23,8 +23,8 @@ class FRendererTarget
 {
 public:
 	explicit FRendererTarget(UTextureStyleManager* TextureStyleManager, const EImageFormat ImageFormat) :
-		TextureStyleManager(TextureStyleManager),
-		ImageFormat(ImageFormat)
+		ImageFormat(ImageFormat),
+		TextureStyleManager(TextureStyleManager)
 	{}
 
 	/** Returns a name of a specific target */
@@ -36,8 +36,8 @@ public:
 	/** Reverts changes made to the sequence by the PrepareSequence */
 	virtual bool FinalizeSequence(ULevelSequence* LevelSequence) = 0;
 
-	/** Returns the selected output format */
-	EImageFormat OutputFormat() const { return ImageFormat; }
+	/** Output image format selected for this target */
+	const EImageFormat ImageFormat;
 
 protected:
 	/** Extracts camera components used by the level sequence */
@@ -54,7 +54,4 @@ protected:
 
 	/** Handle for managing texture style in the level */
 	UTextureStyleManager* TextureStyleManager;
-
-	/** Output image format selected for this target */
-	const EImageFormat ImageFormat;
 };
