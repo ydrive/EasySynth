@@ -70,6 +70,8 @@ Setting up rendering options inside the EasySynth widget:
 
 Start the rendering by clicking the `Render Images` button.
 
+<b>IMPORTANT:</b> Do not close a window that opens during rendering. Closing the window will result in the successful rendering being falsely reported, as it is not possible to know if the window has been closed from the plugin side.
+
 ### Level sequence tips
 
 - If you want images to be more spaced out (instead of being very close to provide a smooth video), you can set the custom level sequence FPS to a small value (1 FPS or lower) inside the Sequencer editor

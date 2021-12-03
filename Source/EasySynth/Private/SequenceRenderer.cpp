@@ -265,7 +265,6 @@ void USequenceRenderer::StartRendering()
 
 	// Assign rendering finished callback
 	ActiveExecutor->OnExecutorFinished().AddUObject(this, &USequenceRenderer::OnExecutorFinished);
-	// TODO: Bind other events, such as rendering canceled
 }
 
 bool USequenceRenderer::PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem)
