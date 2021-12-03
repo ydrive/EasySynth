@@ -8,9 +8,7 @@ The plugin works by automatically starting the rendering of a user-defined level
 - Standard color images, as seen while creating the sequence in the editor
 - Depth images, representing the depth of a pixel using a grayscale value
 - Normal images, representing pixel normals using X, Y, and Z color values
-- Optical flow images, representing per pixel vectors connecting pixel's previous and current position in the frame
-  - Movement vectors are represented using color's angle and saturation as seen on the HSV color wheel
-  - <b>IMPORTANT</b> Due to Unreal Engine limitations optical flow rendering assumes all objects other than camera are stationary
+- Optical flow images, for more detail check out the optical flow section below
 - Semantic images, with every object rendered using the user-defined semantic color
 
 ## Installation
@@ -98,3 +96,13 @@ Output is the `CameraPoses.csv` file, in which the first line contains column na
 | 12     | int   | cy   | Halved image height        |
 
 The coordinate system for saving camera positions and rotation quaternions is the usual right-handed Z-up coordinate system. Note that this differs from Unreal Engine, which internally uses the left-handed Z-up coordinate system.
+
+### Optical flow images
+
+Optical flow images contain color-coded optical flow vectors for each pixel. An optical flow vector describes how the content of a pixel moved between frames. Specifically the vector points from the coordinates the pixel content was in the previous frame, to where the content is in the current frame. Coordinate system the vectors are represented in is the image pixel coordinates, with the image scaled to a 1.0 x 1.0 square.
+
+Optical flow vectors are color-ceded by picking a color from the HSC color wheel with the color angle matching the vector angle and the color saturation matching the vector intensity. If the scene in your sequence is moving slowly these vectors will be very small and the colors will be hard to see when previewed. If this is the case, use the `optical flow scale` parameter to proportionally increase the images saturation.
+
+Our implementation was inspired by the [ProfFan's](https://github.com/ProfFan) [UnrealOpticalFlowDemo](https://github.com/ProfFan/UnrealOpticalFlowDemo), but we had to omit the engine patching in order to make this plugin as easy to use as possible (i.e. not requiring the engine to be manually built).
+
+<b>IMPORTANT:</b> Due to Unreal Engine [limitations](https://github.com/EpicGames/UnrealEngine/pull/6933) optical flow rendering assumes all objects other than the camera are stationary. If there are moving objects in the scene while rendering the sequence, the optical flow for these pixels will be incorrect.
