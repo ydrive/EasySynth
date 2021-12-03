@@ -56,6 +56,9 @@ Image rendering relies on a user-defined `Level Sequence`, which represents a mo
 - https://youtu.be/-NmHXAFX-3M
 
 Setting up rendering options inside the EasySynth widget:
+
+![Plugin widget](/ReadmeContent/Widget.png)
+
 - Pick the created level sequence
 - Choose the desired rendering targets using checkboxes
 - Choose the output image format for each target
