@@ -6,9 +6,11 @@ The plugin works by automatically starting the rendering of a user-defined level
 
 - Camera poses, including position and rotation, as well as calibration parameters
 - Standard color images, as seen while creating the sequence in the editor
-- Depth images, representing the depth of a pixel by a grayscale value
+- Depth images, representing the depth of a pixel using a grayscale value
 - Normal images, representing pixel normals using X, Y, and Z color values
-- Optical flow images
+- Optical flow images, representing per pixel vectors connecting pixel's previous and current position in the frame
+  - Movement vectors are represented using color's angle and saturation as seen on the HSV color wheel
+  - <b>IMPORTANT</b> Due to Unreal Engine limitations optical flow rendering assumes all objects other than camera are stationary
 - Semantic images, with every object rendered using the user-defined semantic color
 
 ## Installation
@@ -65,6 +67,7 @@ Setting up rendering options inside the EasySynth widget:
 - Choose the output images width and height
   - Choosing a different aspect ratio than the selected camera actor aspect ratio can result in an unexpected field of view in the output images
 - Choose the depth infinity threshold for depth rendering
+- Choose the appropriate scaling coefficient for increasing optical flow image color saturation
 - Choose the output directory
 
 Start the rendering by clicking the `Render Images` button.
