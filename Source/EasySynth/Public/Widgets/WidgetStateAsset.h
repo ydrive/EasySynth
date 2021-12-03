@@ -72,6 +72,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Additional parameters")
 	float DepthRange;
 
+	/** Selected optical flow scale */
+	UPROPERTY(EditAnywhere, Category = "Additional parameters")
+	float OpticalFlowScale;
+
 	/** Selected output image resolution */
 	UPROPERTY(EditAnywhere, Category = "Additional parameters")
 	FIntPoint OutputImageResolution;

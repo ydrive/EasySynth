@@ -542,6 +542,7 @@ void FWidgetManager::LoadWidgetOptionStates()
 		static_cast<EImageFormat>(WidgetStateAsset->bSemanticImagesOutputFormat));
 	OutputImageResolution = WidgetStateAsset->OutputImageResolution;
 	SequenceRendererTargets.SetDepthRangeMeters(WidgetStateAsset->DepthRange);
+	SequenceRendererTargets.SetOpticalFlowScale(WidgetStateAsset->OpticalFlowScale);
 	OutputDirectory = WidgetStateAsset->OutputDirectory;
 }
 
@@ -579,6 +580,7 @@ void FWidgetManager::SaveWidgetOptionStates(UWidgetStateAsset* WidgetStateAsset)
 		SequenceRendererTargets.OutputFormat(FRendererTargetOptions::SEMANTIC_IMAGE));
 	WidgetStateAsset->OutputImageResolution = OutputImageResolution;
 	WidgetStateAsset->DepthRange = SequenceRendererTargets.DepthRangeMeters();
+	WidgetStateAsset->OpticalFlowScale = SequenceRendererTargets.OpticalFlowScale();
 	WidgetStateAsset->OutputDirectory = OutputDirectory;
 
 	// Save the asset
