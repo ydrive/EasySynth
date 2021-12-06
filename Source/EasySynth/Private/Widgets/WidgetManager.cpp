@@ -16,7 +16,7 @@
 
 const FString FWidgetManager::TextureStyleColorName(TEXT("Original color textures"));
 const FString FWidgetManager::TextureStyleSemanticName(TEXT("Semantic color textures"));
-const FString FWidgetManager::JpgFormatName(TEXT("jpg"));
+const FString FWidgetManager::JpegFormatName(TEXT("jpeg"));
 const FString FWidgetManager::PngFormatName(TEXT("png"));
 const FString FWidgetManager::ExrFormatName(TEXT("exr"));
 const FIntPoint FWidgetManager::DefaultOutputImageResolution(1920, 1080);
@@ -48,7 +48,7 @@ FWidgetManager::FWidgetManager() :
 	TextureStyleNames.Add(MakeShared<FString>(TextureStyleSemanticName));
 
 	// Prepare content of the outut image format combo box
-	OutputFormatNames.Add(MakeShared<FString>(JpgFormatName));
+	OutputFormatNames.Add(MakeShared<FString>(JpegFormatName));
 	OutputFormatNames.Add(MakeShared<FString>(PngFormatName));
 	OutputFormatNames.Add(MakeShared<FString>(ExrFormatName));
 
@@ -387,7 +387,7 @@ void FWidgetManager::OnOutputFormatSelectionChanged(
 	ESelectInfo::Type SelectInfo,
 	const FRendererTargetOptions::TargetType TargetType)
 {
-	if (*StringItem == JpgFormatName)
+	if (*StringItem == JpegFormatName)
 	{
 		SequenceRendererTargets.SetOutputFormat(TargetType, EImageFormat::JPEG);
 	}
@@ -412,7 +412,7 @@ FText FWidgetManager::SelectedOutputFormat(const FRendererTargetOptions::TargetT
 
 	if (OutputFormat == EImageFormat::JPEG)
 	{
-		return FText::FromString(JpgFormatName);
+		return FText::FromString(JpegFormatName);
 	}
 	else if (OutputFormat == EImageFormat::PNG)
 	{

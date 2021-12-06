@@ -131,8 +131,8 @@ private:
 	/** The name of the texture style representing semantic colors */
 	static const FString TextureStyleSemanticName;
 
-	/** The name of the JPG output format */
-	static const FString JpgFormatName;
+	/** The name of the JPEG output format */
+	static const FString JpegFormatName;
 
 	/** The name of the PNG output format */
 	static const FString PngFormatName;

@@ -272,18 +272,18 @@ bool USequenceRenderer::PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipel
 	check(MoviePipelineQueueSubsystem)
 
 	// Update export image format
-	UMoviePipelineSetting* JpgSetting = EasySynthMoviePipelineConfig->FindOrAddSettingByClass(
+	UMoviePipelineSetting* JpegSetting = EasySynthMoviePipelineConfig->FindOrAddSettingByClass(
 		UMoviePipelineImageSequenceOutput_JPG::StaticClass(), true);
 	UMoviePipelineSetting* PngSetting = EasySynthMoviePipelineConfig->FindSettingByClass(
 		UMoviePipelineImageSequenceOutput_PNG::StaticClass(), true);
 	UMoviePipelineSetting* ExrSetting = EasySynthMoviePipelineConfig->FindOrAddSettingByClass(
 		UMoviePipelineImageSequenceOutput_EXRLocal::StaticClass(), true);
-	if (JpgSetting == nullptr || PngSetting == nullptr || ExrSetting == nullptr)
+	if (JpegSetting == nullptr || PngSetting == nullptr || ExrSetting == nullptr)
 	{
-		ErrorMessage = "JPG, PNG or EXR settings not found";
+		ErrorMessage = "JPEG, PNG or EXR settings not found";
 		return false;
 	}
-	JpgSetting->SetIsEnabled(CurrentTarget->ImageFormat == EImageFormat::JPEG);
+	JpegSetting->SetIsEnabled(CurrentTarget->ImageFormat == EImageFormat::JPEG);
 	PngSetting->SetIsEnabled(CurrentTarget->ImageFormat == EImageFormat::PNG);
 	ExrSetting->SetIsEnabled(CurrentTarget->ImageFormat == EImageFormat::EXR);
 
