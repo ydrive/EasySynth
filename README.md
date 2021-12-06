@@ -6,10 +6,24 @@ The plugin works by automatically starting the rendering of a user-defined level
 
 - Camera poses, including position and rotation, as well as calibration parameters
 - Standard color images, as seen while creating the sequence in the editor
+
+<img src="ReadmeContent/ColorImage.gif" alt="Color image" width="250"/>
+
 - Depth images, representing the depth of a pixel using a grayscale value
+
+<img src="ReadmeContent/DepthImage.gif" alt="Depth image" width="250"/>
+
 - Normal images, representing pixel normals using X, Y, and Z color values
+
+<img src="ReadmeContent/NormalImage.gif" alt="Normal image" width="250"/>
+
 - Optical flow images, for more detail check out the optical flow section below
+
+<img src="ReadmeContent/OpticalFlowImage.gif" alt="Optical flow image" width="250"/>
+
 - Semantic images, with every object rendered using the user-defined semantic color
+
+<img src="ReadmeContent/SemanticImage.gif" alt="Sematic image" width="250"/>
 
 ## Installation
 
