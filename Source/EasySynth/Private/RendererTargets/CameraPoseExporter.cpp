@@ -40,7 +40,7 @@ bool FCameraPoseExporter::ExportCameraPoses(
 	}
 
 	// Store to file
-	if (!SavePosesToFile(OutputDir))
+	if (!SavePosesToCSV(OutputDir))
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed while saving camera poses to the file"), *FString(__FUNCTION__))
 		return false;
@@ -148,11 +148,11 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
 	return true;
 }
 
-bool FCameraPoseExporter::SavePosesToFile(const FString& OutputDir)
+bool FCameraPoseExporter::SavePosesToCSV(const FString& OutputDir)
 {
 	// Create the file content
 	TArray<FString> Lines;
-	Lines.Add("id,tx,ty,tz,qw,qx,qy,qz,fx,fy,cx,cy");
+	Lines.Add("id,tx,ty,tz,qw,qx,qy,qz,fx,fy,cx,cy,ex,ey,ez");
 
     for (int i = 0; i < CameraTransforms.Num(); i++)
 	{
