@@ -218,8 +218,8 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				SNew(SSpinBox<int32>)
 				.Value_Lambda([this](){ return OutputImageResolution.X; })
 				.OnValueChanged_Lambda([this](const int32 NewValue){ OutputImageResolution.X = NewValue / 2 * 2; })
-				.MinValue(1)
-				.MaxValue(10000)
+				.MinValue(100)
+				.MaxValue(1920 * 2)
 			]
 			+SScrollBox::Slot()
 			.Padding(2)
@@ -233,8 +233,8 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				SNew(SSpinBox<int32>)
 				.Value_Lambda([this](){ return OutputImageResolution.Y; })
 				.OnValueChanged_Lambda([this](const int32 NewValue){ OutputImageResolution.Y = NewValue / 2 * 2; })
-				.MinValue(1)
-				.MaxValue(10000)
+				.MinValue(100)
+				.MaxValue(1080 * 2)
 			]
 			+SScrollBox::Slot()
 			.Padding(2)
