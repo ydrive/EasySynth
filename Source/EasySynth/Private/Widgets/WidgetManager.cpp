@@ -31,10 +31,6 @@ FWidgetManager::FWidgetManager() :
 	TextureStyleManager = NewObject<UTextureStyleManager>();
 	check(TextureStyleManager);
 	TextureStyleManager->AddToRoot();
-	// Add some dummy sematic classes
-	TextureStyleManager->NewSemanticClass(TEXT("Drivable"), FColor(255, 0, 0, 255), false);
-	TextureStyleManager->NewSemanticClass(TEXT("Marking"), FColor(0, 255, 0, 255), false);
-	TextureStyleManager->NewSemanticClass(TEXT("Sidewalk"), FColor(0, 0, 255, 255), false);
 
 	// Create the sequence renderer and add it to the root to avoid garbage collection
 	SequenceRenderer = NewObject<USequenceRenderer>();
