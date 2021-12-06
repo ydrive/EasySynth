@@ -1,29 +1,16 @@
 # EasySynth
 
-EasySynth is an Unreal Engine plugin for the easy creation of image datasets from a moving camera, requiring no C++ or Blueprint knowledge.
+EasySynth is an Unreal Engine plugin for an easy creation of image datasets from a moving camera, requiring no C++ or Blueprint knowledge.
 
-The plugin works by automatically starting the rendering of a user-defined level sequence, with different camera post-process settings, to produce:
+The plugin works by automatically starting the rendering of a user-defined level sequence, with different camera post-process settings. The outputs are camera poses, including position, rotation, and calibration parameters, together with the following image types:
 
-- Camera poses, including position and rotation, as well as calibration parameters
-- Standard color images, as seen while creating the sequence in the editor
-
-<img src="ReadmeContent/ColorImage.gif" alt="Color image" width="250"/>
-
-- Depth images, representing the depth of a pixel using a grayscale value
-
-<img src="ReadmeContent/DepthImage.gif" alt="Depth image" width="250"/>
-
-- Normal images, representing pixel normals using X, Y, and Z color values
-
-<img src="ReadmeContent/NormalImage.gif" alt="Normal image" width="250"/>
-
-- Optical flow images, for more detail check out the optical flow section below
-
-<img src="ReadmeContent/OpticalFlowImage.gif" alt="Optical flow image" width="250"/>
-
-- Semantic images, with every object rendered using the user-defined semantic color
-
-<img src="ReadmeContent/SemanticImage.gif" alt="Sematic image" width="250"/>
+|||
+|-|-|
+|Standard color images, as seen while creating the sequence in the editor|<img src="ReadmeContent/ColorImage.gif" alt="Color image" width="250" style="margin:10px"/>|
+|Depth images, representing the depth of a pixel using a grayscale value|<img src="ReadmeContent/DepthImage.gif" alt="Depth image" width="250" style="margin:10px"/>|
+|Normal images, representing pixel normals using X, Y, and Z color values|<img src="ReadmeContent/NormalImage.gif" alt="Normal image" width="250" style="margin:10px"/>|
+|Optical flow images, for more detail check out the optical flow section below|<img src="ReadmeContent/OpticalFlowImage.gif" alt="Optical flow image" width="250" style="margin:10px"/>|
+|Semantic images, with every object rendered using the user-defined semantic color|<img src="ReadmeContent/SemanticImage.gif" alt="Sematic image" width="250" style="margin:10px"/>|
 
 ## Installation
 
