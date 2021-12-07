@@ -152,20 +152,27 @@ bool FCameraPoseExporter::SavePosesToCSV(const FString& OutputDir)
 {
 	// Create the file content
 	TArray<FString> Lines;
-	Lines.Add("id,tx,ty,tz,qw,qx,qy,qz,fx,fy,cx,cy,ex,ey,ez");
+	Lines.Add("id,tx,ty,tz,qw,qx,qy,qz,fx,fy,cx,cy");
 
     for (int i = 0; i < CameraTransforms.Num(); i++)
 	{
         const FTransform& Transform = CameraTransforms[i];
-		// Get right handed location in meters
-		const FVector& Location = Transform.GetLocation() * FVector(1.0f, -1.0f, 1.0f) * 1.0e-2f;
-		// TODO: Check if quaternion rotations are fine as is, or require coordinate system conversion
+		// Get location in the UE coordinate system and convert from centimeters to meters
+		const FVector& Location = Transform.GetLocation() * 1.0e-2f;
+		// Get rotation quaternion in the UE coordinate system
 		const FQuat& Rotation = Transform.GetRotation();
 		const FVector2D& FocalLength = PixelFocalLengths[i];
+		// const FVector Euler = Transform.GetRotation().Euler();
+		// Print the camera pose line and convert the pose and the rotation to different coordinate system
+		// When looking through a camera with zero rotation in the target cooridnate system:
+		// - X axis points to the right
+		// - Y axis points down
+		// - Z axis points straight away from the camera
+		// TODO: Explain rotations
 		Lines.Add(FString::Printf(TEXT("%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d"),
 			i,
-			Location.X , Location.Y, Location.Z,
-			Rotation.W, Rotation.X, Rotation.Y, Rotation.Z,
+			Location.Y, -Location.Z, Location.X,
+			Rotation.W, -Rotation.Y, Rotation.Z, -Rotation.X,
 			FocalLength.X, FocalLength.Y,
 			OutputResolution.X / 2, OutputResolution.Y / 2));
 	}
