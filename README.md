@@ -101,7 +101,45 @@ Output is the `CameraPoses.csv` file, in which the first line contains column na
 | 11     | int   | cx   | Halved image width         |
 | 12     | int   | cy   | Halved image height        |
 
-The coordinate system for saving camera positions and rotation quaternions is the usual right-handed Z-up coordinate system (consistent with Blender and 3ds Max). Note that this differs from Unreal Engine, which internally uses the left-handed Z-up coordinate system.
+The coordinate system for saving camera positions and rotation quaternions is a right-handed coordinate system. When looking through a camera with zero rotation in the target coordinate system:
+- X axis points to the right
+- Y axis points down
+- Z axis points straight away from the camera
+
+<img src="ReadmeContent/OutputCoordinateSystem.png" alt="Output coordinate system" width="150" style="margin:10px"/>
+
+Note that this differs from Unreal Engine, which internally uses the left-handed Z-up coordinate system.
+
+Following is an example Python code for accessing camera poses:
+``` Python
+import numpy as np
+import pandas as pd
+from scipy.spatial.transform import Rotation as R
+
+poses_df = pd.read_csv('<rendering_output_path>/CameraPoses.csv')
+
+for i, pose in poses_df.iterrows():
+
+    # Rotation quaternion to numpy array
+    quat = pose[['qx', 'qy', 'qz', 'qw']].to_numpy()
+
+    # Quaternion to rotation object
+    rotation = R.from_quat(quat)
+
+    # Rotation to Euler angles
+    euler = rotation.as_euler('xyz')
+
+    # Rotation to 3x3 rotation matrix, than to 4x4 rotation matrix
+    mat3 = rotation.as_matrix()
+    mat4 = np.hstack((mat3, np.zeros((3, 1))))
+    mat4 = np.vstack((mat4, np.array([0.0, 0.0, 0.0, 1.0])))
+
+    # Adding translation to the 4x4 transformation matrix
+    mat4[:3, 3] = pose[['tx', 'ty', 'tz']].to_numpy()
+
+    # Convert camera pose to a camera view matrix
+    view_mat = np.linalg.inv(mat4)
+```
 
 ### Optical flow images
 

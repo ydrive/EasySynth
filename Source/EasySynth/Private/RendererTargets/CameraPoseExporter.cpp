@@ -162,13 +162,12 @@ bool FCameraPoseExporter::SavePosesToCSV(const FString& OutputDir)
 		// Get rotation quaternion in the UE coordinate system
 		const FQuat& Rotation = Transform.GetRotation();
 		const FVector2D& FocalLength = PixelFocalLengths[i];
-		// const FVector Euler = Transform.GetRotation().Euler();
-		// Print the camera pose line and convert the pose and the rotation to different coordinate system
-		// When looking through a camera with zero rotation in the target cooridnate system:
+		// Print the camera pose line and convert the pose and the rotation to a different coordinate system
+		// When looking through a camera with zero rotation in the target coordinate system:
 		// - X axis points to the right
 		// - Y axis points down
 		// - Z axis points straight away from the camera
-		// TODO: Explain rotations
+		// Rotations follow right-handed rule with respect to the defined axes
 		Lines.Add(FString::Printf(TEXT("%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d"),
 			i,
 			Location.Y, -Location.Z, Location.X,
