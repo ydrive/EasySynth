@@ -158,4 +158,4 @@ Our implementation was inspired by the [ProfFan's](https://github.com/ProfFan) [
 
 ## Contributions
 
-This tool was designed to be as general as possible, but also to suit our internal needs. As we are not Unreal Engine experts you may find unusual or suboptimal implementations of different plugin functionalities. We encourage you to report those to us, or even contribute your fixes or optimizations. This also applies to the plugin widget Slate UI whose current design is at the minimal acceptable quality.
+This tool was designed to be as general as possible, but also to suit our internal needs. You may find unusual or suboptimal implementations of different plugin functionalities. We encourage you to report those to us, or even contribute your fixes or optimizations. This also applies to the plugin widget Slate UI whose current design is at the minimum acceptable quality.
