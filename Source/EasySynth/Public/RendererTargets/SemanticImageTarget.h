@@ -17,7 +17,9 @@ class UTextureStyleManager;
 class FSemanticImageTarget : public FRendererTarget
 {
 public:
-	explicit FSemanticImageTarget(UTextureStyleManager* TextureStyleManager) : FRendererTarget(TextureStyleManager) {}
+	explicit FSemanticImageTarget(UTextureStyleManager* TextureStyleManager, const EImageFormat ImageFormat) :
+		FRendererTarget(TextureStyleManager, ImageFormat)
+	{}
 
 	/** Returns the name of the target */
 	virtual FString Name() const { return TEXT("SemanticImage"); }

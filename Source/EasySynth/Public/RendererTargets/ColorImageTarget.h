@@ -17,7 +17,9 @@ class UTextureStyleManager;
 class FColorImageTarget : public FRendererTarget
 {
 public:
-	explicit FColorImageTarget(UTextureStyleManager* TextureStyleManager) : FRendererTarget(TextureStyleManager) {}
+	explicit FColorImageTarget(UTextureStyleManager* TextureStyleManager, const EImageFormat ImageFormat) :
+		FRendererTarget(TextureStyleManager, ImageFormat)
+	{}
 
 	/** Returns the name of the target */
 	virtual FString Name() const { return TEXT("ColorImage"); }

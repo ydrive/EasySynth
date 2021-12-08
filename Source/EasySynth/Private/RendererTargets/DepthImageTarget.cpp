@@ -41,7 +41,7 @@ bool FDepthImageTarget::PrepareSequence(ULevelSequence* LevelSequence)
 		UE_LOG(LogTemp, Error, TEXT("%s: Could not create the material instance dynamic"), *FString(__FUNCTION__))
 		return false;
 	}
-	PostProcessMaterialInstance->SetScalarParameterValue(*DepthRangeMetersParameter, DepthRange);
+	PostProcessMaterialInstance->SetScalarParameterValue(*DepthRangeMetersParameter, DepthRangeMeters);
 
 	for (UCameraComponent* Camera : Cameras)
 	{

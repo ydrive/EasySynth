@@ -55,6 +55,15 @@ private:
 	/** Target render images checkbox handling */
 	void OnRenderTargetsChanged(ECheckBoxState NewState, const FRendererTargetOptions::TargetType TargetType);
 
+	// Callback function handling the choosing of the output format inside the combo box
+	void OnOutputFormatSelectionChanged(
+		TSharedPtr<FString> StringItem,
+		ESelectInfo::Type SelectInfo,
+		const FRendererTargetOptions::TargetType TargetType);
+
+	/** Returns the selected output format of the target */
+	FText SelectedOutputFormat(const FRendererTargetOptions::TargetType TargetType) const;
+
 	/** Callback function handling the update of the output directory */
 	void OnOutputDirectoryChanged(const FString& Directory) { OutputDirectory = Directory; }
 
@@ -89,6 +98,9 @@ private:
 	/** FStrings texture style names referenced by the combo box */
 	TArray<TSharedPtr<FString>> TextureStyleNames;
 
+	/** FStrings output image format names referenced by the combo box */
+	TArray<TSharedPtr<FString>> OutputFormatNames;
+
 	/** Currently selected sequencer asset data */
 	FAssetData LevelSequenceAssetData;
 
@@ -119,15 +131,15 @@ private:
 	/** The name of the texture style representing semantic colors */
 	static const FString TextureStyleSemanticName;
 
+	/** The name of the JPEG output format */
+	static const FString JpegFormatName;
+
+	/** The name of the PNG output format */
+	static const FString PngFormatName;
+
+	/** The name of the EXR output format */
+	static const FString ExrFormatName;
+
 	/** Default output image resolution */
 	static const FIntPoint DefaultOutputImageResolution;
-
-	/** Error message box title for failed rendering start */
-	static const FText StartRenderingErrorMessageBoxTitle;
-
-	/** Error message box title for failure during the rendering */
-	static const FText RenderingErrorMessageBoxTitle;
-
-	/** Message box title for successful rendering */
-	static const FText SuccessfulRenderingMessageBoxTitle;
 };

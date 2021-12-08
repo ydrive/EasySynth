@@ -9,6 +9,8 @@
 #include "Widgets/Layout/SUniformGridPanel.h"
 
 
+#define LOCTEXT_NAMESPACE "FSemanticClassesWidgetManager"
+
 FSemanticClassesWidgetManager::FSemanticClassesWidgetManager() :
 	NewClassName(FText::GetEmpty()),
     NewClassColor(FColor::White)
@@ -32,7 +34,7 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 
 	// Crate the window
 	TSharedRef<SWindow> Window = SNew(SWindow)
-		.Title(FText::FromString("Manage Semantic Classes"))
+		.Title(LOCTEXT("ManageSemanticClassesWindowTitle", "Manage Semantic Classes"))
 		.SizingRule(ESizingRule::Autosized)
 		.SupportsMaximize(false)
 		.SupportsMinimize(false)
@@ -43,7 +45,7 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 			.Padding(3)
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString("Edit or remove semantic classes"))
+				.Text(LOCTEXT("EditOrRemoveSectionTitle", "Edit or remove semantic classes"))
 			]
 			+ SVerticalBox::Slot()
 			.AutoHeight()
@@ -54,7 +56,7 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 			.Padding(3)
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString("Add new semantic classes"))
+				.Text(LOCTEXT("AddNewSemanticClassSectionTitle", "Add new semantic class"))
 			]
 			+ SVerticalBox::Slot()
 			.Padding(3)
@@ -77,7 +79,7 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 			.Padding(3)
 			[
 				SNew(SButton)
-				.Text(FText::FromString("Add new class"))
+				.Text(LOCTEXT("AddNewClassButtonText", "Add new class"))
 				.OnClicked_Raw(this, &FSemanticClassesWidgetManager::OnAddNewClassClicked)
 			]
 			+ SVerticalBox::Slot()
@@ -86,7 +88,7 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 			[
 				SNew(SButton)
 				.HAlign(HAlign_Center)
-				.Text(FText::FromString("Done"))
+				.Text(LOCTEXT("DoneButtonText", "Done"))
 				.OnClicked_Raw(this, &FSemanticClassesWidgetManager::OnDoneClicked)
 			]
 		];
@@ -285,9 +287,11 @@ void FSemanticClassesWidgetManager::RefreshSemanticClasses()
 			.Padding(2)
 			[
 				SNew(SButton)
-				.Text(FText::FromString("Delete"))
+				.Text(LOCTEXT("DeleteClassButtonText", "Delete"))
 				.OnClicked_Raw(this, &FSemanticClassesWidgetManager::OnDeleteClassClicked, SemanticClass->Name)
 			]
 		];
 	}
 }
+
+#undef LOCTEXT_NAMESPACE

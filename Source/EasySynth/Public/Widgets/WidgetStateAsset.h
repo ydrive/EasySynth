@@ -32,21 +32,49 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
 	bool bColorImagesSelected;
 
+	/** Output format for color images */
+	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
+	int8 bColorImagesOutputFormat;
+
 	/** Whether depth images are selected */
 	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
 	bool bDepthImagesSelected;
+
+	/** Output format for depth images */
+	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
+	int8 bDepthImagesOutputFormat;
 
 	/** Whether normal images are selected */
 	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
 	bool bNormalImagesSelected;
 
+	/** Output format for normal images */
+	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
+	int8 bNormalImagesOutputFormat;
+
+	/** Whether optical flow images are selected */
+	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
+	bool bOpticalFlowImagesSelected;
+
+	/** Output format for optical flow images */
+	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
+	int8 bOpticalFlowImagesOutputFormat;
+
 	/** Whether semantic images are selected */
 	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
-	bool bSematicImagesSelected;
+	bool bSemanticImagesSelected;
+
+	/** Output format for rendering images */
+	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
+	int8 bSemanticImagesOutputFormat;
 
 	/** Selected depth threashold range */
 	UPROPERTY(EditAnywhere, Category = "Additional parameters")
 	float DepthRange;
+
+	/** Selected optical flow scale */
+	UPROPERTY(EditAnywhere, Category = "Additional parameters")
+	float OpticalFlowScale;
 
 	/** Selected output image resolution */
 	UPROPERTY(EditAnywhere, Category = "Additional parameters")

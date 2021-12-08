@@ -17,7 +17,9 @@ class UTextureStyleManager;
 class FNormalImageTarget : public FRendererTarget
 {
 public:
-	explicit FNormalImageTarget(UTextureStyleManager* TextureStyleManager) : FRendererTarget(TextureStyleManager) {}
+	explicit FNormalImageTarget(UTextureStyleManager* TextureStyleManager, const EImageFormat ImageFormat) :
+		FRendererTarget(TextureStyleManager, ImageFormat)
+	{}
 
 	/** Returns the name of the target */
 	virtual FString Name() const { return TEXT("NormalImage"); }

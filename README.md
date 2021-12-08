@@ -1,14 +1,17 @@
 # EasySynth
 
-EasySynth is an Unreal Engine plugin for the easy creation of image datasets from a moving camera, requiring no C++ or Blueprint knowledge.
+EasySynth is an Unreal Engine plugin for easy creation of image datasets from a moving camera, requiring no C++ or Blueprint knowledge.
 
-The plugin works by automatically starting the rendering of a user-defined level sequence, with different camera post-process settings, to produce:
+The plugin works by automatically starting the rendering of a user-defined level sequence, with different camera post-process settings. The outputs are camera poses, including position, rotation, and calibration parameters, together with the following image types:
 
-- Standard color images, as seen while creating the sequence in the editor
-- Depth images, representing the depth of a pixel by a grayscale value
-- Normal images, representing pixel normals using X, Y, and Z color values
-- Semantic images, with every object rendered using the user-defined semantic color
-- Camera poses, including position and rotation, as well as calibration parameters
+|||
+|-|-|
+|Standard color images, as seen while creating the sequence in the editor|<img src="ReadmeContent/ColorImage.gif" alt="Color image" width="250" style="margin:10px"/>|
+|Depth images, representing the depth of a pixel using a grayscale value|<img src="ReadmeContent/DepthImage.gif" alt="Depth image" width="250" style="margin:10px"/>|
+|Normal images, representing pixel normals using X, Y, and Z color values|<img src="ReadmeContent/NormalImage.gif" alt="Normal image" width="250" style="margin:10px"/>|
+|Optical flow images, for more detail check out the optical flow section below|<img src="ReadmeContent/OpticalFlowImage.gif" alt="Optical flow image" width="250" style="margin:10px"/>|
+|Semantic images, with every object rendered using the user-defined semantic color|<img src="ReadmeContent/SemanticImage.gif" alt="Sematic image" width="250" style="margin:10px"/>|
+||Model credits: [Art Equilibrium](https://www.cgtrader.com/3d-models/exterior/street/japanese-street-6278f45d-3e1e-48db-9ca6-cce343baa974)|
 
 ## Installation
 
@@ -55,14 +58,24 @@ Image rendering relies on a user-defined `Level Sequence`, which represents a mo
 - https://youtu.be/-NmHXAFX-3M
 
 Setting up rendering options inside the EasySynth widget:
+
+![Plugin widget](/ReadmeContent/Widget.png)
+
 - Pick the created level sequence
 - Choose the desired rendering targets using checkboxes
+- Choose the output image format for each target
+  - jpeg - 8-bit image output intended for visual inspection due to lossy jpeg compression,
+  - png - 8-bit image output with lossless png compression, but with zero alpha, making the images appear transparent when previewed
+  - exr - 16-bit image output with lossless exr compression, to open them with OpenCV in Python use `cv2.imread(img_path, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)`
 - Choose the output images width and height
   - Choosing a different aspect ratio than the selected camera actor aspect ratio can result in an unexpected field of view in the output images
 - Choose the depth infinity threshold for depth rendering
+- Choose the appropriate scaling coefficient for increasing optical flow image color saturation
 - Choose the output directory
 
 Start the rendering by clicking the `Render Images` button.
+
+<b>IMPORTANT:</b> Do not close a window that opens during rendering. Closing the window will result in the successful rendering being falsely reported, as it is not possible to know if the window has been closed from the plugin side.
 
 ### Level sequence tips
 
@@ -89,4 +102,61 @@ Output is the `CameraPoses.csv` file, in which the first line contains column na
 | 11     | int   | cx   | Halved image width         |
 | 12     | int   | cy   | Halved image height        |
 
-The coordinate system for saving camera positions and rotation quaternions is the usual right-handed Z-up coordinate system. Note that this differs from Unreal Engine, which internally uses the left-handed Z-up coordinate system.
+The coordinate system for saving camera positions and rotation quaternions is a right-handed coordinate system. When looking through a camera with zero rotation in the target coordinate system:
+- X axis points to the right
+- Y axis points down
+- Z axis points straight away from the camera
+
+<img src="ReadmeContent/OutputCoordinateSystem.png" alt="Output coordinate system" width="150" style="margin:10px"/>
+
+Note that this differs from Unreal Engine, which internally uses the left-handed Z-up coordinate system.
+
+Following is an example Python code for accessing camera poses:
+``` Python
+import numpy as np
+import pandas as pd
+from scipy.spatial.transform import Rotation as R
+
+poses_df = pd.read_csv('<rendering_output_path>/CameraPoses.csv')
+
+for i, pose in poses_df.iterrows():
+
+    # Rotation quaternion to numpy array
+    quat = pose[['qx', 'qy', 'qz', 'qw']].to_numpy()
+
+    # Quaternion to rotation object
+    rotation = R.from_quat(quat)
+
+    # Rotation to Euler angles
+    euler = rotation.as_euler('xyz')
+
+    # Rotation to 3x3 rotation matrix, than to 4x4 rotation matrix
+    mat3 = rotation.as_matrix()
+    mat4 = np.hstack((mat3, np.zeros((3, 1))))
+    mat4 = np.vstack((mat4, np.array([0.0, 0.0, 0.0, 1.0])))
+
+    # Adding translation to the 4x4 transformation matrix
+    mat4[:3, 3] = pose[['tx', 'ty', 'tz']].to_numpy()
+
+    # Convert camera pose to a camera view matrix
+    view_mat = np.linalg.inv(mat4)
+```
+
+### Optical flow images
+
+Optical flow images contain color-coded optical flow vectors for each pixel. An optical flow vector describes how the content of a pixel has moved between frames. Specifically, the vector spans from coordinates where the pixel content was in the previous frame to where the content is in the current frame. The coordinate system the vectors are represented in is the image pixel coordinates, with the image scaled to a 1.0 x 1.0 square.
+
+Optical flow vectors are color-coded by picking a color from the HSV color wheel with the color angle matching the vector angle and the color saturation matching the vector intensity. If the scene in your sequence moves slowly, these vectors can be very short, and the colors can be hard to see when previewed. If this is the case, use the `optical flow scale` parameter to proportionally increase the images saturation.
+
+The following images represent optical flows when moving forward and backward respectively. Notice that all of the colors are opposite, as in the first case pixels are moving away from the image center, while in the second case pixels are moving toward the image center. In both examples the fastest moving pixels are the ones on the image edges.
+
+<img src="ReadmeContent/OpticalFlowForward.jpeg" alt="Optical flow forward" width="250" style="margin:10px"/>
+<img src="ReadmeContent/OpticalFlowBackward.jpeg" alt="Optical flow backward" width="250" style="margin:10px"/>
+
+Our implementation was inspired by the [ProfFan's](https://github.com/ProfFan) [UnrealOpticalFlowDemo](https://github.com/ProfFan/UnrealOpticalFlowDemo), but we had to omit the engine patching to make this plugin as easy to use as possible (i.e. not requiring the engine to be manually built). The shader code that renders optical flow is baked inside the optical flow post-process material. It can be accessed by opening the post-process material from the plugin's content inside the Unreal Engine editor.
+
+<b>IMPORTANT:</b> Due to Unreal Engine [limitations](https://github.com/EpicGames/UnrealEngine/pull/6933) optical flow rendering assumes all objects other than the camera are stationary. If there are moving objects in the scene while rendering the sequence, the optical flow for these pixels will be incorrect.
+
+## Contributions
+
+This tool was designed to be as general as possible, but also to suit our internal needs. You may find unusual or suboptimal implementations of different plugin functionalities. We encourage you to report those to us, or even contribute your fixes or optimizations. This also applies to the plugin widget Slate UI whose current design is at the minimum acceptable quality.

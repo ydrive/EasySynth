@@ -4,6 +4,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "IImageWrapper.h"
 
 #include "PathUtils.h"
 
@@ -21,7 +22,10 @@ class UTextureStyleManager;
 class FRendererTarget
 {
 public:
-	explicit FRendererTarget(UTextureStyleManager* Value) : TextureStyleManager(Value) {}
+	explicit FRendererTarget(UTextureStyleManager* TextureStyleManager, const EImageFormat ImageFormat) :
+		ImageFormat(ImageFormat),
+		TextureStyleManager(TextureStyleManager)
+	{}
 
 	/** Returns a name of a specific target */
 	virtual FString Name() const = 0;
@@ -31,6 +35,9 @@ public:
 
 	/** Reverts changes made to the sequence by the PrepareSequence */
 	virtual bool FinalizeSequence(ULevelSequence* LevelSequence) = 0;
+
+	/** Output image format selected for this target */
+	const EImageFormat ImageFormat;
 
 protected:
 	/** Extracts camera components used by the level sequence */

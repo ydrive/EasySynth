@@ -17,9 +17,12 @@ class UTextureStyleManager;
 class FDepthImageTarget : public FRendererTarget
 {
 public:
-	explicit FDepthImageTarget(UTextureStyleManager* TextureStyleManager, const float DepthRangeMeters) :
-		FRendererTarget(TextureStyleManager),
-		DepthRange(DepthRangeMeters)
+	explicit FDepthImageTarget(
+		UTextureStyleManager* TextureStyleManager,
+		const EImageFormat ImageFormat,
+		const float DepthRangeMeters) :
+			FRendererTarget(TextureStyleManager, ImageFormat),
+			DepthRangeMeters(DepthRangeMeters)
 	{}
 
 	/** Returns the name of the target */
@@ -33,7 +36,7 @@ public:
 
 private:
 	/** The clipping range meters when rendering the depth target */
-	const float DepthRange;
+	const float DepthRangeMeters;
 
 	/** The name of the depth range meters material parameter */
 	static const FString DepthRangeMetersParameter;

@@ -3,22 +3,27 @@
 
 #include "SequenceRenderer.h"
 
+#include "MoviePipelineImageSequenceOutput.h"
 #include "MoviePipelineOutputSetting.h"
 #include "MoviePipelineQueueSubsystem.h"
 #include "MovieRenderPipelineSettings.h"
 
+#include "EXROutput/MoviePipelineEXROutputLocal.h"
 #include "PathUtils.h"
 #include "RendererTargets/CameraPoseExporter.h"
 #include "RendererTargets/RendererTarget.h"
 
 
 const float FRendererTargetOptions::DefaultDepthRangeMetersValue = 100.0f;
+const float FRendererTargetOptions::DefaultOpticalFlowScaleValue = 1.0f;
 
 FRendererTargetOptions::FRendererTargetOptions() :
 	bExportCameraPoses(false),
-	DepthRangeMetersValue(DefaultDepthRangeMetersValue)
+	DepthRangeMetersValue(DefaultDepthRangeMetersValue),
+	OpticalFlowScaleValue(DefaultOpticalFlowScaleValue)
 {
 	SelectedTargets.Init(false, TargetType::COUNT);
+	OutputFormats.Init(EImageFormat::JPEG, TargetType::COUNT);
 }
 
 bool FRendererTargetOptions::AnyOptionSelected() const
@@ -62,12 +67,16 @@ TSharedPtr<FRendererTarget> FRendererTargetOptions::RendererTarget(
 	const int TargetType,
 	UTextureStyleManager* TextureStyleManager) const
 {
+	const EImageFormat OutputFormat = OutputFormats[TargetType];
 	switch (TargetType)
 	{
-	case COLOR_IMAGE: return MakeShared<FColorImageTarget>(TextureStyleManager); break;
-	case DEPTH_IMAGE: return MakeShared<FDepthImageTarget>(TextureStyleManager, DepthRangeMetersValue); break;
-	case NORMAL_IMAGE: return MakeShared<FNormalImageTarget>(TextureStyleManager); break;
-	case SEMANTIC_IMAGE: return MakeShared<FSemanticImageTarget>(TextureStyleManager); break;
+	case COLOR_IMAGE: return MakeShared<FColorImageTarget>(TextureStyleManager, OutputFormat); break;
+	case DEPTH_IMAGE: return MakeShared<FDepthImageTarget>(
+		TextureStyleManager, OutputFormat, DepthRangeMetersValue); break;
+	case NORMAL_IMAGE: return MakeShared<FNormalImageTarget>(TextureStyleManager, OutputFormat); break;
+	case OPTICAL_FLOW_IMAGE: return MakeShared<FOpticalFlowImageTarget>(
+		TextureStyleManager, OutputFormat, OpticalFlowScaleValue); break;
+	case SEMANTIC_IMAGE: return MakeShared<FSemanticImageTarget>(TextureStyleManager, OutputFormat); break;
 	default: return nullptr;
 	}
 }
@@ -256,12 +265,27 @@ void USequenceRenderer::StartRendering()
 
 	// Assign rendering finished callback
 	ActiveExecutor->OnExecutorFinished().AddUObject(this, &USequenceRenderer::OnExecutorFinished);
-	// TODO: Bind other events, such as rendering canceled
 }
 
 bool USequenceRenderer::PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipelineQueueSubsystem)
 {
 	check(MoviePipelineQueueSubsystem)
+
+	// Update export image format
+	UMoviePipelineSetting* JpegSetting = EasySynthMoviePipelineConfig->FindOrAddSettingByClass(
+		UMoviePipelineImageSequenceOutput_JPG::StaticClass(), true);
+	UMoviePipelineSetting* PngSetting = EasySynthMoviePipelineConfig->FindSettingByClass(
+		UMoviePipelineImageSequenceOutput_PNG::StaticClass(), true);
+	UMoviePipelineSetting* ExrSetting = EasySynthMoviePipelineConfig->FindOrAddSettingByClass(
+		UMoviePipelineImageSequenceOutput_EXRLocal::StaticClass(), true);
+	if (JpegSetting == nullptr || PngSetting == nullptr || ExrSetting == nullptr)
+	{
+		ErrorMessage = "JPEG, PNG or EXR settings not found";
+		return false;
+	}
+	JpegSetting->SetIsEnabled(CurrentTarget->ImageFormat == EImageFormat::JPEG);
+	PngSetting->SetIsEnabled(CurrentTarget->ImageFormat == EImageFormat::PNG);
+	ExrSetting->SetIsEnabled(CurrentTarget->ImageFormat == EImageFormat::EXR);
 
 	// Update pipeline output settings for the current target
 	UMoviePipelineOutputSetting* OutputSetting =

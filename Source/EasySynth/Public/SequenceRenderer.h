@@ -9,6 +9,7 @@
 #include "RendererTargets/ColorImageTarget.h"
 #include "RendererTargets/DepthImageTarget.h"
 #include "RendererTargets/NormalImageTarget.h"
+#include "RendererTargets/OpticalFlowImageTarget.h"
 #include "RendererTargets/SemanticImageTarget.h"
 #include "TextureStyles/TextureStyleManager.h"
 
@@ -27,7 +28,7 @@ class FRendererTargetOptions
 {
 public:
 	/** The enum containing all supported rendering targets */
-	enum TargetType { COLOR_IMAGE, DEPTH_IMAGE, NORMAL_IMAGE, SEMANTIC_IMAGE, COUNT };
+	enum TargetType { COLOR_IMAGE, DEPTH_IMAGE, NORMAL_IMAGE, OPTICAL_FLOW_IMAGE, SEMANTIC_IMAGE, COUNT };
 
 	FRendererTargetOptions();
 
@@ -39,6 +40,12 @@ public:
 
 	/** Checks if any of the available options is selected */
 	bool AnyOptionSelected() const;
+
+	/** Set output format for the target */
+	void SetOutputFormat(const int TargetType, const EImageFormat Selected) { OutputFormats[TargetType] = Selected; }
+
+	/** Get selected output format for the target */
+	EImageFormat OutputFormat(const int TargetType) const { return OutputFormats[TargetType]; }
 
 	/** Updates should camera poses be exported */
 	void SetExportCameraPoses(const bool bValue) { bExportCameraPoses = bValue; }
@@ -52,6 +59,12 @@ public:
 	/** DepthRangeMetersValue setter */
 	float DepthRangeMeters() const { return DepthRangeMetersValue; }
 
+	/** OpticalFlowScaleValue getter */
+	void SetOpticalFlowScale(const float OpticalFlowScale) { OpticalFlowScaleValue = OpticalFlowScale; }
+
+	/** OpticalFlowScaleValue setter */
+	float OpticalFlowScale() const { return OpticalFlowScaleValue; }
+
 	/** Populate provided queue with selected renderer targets */
 	void GetSelectedTargets(
 		UTextureStyleManager* TextureStyleManager,
@@ -64,6 +77,9 @@ private:
 	/** Is the default color image rendering requested */
 	TArray<bool> SelectedTargets;
 
+	/** Selected output formats for each target */
+	TArray<EImageFormat> OutputFormats;
+
 	/** Whether to export camera poses */
 	bool bExportCameraPoses;
 
@@ -73,8 +89,17 @@ private:
 	*/
 	float DepthRangeMetersValue;
 
+	/**
+	 * Multiplying coefficient for optical flow
+	 * Larger values increase color intensity, but also increase the chance of clipping
+	*/
+	float OpticalFlowScaleValue;
+
 	/** Default value for the depth range */
 	static const float DefaultDepthRangeMetersValue;
+
+	/** Default value for the optical flow scale */
+	static const float DefaultOpticalFlowScaleValue;
 };
 
 
