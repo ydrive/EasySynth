@@ -49,7 +49,8 @@ protected:
 	/** Returns the path to the specific target post process material */
 	inline UMaterial* LoadPostProcessMatrial() const
 	{
-		return LoadObject<UMaterial>(nullptr, *FPathUtils::PostProcessMaterialPath(Name()));
+		return DuplicateObject<UMaterial>( 
+			LoadObject<UMaterial>(nullptr, *FPathUtils::PostProcessMaterialPath(Name())), nullptr);
 	}
 
 	/** Handle for managing texture style in the level */

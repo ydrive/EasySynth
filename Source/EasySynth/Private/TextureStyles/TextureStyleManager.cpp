@@ -19,7 +19,8 @@ const FString UTextureStyleManager::SemanticColorParameter(TEXT("SemanticColor")
 const FString UTextureStyleManager::UndefinedSemanticClassName(TEXT("Undefined"));
 
 UTextureStyleManager::UTextureStyleManager() :
-	PlainColorMaterial(LoadObject<UMaterial>(nullptr, *FPathUtils::PlainColorMaterialPath())),
+	PlainColorMaterial(DuplicateObject<UMaterial>(
+		LoadObject<UMaterial>(nullptr, *FPathUtils::PlainColorMaterialPath()), nullptr)),
 	CurrentTextureStyle(ETextureStyle::COLOR),
 	bEventsBound(false)
 {
