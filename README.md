@@ -106,7 +106,7 @@ The coordinate system for saving camera positions and rotation quaternions is a 
 - Y axis points down
 - Z axis points straight away from the camera
 
-<img src="ReadmeContent/OutputCoordinateSystem.png" alt="Output coordinate system" width="150" style="margin:10px"/>
+<img src="ReadmeContent/OutputCoordinateSystem.png" alt="Output coordinate system" width="250" style="margin:10px"/>
 
 Note that this differs from Unreal Engine, which internally uses the left-handed Z-up coordinate system.
 
