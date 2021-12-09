@@ -75,6 +75,8 @@ public class EasySynth : ModuleRules
 			}
 			);
 
+		// Required for UEOpenExr
+		AddEngineThirdPartyPrivateStaticDependencies(Target, "zlib");
 		AddEngineThirdPartyPrivateStaticDependencies(Target, "UEOpenExr");
 	}
 }
