@@ -17,6 +17,8 @@ The plugin works by automatically starting the rendering of a user-defined level
 
 ### Install by adding the plugin source code to your project
 
+It works with both installed and engines built from code.
+
 - Create a new Unreal Engine project with the path `<UEProject>`
   - <em>Optional</em>: Use some of the provided Unreal Engine templates that come with a prebuilt level layout
 - Exit the editor
