@@ -81,6 +81,7 @@ Start the rendering by clicking the `Render Images` button.
 ### Workflow tips
 
 - You can use affordable asset marketplaces such as [Unreal Engine Marketplace](https://www.unrealengine.com/marketplace) or [CGTrader](https://www.cgtrader.com/) to obtain template levels. Make sure to choose ones that provide assets in the Unreal Engine `.uasset` format.
+- When semantic labeling levels with many assets, utilize the World Outliner as much as possible. Use the search option to filter similar actors and bulk-select them so that all of them are labeled in one click.
 - If you want images to be spaced out more inside the level sequence (instead of being very close in order to provide a smooth video), you can set the custom level sequence FPS to a small value (1 FPS or lower) inside the Sequencer editor.
 - To avoid adding keyframes manually, select the button with an image of a key inside the sequence editor toolbar. After you create the first keyframe, this will automatically add one at the current time for any moved asset.
 
