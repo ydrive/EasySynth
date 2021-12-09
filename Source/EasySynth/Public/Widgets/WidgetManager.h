@@ -37,9 +37,6 @@ private:
 	/** Callback function handling the choosing of the semantic class inside the combo box */
 	void OnSemanticClassComboBoxSelectionChanged(TSharedPtr<FString> StringItem, ESelectInfo::Type SelectInfo);
 
-	/** Callback function handling the opening of the combo box menu */
-	void OnSemanticClassComboBoxOpened();
-
 	/** Callback function handling the choosing of the texture style inside the combo box */
 	void OnTextureStyleComboBoxSelectionChanged(TSharedPtr<FString> StringItem, ESelectInfo::Type SelectInfo);
 

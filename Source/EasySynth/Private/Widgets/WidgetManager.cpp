@@ -139,7 +139,6 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 					[](TSharedPtr<FString> StringItem)
 					{ return SNew(STextBlock).Text(FText::FromString(*StringItem)); })
 				.OnSelectionChanged_Raw(this, &FWidgetManager::OnSemanticClassComboBoxSelectionChanged)
-				.OnComboBoxOpening_Raw(this, &FWidgetManager::OnSemanticClassComboBoxOpened)
 				.Content()
 				[
 					SNew(STextBlock)
@@ -319,10 +318,6 @@ void FWidgetManager::OnSemanticClassComboBoxSelectionChanged(
 		TextureStyleManager->ApplySemanticClassToSelectedActors(*StringItem);
 		SemanticClassComboBox->ClearSelection();
 	}
-}
-
-void FWidgetManager::OnSemanticClassComboBoxOpened()
-{
 }
 
 void FWidgetManager::OnTextureStyleComboBoxSelectionChanged(
