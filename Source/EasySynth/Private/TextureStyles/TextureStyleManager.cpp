@@ -82,6 +82,9 @@ bool UTextureStyleManager::NewSemanticClass(
 		SaveTextureMappingAsset();
 	}
 
+	// Broadcast the semantic classes change
+	SemanticClassesUpdatedEvent.Broadcast();
+
 	return true;
 }
 
@@ -217,6 +220,9 @@ bool UTextureStyleManager::RemoveSemanticClass(const FString& ClassName)
 	TextureMappingAsset->SemanticClasses.Remove(ClassName);
 
 	SaveTextureMappingAsset();
+
+	// Broadcast the semantic classes change
+	SemanticClassesUpdatedEvent.Broadcast();
 
 	return true;
 }

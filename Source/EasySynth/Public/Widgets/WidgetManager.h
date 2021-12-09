@@ -73,6 +73,9 @@ private:
 	/** Handles render images button click */
 	FReply OnRenderImagesClicked();
 
+	/** Handles the semantic classes updated event */
+	void OnSemanticClassesUpdated();
+
 	/** Handles the sequence renderer finished event */
 	void OnRenderingFinished(bool bSuccess);
 
