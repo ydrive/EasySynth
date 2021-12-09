@@ -19,7 +19,6 @@ The plugin works by automatically starting the rendering of a user-defined level
 
 - Create a new Unreal Engine project with the path `<UEProject>`
   - <em>Optional</em>: Use some of the provided Unreal Engine templates that come with a prebuilt level layout
-- <b>IMPORTANT</b> Enable the Movie Render Queue builtin plugin (Edit -> Plugins -> Movie Render Queue -> Enabled)
 - Exit the editor
 - Create and navigate to the `<UEProject>/Plugins` directory
 - Clone this repo inside the `<UEProject>/Plugins` directory
