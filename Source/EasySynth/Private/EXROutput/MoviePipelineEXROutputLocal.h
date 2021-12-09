@@ -102,7 +102,7 @@ private:
 #endif // WITH_UNREALEXR
 
 UCLASS()
-class MOVIERENDERPIPELINERENDERPASSES_API UMoviePipelineImageSequenceOutput_EXRLocal : public UMoviePipelineImageSequenceOutputBase
+class UMoviePipelineImageSequenceOutput_EXRLocal : public UMoviePipelineImageSequenceOutputBase
 {
 	GENERATED_BODY()
 public:
