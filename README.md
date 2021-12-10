@@ -26,7 +26,11 @@ This method works with both engines installed from the Epic launcher and engines
 - Clone this repo inside the `<UEProject>/Plugins` directory
 - Reopen your project
 
+<b>IMPORTANT:</b> The plugin was developed using Unreal Engine 4.26 and it appears not to compile successfully with 4.27. Please use the compatible engine versions until the fix is released.
+
 ## How to use
+
+Check out our [demonstration video](https://vimeo.com/655432464) showcasing everything from setting up the project to rendering output images.
 
 ### Setup
 
