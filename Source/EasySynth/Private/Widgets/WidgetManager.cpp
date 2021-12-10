@@ -31,6 +31,8 @@ FWidgetManager::FWidgetManager() :
 	TextureStyleManager = NewObject<UTextureStyleManager>();
 	check(TextureStyleManager);
 	TextureStyleManager->AddToRoot();
+	// Register the semantic classes updated callback
+	TextureStyleManager->OnSemanticClassesUpdated().AddRaw(this, &FWidgetManager::OnSemanticClassesUpdated);
 
 	// Create the sequence renderer and add it to the root to avoid garbage collection
 	SequenceRenderer = NewObject<USequenceRenderer>();
@@ -63,6 +65,9 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 
 	// Load saved optsion states now, also to make sure editor is ready
 	LoadWidgetOptionStates();
+
+	// Update combo box semantic class names
+	OnSemanticClassesUpdated();
 
 	// Dynamically generate renderer target checkboxes
 	TSharedRef<SScrollBox> TargetsScrollBoxes = SNew(SScrollBox);
@@ -134,7 +139,6 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 					[](TSharedPtr<FString> StringItem)
 					{ return SNew(STextBlock).Text(FText::FromString(*StringItem)); })
 				.OnSelectionChanged_Raw(this, &FWidgetManager::OnSemanticClassComboBoxSelectionChanged)
-				.OnComboBoxOpening_Raw(this, &FWidgetManager::OnSemanticClassComboBoxOpened)
 				.Content()
 				[
 					SNew(STextBlock)
@@ -312,28 +316,7 @@ void FWidgetManager::OnSemanticClassComboBoxSelectionChanged(
 	{
 		UE_LOG(LogEasySynth, Log, TEXT("%s: Semantic class selected: %s"), *FString(__FUNCTION__), **StringItem)
 		TextureStyleManager->ApplySemanticClassToSelectedActors(*StringItem);
-	}
-}
-
-void FWidgetManager::OnSemanticClassComboBoxOpened()
-{
-	// Refresh the list of semantic classes
-	SemanticClassNames.Reset();
-	TArray<FString> ClassNames = TextureStyleManager->SemanticClassNames();
-	for (const FString& ClassName : ClassNames)
-	{
-		SemanticClassNames.Add(MakeShared<FString>(ClassName));
-	}
-
-	// Refresh the combo box
-	if (SemanticClassComboBox.IsValid())
-	{
-		SemanticClassComboBox->RefreshOptions();
-	}
-	else
-	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Semantic class picker is invalid, could not refresh"),
-			*FString(__FUNCTION__));
+		SemanticClassComboBox->ClearSelection();
 	}
 }
 
@@ -460,6 +443,28 @@ FReply FWidgetManager::OnRenderImagesClicked()
 	SaveWidgetOptionStates();
 
 	return FReply::Handled();
+}
+
+void FWidgetManager::OnSemanticClassesUpdated()
+{
+	// Refresh the list of semantic classes
+	SemanticClassNames.Reset();
+	TArray<FString> ClassNames = TextureStyleManager->SemanticClassNames();
+	for (const FString& ClassName : ClassNames)
+	{
+		SemanticClassNames.Add(MakeShared<FString>(ClassName));
+	}
+
+	// Refresh the combo box
+	if (SemanticClassComboBox.IsValid())
+	{
+		SemanticClassComboBox->RefreshOptions();
+	}
+	else
+	{
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Semantic class picker is invalid, could not refresh"),
+			*FString(__FUNCTION__));
+	}
 }
 
 void FWidgetManager::OnRenderingFinished(bool bSuccess)

@@ -19,7 +19,8 @@ const FString UTextureStyleManager::SemanticColorParameter(TEXT("SemanticColor")
 const FString UTextureStyleManager::UndefinedSemanticClassName(TEXT("Undefined"));
 
 UTextureStyleManager::UTextureStyleManager() :
-	PlainColorMaterial(LoadObject<UMaterial>(nullptr, *FPathUtils::PlainColorMaterialPath())),
+	PlainColorMaterial(DuplicateObject<UMaterial>(
+		LoadObject<UMaterial>(nullptr, *FPathUtils::PlainColorMaterialPath()), nullptr)),
 	CurrentTextureStyle(ETextureStyle::COLOR),
 	bEventsBound(false)
 {
@@ -81,6 +82,9 @@ bool UTextureStyleManager::NewSemanticClass(
 	{
 		SaveTextureMappingAsset();
 	}
+
+	// Broadcast the semantic classes change
+	SemanticClassesUpdatedEvent.Broadcast();
 
 	return true;
 }
@@ -217,6 +221,9 @@ bool UTextureStyleManager::RemoveSemanticClass(const FString& ClassName)
 	TextureMappingAsset->SemanticClasses.Remove(ClassName);
 
 	SaveTextureMappingAsset();
+
+	// Broadcast the semantic classes change
+	SemanticClassesUpdatedEvent.Broadcast();
 
 	return true;
 }

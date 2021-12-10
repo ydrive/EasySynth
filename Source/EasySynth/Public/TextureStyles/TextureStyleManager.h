@@ -113,6 +113,12 @@ public:
 	/** Get the selected texture style */
 	ETextureStyle SelectedTextureStyle() const { return CurrentTextureStyle; }
 
+	/** Delegate type used to broadcast the semantic classes updated event */
+	DECLARE_EVENT(UTextureStyleManager, FSemanticClassesUpdatedEvent);
+
+	/** Returns a reference to the event for others to bind */
+	FSemanticClassesUpdatedEvent& OnSemanticClassesUpdated() { return SemanticClassesUpdatedEvent; }
+
 private:
 	/** Load or create texture mapping asset on startup */
 	void LoadOrCreateTextureMappingAsset();
@@ -137,6 +143,9 @@ private:
 
 	/** Generates the semantic class material if needed and returns it */
 	UMaterialInstanceDynamic* GetSemanticClassMaterial(FSemanticClass& SemanticClass);
+	
+	/** Semantic classes updated event dispatcher */
+	FSemanticClassesUpdatedEvent SemanticClassesUpdatedEvent;
 
 	/** Global texture mapping asset of the specific project */
 	UPROPERTY()

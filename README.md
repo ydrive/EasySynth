@@ -17,6 +17,8 @@ The plugin works by automatically starting the rendering of a user-defined level
 
 ### Install by adding the plugin source code to your project
 
+This method works with both engines installed from the Epic launcher and engines built from source code.
+
 - Create a new Unreal Engine project with the path `<UEProject>`
   - <em>Optional</em>: Use some of the provided Unreal Engine templates that come with a prebuilt level layout
 - Exit the editor
@@ -76,9 +78,14 @@ Start the rendering by clicking the `Render Images` button.
 
 <b>IMPORTANT:</b> Do not close a window that opens during rendering. Closing the window will result in the successful rendering being falsely reported, as it is not possible to know if the window has been closed from the plugin side.
 
-### Level sequence tips
+### Workflow tips
 
-- If you want images to be more spaced out (instead of being very close to provide a smooth video), you can set the custom level sequence FPS to a small value (1 FPS or lower) inside the Sequencer editor
+- You can use affordable asset marketplaces such as [Unreal Engine Marketplace](https://www.unrealengine.com/marketplace) or [CGTrader](https://www.cgtrader.com/) to obtain template levels. Ones that provide assets in the Unreal Engine `.uasset` format are preferred. Formats such as `FBX` or `OBJ` can lose their textures when imported into the UE editor.
+- When semantic labeling levels with many assets, utilize the World Outliner as much as possible. Use the search option to filter similar actors and bulk-select them so that all of them are labeled in one click.
+- If you want images to be spaced out more inside the level sequence (instead of being very close in order to provide a smooth video), you can set the custom level sequence FPS to a small value (1 FPS or lower) inside the Sequencer editor.
+- To avoid adding keyframes manually, select the <img src="ReadmeContent/KeyButton.png" alt="Color image" width="20"/> button inside the sequence editor toolbar. After you create the first keyframe, this will automatically add one at the current time for any moved asset.
+
+## Outputs' structure details
 
 ### Camera pose output
 
@@ -106,7 +113,7 @@ The coordinate system for saving camera positions and rotation quaternions is a 
 - Y axis points down
 - Z axis points straight away from the camera
 
-<img src="ReadmeContent/OutputCoordinateSystem.png" alt="Output coordinate system" width="150" style="margin:10px"/>
+<img src="ReadmeContent/OutputCoordinateSystem.png" alt="Output coordinate system" width="250" style="margin:10px"/>
 
 Note that this differs from Unreal Engine, which internally uses the left-handed Z-up coordinate system.
 
