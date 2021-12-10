@@ -1,6 +1,6 @@
 # EasySynth
 
-EasySynth is an Unreal Engine plugin for easy creation of image datasets from a moving camera, requiring no C++ or Blueprint knowledge. It leverages native Unreal Engine components to create compelling machine learning data, without relying on 3rd party tools.
+EasySynth is an Unreal Engine plugin for easy creation of image datasets from a moving camera, requiring no C++ or Blueprint knowledge. It leverages native Unreal Engine components to create compelling machine learning datasets, without relying on 3rd party tools.
 
 The plugin works by automatically starting the rendering of a user-defined level sequence, with different camera post-process settings. The outputs are camera poses, including position, rotation, and calibration parameters, together with the following image types:
 
