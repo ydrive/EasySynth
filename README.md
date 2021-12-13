@@ -37,7 +37,7 @@ This method works with both engines installed from the Epic launcher and engines
 - Restart the engine
 - Create a new project and activate the plugin inside the Plugins menu
 
-### Install inside the engine built from source
+### Install inside the engine by building from source code
 
 This method only works with engines built from source code.
 
