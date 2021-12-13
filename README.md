@@ -15,7 +15,9 @@ The plugin works by automatically starting the rendering of a user-defined level
 
 ## Installation
 
-### Install by adding the plugin source code to your project
+<b>IMPORTANT:</b> The plugin was developed using Unreal Engine 4.26 and it appears not to compile successfully with 4.27. Please use the compatible engine versions until the fix is released.
+
+### Install inside a specific project
 
 This method works with both engines installed from the Epic launcher and engines built from source code.
 
@@ -23,10 +25,28 @@ This method works with both engines installed from the Epic launcher and engines
   - <em>Optional</em>: Use some of the provided Unreal Engine templates that come with a prebuilt level layout
 - Exit the editor
 - Create and navigate to the `<UEProject>/Plugins` directory
-- Clone this repo inside the `<UEProject>/Plugins` directory
+- Clone this repo, or unzip the appropriate release inside the `<UEProject>/Plugins` directory
 - Reopen your project
 
-<b>IMPORTANT:</b> The plugin was developed using Unreal Engine 4.26 and it appears not to compile successfully with 4.27. Please use the compatible engine versions until the fix is released.
+### Install inside the engine using prebuilt binaries
+
+This method works with both engines installed from the Epic launcher and engines built from source code but requires using appropriate binaries.
+
+- Navigate to the `<UEPath>/Engine/Plugins` directory
+- Unzip the appropriate release
+- Restart the engine
+- Create a new project and activate the plugin inside the Plugins menu
+
+### Install inside the engine by building from source code
+
+This method only works with engines built from source code.
+
+- Navigate to the `<UEPath>/Engine/Plugins` directory
+- Clone this repo
+- Navigate to the `<UEPath>` directory
+- Run the `make` command
+- Restart the engine
+- Create a new project and activate the plugin inside the Plugins menu
 
 ## How to use
 
@@ -169,4 +189,4 @@ Our implementation was inspired by the [ProfFan's](https://github.com/ProfFan) [
 
 ## Contributions
 
-This tool was designed to be as general as possible, but also to suit our internal needs. You may find unusual or suboptimal implementations of different plugin functionalities. We encourage you to report those to us, or even contribute your fixes or optimizations. This also applies to the plugin widget Slate UI whose current design is at the minimum acceptable quality.
+This tool was designed to be as general as possible, but also to suit our internal needs. You may find unusual or suboptimal implementations of different plugin functionalities. We encourage you to report those to us, or even contribute your fixes or optimizations. This also applies to the plugin widget Slate UI whose current design is at the minimum acceptable quality. Also, if you try to build it on Mac, let us know how it went.
