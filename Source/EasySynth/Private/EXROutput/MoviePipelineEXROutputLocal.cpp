@@ -17,6 +17,7 @@
 #include "MoviePipelineMasterConfig.h"
 #include "IOpenExrRTTIModule.h"
 #include "Modules/ModuleManager.h"
+#include "MoviePipelineUtils.h"
 
 THIRD_PARTY_INCLUDES_START
 #include "OpenEXR/include/ImfChannelList.h"
@@ -129,10 +130,18 @@ bool FEXRImageWriteTaskLocal::WriteToDisk()
 		// Data Window specifies how much data is in the actual file, ie: 1920x1080
 		IMATH_NAMESPACE::Box2i DataWindow = IMATH_NAMESPACE::Box2i(IMATH_NAMESPACE::V2i(0,0), IMATH_NAMESPACE::V2i(Width - 1, Height - 1));
 
+		float BorderRatio = FMath::Clamp((OverscanPercentage / (1.0f + OverscanPercentage)) / 2.0f, 0.0f, 0.5f);
+		int32 OverscanBorderWidth = FMath::RoundToInt(Width * BorderRatio);
+		int32 OverscanBorderHeight = FMath::RoundToInt(Height * BorderRatio);
+
+		// Taking Overscan into account.
+		IMATH_NAMESPACE::V2i TopLeft = IMATH_NAMESPACE::V2i(OverscanBorderWidth, OverscanBorderHeight);
+		IMATH_NAMESPACE::V2i BottomRight = IMATH_NAMESPACE::V2i(Width - OverscanBorderWidth - 1, Height - OverscanBorderHeight - 1);
+
 		// Display Window specifies the total 'visible' area of the output file.
 		// The Display Window always starts at 0,0, but Data Window can go negative to
 		// support having pixels out of bounds (such as camera overscan).
-		IMATH_NAMESPACE::Box2i DisplayWindow = IMATH_NAMESPACE::Box2i(IMATH_NAMESPACE::V2i(0,0), IMATH_NAMESPACE::V2i(Width - 1, Height - 1));
+		IMATH_NAMESPACE::Box2i DisplayWindow = IMATH_NAMESPACE::Box2i(TopLeft, BottomRight);
 
 		Imf::Header Header(DisplayWindow, DataWindow, 1, Imath::V2f(0, 0), 1, Imf::LineOrder::INCREASING_Y, FileCompression);
 
@@ -163,7 +172,7 @@ bool FEXRImageWriteTaskLocal::WriteToDisk()
 				bSuccess = Layer->GetRawData(RawDataPtr, RawDataSize);
 				if (!bSuccess)
 				{
-					UE_LOG(LogMovieRenderPipeline, Error, TEXT("Failed to retrieve raw data from image data for writing. Bailing."));
+					UE_LOG(LogMovieRenderPipelineIO, Error, TEXT("Failed to retrieve raw data from image data for writing. Bailing."));
 					break;
 				}
 
@@ -214,7 +223,7 @@ bool FEXRImageWriteTaskLocal::WriteToDisk()
 #if WITH_EDITOR
 			catch (const IEX_NAMESPACE::BaseExc& Exception)
 			{
-				UE_LOG(LogMovieRenderPipeline, Error, TEXT("Caught exception: %s"), Exception.message().c_str());
+				UE_LOG(LogMovieRenderPipelineIO, Error, TEXT("Caught exception: %s"), Exception.message().c_str());
 			}
 #endif
 		}
@@ -228,7 +237,7 @@ bool FEXRImageWriteTaskLocal::WriteToDisk()
 
 	if (!bSuccess)
 	{
-		UE_LOG(LogMovieRenderPipeline, Error, TEXT("Failed to write image to '%s'. The pixel format may not be compatible with this image type, or there was an error writing to that filename."), *Filename);
+		UE_LOG(LogMovieRenderPipelineIO, Error, TEXT("Failed to write image to '%s'. The pixel format may not be compatible with this image type, or there was an error writing to that filename."), *Filename);
 	}
 
 	return bSuccess;
@@ -341,7 +350,7 @@ bool FEXRImageWriteTaskLocal::EnsureWritableFile()
 	// We can't write to the file
 	else
 	{
-		UE_LOG(LogMovieRenderPipeline, Error, TEXT("Failed to write image to '%s'. Should Overwrite: %d - If we should have overwritten the file, we failed to delete the file. If we shouldn't have overwritten the file the file already exists so we can't replace it."), *Filename, bOverwriteFile);
+		UE_LOG(LogMovieRenderPipelineIO, Error, TEXT("Failed to write image to '%s'. Should Overwrite: %d - If we should have overwritten the file, we failed to delete the file. If we shouldn't have overwritten the file the file already exists so we can't replace it."), *Filename, bOverwriteFile);
 		return false;
 	}
 }
@@ -352,7 +361,12 @@ void FEXRImageWriteTaskLocal::AddFileMetadata(Imf::Header& InHeader)
 	IOpenExrRTTIModule* OpenExrModule = FModuleManager::LoadModulePtr<IOpenExrRTTIModule>(RTTIExtensionModuleName);
 	if (OpenExrModule)
 	{
-		OpenExrModule->AddFileMetadata(FileMetadata, InHeader);
+		TMap<FString, FStringFormatArg> NewMap;
+		for (const TPair<FString, FString>& Metadata : FileMetadata)
+		{
+			NewMap.Add(Metadata.Key, Metadata.Value);
+		}
+		OpenExrModule->AddFileMetadata(NewMap, InHeader);
 	}
 }
 
@@ -408,7 +422,7 @@ void UMoviePipelineImageSequenceOutput_EXRLocal::OnReceiveImageDataImpl(FMoviePi
 			UE::MoviePipeline::ValidateOutputFormatString(FileNameFormatString, bIncludeRenderPass, bTestFrameNumber);
 
 			// Create specific data that needs to override
-			FStringFormatNamedArguments FormatOverrides;
+			TMap<FString, FString> FormatOverrides;
 			FormatOverrides.Add(TEXT("render_pass"), TEXT("")); // Render Passes are included inside the exr file by named layers.
 			FormatOverrides.Add(TEXT("ext"), Extension);
 
@@ -434,6 +448,11 @@ void UMoviePipelineImageSequenceOutput_EXRLocal::OnReceiveImageDataImpl(FMoviePi
 			FString FilePathFormatString = OutputDirectory / FileNameFormatString;
 			GetPipeline()->ResolveFilenameFormatArguments(FilePathFormatString, FormatOverrides, FinalFilePath, FinalFormatArgs, &InMergedOutputFrame->FrameOutputState);
 
+			if (FPaths::IsRelative(FinalFilePath))
+			{
+				FinalFilePath = FPaths::ConvertRelativePathToFull(FinalFilePath);
+			}
+
 			// Create a deterministic clipname by removing frame numbers, file extension, and any trailing .'s
 			UE::MoviePipeline::RemoveFrameNumberFormatStrings(FileNameFormatString, true);
 			GetPipeline()->ResolveFilenameFormatArguments(FileNameFormatString, FormatOverrides, ClipName, FinalFormatArgs, &InMergedOutputFrame->FrameOutputState);
@@ -448,6 +467,7 @@ void UMoviePipelineImageSequenceOutput_EXRLocal::OnReceiveImageDataImpl(FMoviePi
 
 		int32 LayerIndex = 0;
 		bool bRequiresTransparentOutput = false;
+		int32 ShotIndex = 0;
 		for (TPair<FMoviePipelinePassIdentifier, TUniquePtr<FImagePixelData>>& RenderPassData : InMergedOutputFrame->ImageOutputData)
 		{
 			if (RenderPassData.Value->GetSize() != Resolutions[Index])
@@ -466,6 +486,8 @@ void UMoviePipelineImageSequenceOutput_EXRLocal::OnReceiveImageDataImpl(FMoviePi
 				// Only check the main image pass for transparent output since that's generally considered the 'preview'.
 				FImagePixelDataPayload* Payload = RenderPassData.Value->GetPayload<FImagePixelDataPayload>();
 				bRequiresTransparentOutput = Payload->bRequireTransparentOutput;
+				ShotIndex = Payload->SampleState.OutputState.ShotIndex;
+				MultiLayerImageTask->OverscanPercentage = Payload->SampleState.OverscanPercentage;
 			}
 			else
 			{
@@ -480,9 +502,15 @@ void UMoviePipelineImageSequenceOutput_EXRLocal::OnReceiveImageDataImpl(FMoviePi
 			LayerIndex++;
 		}
 
-		ImageWriteQueue->Enqueue(MoveTemp(MultiLayerImageTask));
+		MoviePipeline::FMoviePipelineOutputFutureData OutputData;
+		OutputData.Shot = GetPipeline()->GetActiveShotList()[ShotIndex];
+		OutputData.PassIdentifier = FMoviePipelinePassIdentifier(TEXT("")); // exrs put all the render passes internally so this resolves to a ""
+		OutputData.FilePath = FinalFilePath;
+		GetPipeline()->AddOutputFuture(ImageWriteQueue->Enqueue(MoveTemp(MultiLayerImageTask)), OutputData);
+
 #if WITH_EDITOR
 		GetPipeline()->AddFrameToOutputMetadata(ClipName, FinalImageSequenceFileName, InMergedOutputFrame->FrameOutputState, Extension, bRequiresTransparentOutput);
 #endif
+
 	}
 }

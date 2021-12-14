@@ -57,7 +57,7 @@ public:
 	int32 Height;
 
 	/** A set of key/value pairs to write into the exr file as metadata. */
-	FStringFormatNamedArguments FileMetadata;
+	TMap<FString, FString> FileMetadata;
 
 	/** The image data to write. Supports multiple layers of different bitdepths. */
 	TArray<TUniquePtr<FImagePixelData>> Layers;
@@ -65,9 +65,13 @@ public:
 	/** Optional. A mapping between the FImagePixelData and a name. The standard is that the default layer is nameless (at which point it would be omitted) and other layers are prefixed. */
 	TMap<FImagePixelData*, FString> LayerNames;
 
+	/** Overscan info used to create apropriate dataWindow for EXR output. Goes from 0.0 to 1.0. */
+	float OverscanPercentage;
+
 	FEXRImageWriteTaskLocal()
 		: bOverwriteFile(true)
 		, Compression(EEXRCompressionFormatLocal::PIZ)
+		, OverscanPercentage(0.0f)
 	{}
 
 public:
