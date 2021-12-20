@@ -15,7 +15,7 @@ The plugin works by automatically starting the rendering of a user-defined level
 
 ## Installation
 
-<b>IMPORTANT:</b> The plugin was developed using Unreal Engine 4.26 and it appears not to compile successfully with 4.27. Please use the compatible engine versions until the fix is released.
+The current main branch of this repo is compatible with Unreal Engine 4.27. For source code or binary builds, targeting older engine versions, please consult previous releases.
 
 ### Install inside a specific project
 

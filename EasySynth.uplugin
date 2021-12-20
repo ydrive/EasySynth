@@ -2,7 +2,7 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"EngineVersion" : "4.26.0",
+	"EngineVersion" : "4.27.0",
 	"WhitelistPlatforms": [ "Win64", "Win32", "Linux" ],
 	"FriendlyName": "EasySynth",
 	"Description": "An Unreal Engine plugin for easy creation of image datasets",
@@ -26,7 +26,7 @@
 		{
 			"Name": "EasySynth",
 			"Type": "Editor",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "PostDefault"
 		}
 	]
 }
