@@ -1,5 +1,4 @@
-// Copyright (c) YDrive Inc. All rights reserved.
-// Licensed under the MIT License.
+// Copyright (c) 2022 YDrive Inc. All rights reserved.
 
 #include "SequenceRenderer.h"
 
@@ -82,7 +81,7 @@ TSharedPtr<FRendererTarget> FRendererTargetOptions::RendererTarget(
 }
 
 USequenceRenderer::USequenceRenderer() :
-	EasySynthMoviePipelineConfig(DuplicateObject<UMoviePipelineMasterConfig>( 
+	EasySynthMoviePipelineConfig(DuplicateObject<UMoviePipelineMasterConfig>(
 		LoadObject<UMoviePipelineMasterConfig>(nullptr, *FPathUtils::DefaultMoviePipelineConfigPath()), nullptr)),
 	bCurrentlyRendering(false),
 	ErrorMessage("")

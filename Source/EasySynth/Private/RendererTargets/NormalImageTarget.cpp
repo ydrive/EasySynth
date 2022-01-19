@@ -1,5 +1,4 @@
-// Copyright (c) YDrive Inc. All rights reserved.
-// Licensed under the MIT License.
+// Copyright (c) 2022 YDrive Inc. All rights reserved.
 
 #include "RendererTargets/NormalImageTarget.h"
 

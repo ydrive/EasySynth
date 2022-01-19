@@ -1,5 +1,4 @@
-// Copyright (c) YDrive Inc. All rights reserved.
-// Licensed under the MIT License.
+// Copyright (c) 2022 YDrive Inc. All rights reserved.
 
 #pragma once
 
@@ -143,7 +142,7 @@ private:
 
 	/** Generates the semantic class material if needed and returns it */
 	UMaterialInstanceDynamic* GetSemanticClassMaterial(FSemanticClass& SemanticClass);
-	
+
 	/** Semantic classes updated event dispatcher */
 	FSemanticClassesUpdatedEvent SemanticClassesUpdatedEvent;
 

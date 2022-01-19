@@ -3,15 +3,14 @@
 	"Version": 1,
 	"VersionName": "1.0",
 	"EngineVersion" : "4.27.0",
-	"WhitelistPlatforms": [ "Win64", "Win32", "Linux" ],
 	"FriendlyName": "EasySynth",
 	"Description": "An Unreal Engine plugin for easy creation of image datasets",
 	"Category": "Other",
 	"CreatedBy": "YDrive Inc",
 	"CreatedByURL": "ydrive.ai",
 	"DocsURL": "https://github.com/ydrive/EasySynth",
-	"MarketplaceURL": "",
-	"SupportURL": "",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/30e046c537aa4579b55e9a018521f259",
+	"SupportURL": "https://github.com/ydrive/EasySynth/issues",
 	"CanContainContent": true,
 	"IsBetaVersion": true,
 	"IsExperimentalVersion": false,
@@ -26,7 +25,8 @@
 		{
 			"Name": "EasySynth",
 			"Type": "Editor",
-			"LoadingPhase": "PostDefault"
+			"LoadingPhase": "PostDefault",
+			"WhitelistPlatforms": [ "Win64", "Win32", "Linux" ]
 		}
 	]
 }
