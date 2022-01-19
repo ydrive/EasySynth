@@ -1,5 +1,4 @@
-// Copyright (c) YDrive Inc. All rights reserved.
-// Licensed under the MIT License.
+// Copyright (c) 2022 YDrive Inc. All rights reserved.
 
 #pragma once
 
@@ -49,7 +48,7 @@ protected:
 	/** Returns the path to the specific target post process material */
 	inline UMaterial* LoadPostProcessMatrial() const
 	{
-		return DuplicateObject<UMaterial>( 
+		return DuplicateObject<UMaterial>(
 			LoadObject<UMaterial>(nullptr, *FPathUtils::PostProcessMaterialPath(Name())), nullptr);
 	}
 
