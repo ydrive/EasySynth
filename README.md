@@ -17,6 +17,16 @@ The plugin works by automatically starting the rendering of a user-defined level
 
 The current main branch of this repo is compatible with Unreal Engine 4.27. For source code or binary builds, targeting older engine versions, please consult previous releases.
 
+Major releases also include example projects amongst the release assets.
+
+### Install from the marketplace
+
+This is the easiest method if using Windows and you are not interested in modifying the plugin source code.
+
+- Install a compatible Unreal Engine version through the launcher
+- Find the [EasySynth](https://www.unrealengine.com/marketplace/en-US/product/easysynth) page inside the `Marketplace` tab and hit `Install to Engine`
+- Create a new project and activate the plugin inside the Plugins menu
+
 ### Install inside a specific project
 
 This method works with both engines installed from the Epic launcher and engines built from source code.
