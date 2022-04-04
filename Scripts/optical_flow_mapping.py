@@ -1,4 +1,5 @@
 # Copyright (c) 2022 YDrive Inc. All rights reserved.
+
 """
 This file contains example code for applying optical flow mapping to an image,
 utilizing torch and CUDA.
@@ -26,9 +27,9 @@ def read_image(image_path: str, use_cuda: bool) -> torch.Tensor:
 
 
 def load_optical_flow(optical_flow_image_path: str, use_cuda: bool) -> torch.Tensor:
-    '''
+    """
     Loads optical flow from an .exr image and returns it as a tensor with shape (2, h, w).
-    '''
+    """
     of_image = cv2.imread(optical_flow_image_path, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
     h, w, _ = of_image.shape
     # Convert image to HSV, where H is angle and S is intensity
