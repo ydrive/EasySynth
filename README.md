@@ -197,6 +197,45 @@ Our implementation was inspired by the [ProfFan's](https://github.com/ProfFan) [
 
 <b>IMPORTANT:</b> Due to Unreal Engine [limitations](https://github.com/EpicGames/UnrealEngine/pull/6933) optical flow rendering assumes all objects other than the camera are stationary. If there are moving objects in the scene while rendering the sequence, the optical flow for these pixels will be incorrect.
 
+Following is an example Python code for loading optical flow from an `.exr` image and applying it to the appropriate image from a sequence, to produce its successor:
+``` Python
+import cv2
+import numpy as np
+
+# Load the base image
+base_image = cv2.imread('<rendering_output_path>/ColorImage/<sequence>.0010.jpeg')
+h, w, _ = base_image.shape
+
+# Load the optical flow image from an .exr file
+optical_flow_image = cv2.imread(
+  '<rendering_output_path>/OpticalFlowImage/<sequence>.0011.exr',
+  cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
+
+# Convert the image to HSV, where H is the angle and S is the intensity on the color wheel
+optical_flow_image = cv2.cvtColor(optical_flow_image, cv2.COLOR_BGR2HSV)
+angle, magnitude = optical_flow_image[:, :, 0], optical_flow_image[:, :, 1]
+
+# Convert the shift from polar to cartesian coordinates (magnitude, angle => x, y)
+x_flow, y_flow = cv2.polarToCart(magnitude, angle, angleInDegrees=True)
+x_flow = np.round(-w * x_flow).astype(np.int32)
+y_flow = np.round(-h * y_flow).astype(np.int32)
+
+# Update each pixel value with the value of the shifted pixel
+mapped_image = np.zeros((h, w, 3), dtype=np.uint8)
+for i in range(h):
+    for j in range(w):
+        # Make sure the shifted pixel is inside the base image
+        y = i + y_flow[i, j]
+        x = j + x_flow[i, j]
+        if 0 <= x < w and 0 <= y < h:
+            mapped_image[i, j, :] = base_image[y, x]
+
+# Store the output image
+cv2.imwrite('mapped_image.jpeg', mapped_image)
+```
+
+Advanced version of this code, utilizing torch and CUDA, can be found in `Scripts/optical_flow_mapping.py`.
+
 ## Contributions
 
 This tool was designed to be as general as possible, but also to suit our internal needs. You may find unusual or suboptimal implementations of different plugin functionalities. We encourage you to report those to us, or even contribute your fixes or optimizations. This also applies to the plugin widget Slate UI whose current design is at the minimum acceptable quality. Also, if you try to build it on Mac, let us know how it went.
