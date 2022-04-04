@@ -65,8 +65,8 @@ def map_optical_flow(base_image: torch.Tensor, optical_flow: torch.Tensor) -> to
     new_grid = grid + optical_flow
 
     # Scale grid to [-1, 1]
-    new_grid[0, :, :] = 2.0 * new_grid[0, :, :].clone() / max(w - 1, 1) - 1.0
-    new_grid[1, :, :] = 2.0 * new_grid[1, :, :].clone() / max(h - 1, 1) - 1.0
+    new_grid[0, :, :] = 2.0 * new_grid[0, :, :] / max(w - 1, 1) - 1.0
+    new_grid[1, :, :] = 2.0 * new_grid[1, :, :] / max(h - 1, 1) - 1.0
     new_grid = new_grid.permute(1, 2, 0)
 
     # The grid sampling method requires higher dimensionality of input tensors,
