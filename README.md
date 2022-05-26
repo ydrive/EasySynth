@@ -118,6 +118,8 @@ Start the rendering by clicking the `Render Images` button.
 - When semantic labeling levels with many assets, utilize the World Outliner as much as possible. Use the search option to filter similar actors and bulk-select them so that all of them are labeled in one click.
 - If you want images to be spaced out more inside the level sequence (instead of being very close in order to provide a smooth video), you can set the custom level sequence FPS to a small value (1 FPS or lower) inside the Sequencer editor.
 - To avoid adding keyframes manually, select the <img src="ReadmeContent/KeyButton.png" alt="Color image" width="20"/> button inside the sequence editor toolbar. After you create the first keyframe, this will automatically add one at the current time for any moved asset.
+- To avoid potential artifacts, make sure the camera trajectory line is always smooth and does not contain "edged" turns - except when that is done intentionally.
+- Although changing the `CameraComponenet` offset/translation in relation to the `CameraActor` is possible, the exported camera poses will be `CameraActor` poses. If the relative translation is not zero, exported poses will not match locations where the actual image is taken from and you will have to compensate for that manually.
 
 ## Outputs' structure details
 
