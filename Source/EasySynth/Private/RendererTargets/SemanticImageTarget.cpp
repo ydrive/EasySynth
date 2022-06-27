@@ -22,7 +22,7 @@ bool FSemanticImageTarget::PrepareSequence(ULevelSequence* LevelSequence)
 	}
 
 	// Prepare the camera post process material
-	UMaterial* PostProcessMaterial = LoadPostProcessMatrial();
+	UMaterial* PostProcessMaterial = LoadPostProcessMaterial();
 	if (PostProcessMaterial == nullptr)
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not load semantic post process material"), *FString(__FUNCTION__))

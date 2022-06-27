@@ -46,7 +46,7 @@ protected:
 	bool ClearCameraPostProcess(ULevelSequence* LevelSequence);
 
 	/** Returns the path to the specific target post process material */
-	inline UMaterial* LoadPostProcessMatrial() const
+	inline UMaterial* LoadPostProcessMaterial() const
 	{
 		return DuplicateObject<UMaterial>(
 			LoadObject<UMaterial>(nullptr, *FPathUtils::PostProcessMaterialPath(Name())), nullptr);
