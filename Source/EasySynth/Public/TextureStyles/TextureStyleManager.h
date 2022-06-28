@@ -107,7 +107,7 @@ public:
 	void ApplySemanticClassToSelectedActors(const FString& ClassName);
 
 	/** Update mesh materials to show requested texture styles */
-	void CheckoutTextureStyle(ETextureStyle TextureStyle);
+	void CheckoutTextureStyle(const ETextureStyle NewTextureStyle);
 
 	/** Get the selected texture style */
 	ETextureStyle SelectedTextureStyle() const { return CurrentTextureStyle; }
@@ -136,6 +136,9 @@ private:
 
 	/** Sets a semantic class to the actor */
 	void SetSemanticClassToActor(AActor* Actor, const FString& ClassName, const bool bDelayAddingDescriptors = false);
+
+	/** Set active actor texture style to original or semantic color */
+	void CheckoutActorTexture(AActor* Actor, const ETextureStyle NewTextureStyle);
 
 	/** Adds semantic classes to actors in the delay actor buffer after a delay */
 	void ProcessDelayActorBuffer();

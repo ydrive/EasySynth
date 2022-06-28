@@ -278,7 +278,7 @@ void UTextureStyleManager::ApplySemanticClassToSelectedActors(const FString& Cla
 	SaveTextureMappingAsset();
 }
 
-void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
+void UTextureStyleManager::CheckoutTextureStyle(const ETextureStyle NewTextureStyle)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s: New texture style: %d"), *FString(__FUNCTION__), NewTextureStyle)
 
@@ -289,123 +289,12 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 		return;
 	}
 
-	if (CurrentTextureStyle == ETextureStyle::COLOR)
-	{
-		// Reset the original actor material storage to prepare it for new data
-		OriginalActorDescriptors.Empty();
-	}
-
 	// Apply materials to all actors
 	TArray<AActor*> LevelActors;
 	UGameplayStatics::GetAllActorsOfClass(GEditor->GetEditorWorldContext().World(), AActor::StaticClass(), LevelActors);
 	for (AActor* Actor : LevelActors)
 	{
-		// Get actor mesh components
-		TArray<UActorComponent*> ActorComponents;
-		const bool bIncludeFromChildActors = true;
-		Actor->GetComponents(UStaticMeshComponent::StaticClass(), ActorComponents, bIncludeFromChildActors);
-
-		// If no mesh components are found, ignore the actor
-		if (ActorComponents.Num() == 0)
-		{
-			continue;
-		}
-
-		// Cannot just proceed if the actor is unknown
-		if (!TextureMappingAsset->ActorClassPairs.Contains(Actor->GetActorGuid()))
-		{
-			if (CurrentTextureStyle == ETextureStyle::COLOR)
-			{
-				// Moving from original to semantic colors, we need to assign a class to the actor
-				SetSemanticClassToActor(Actor, UndefinedSemanticClassName);
-			}
-			else if (CurrentTextureStyle == ETextureStyle::SEMANTIC)
-			{
-				// Moving from semantic to original colors, cross the fingers and ignore the actor for now
-				UE_LOG(LogEasySynth, Warning, TEXT("%s: Found unknown actor '%s' while transitioning from semantic to original color mode, ignoring it"),
-					*FString(__FUNCTION__), *Actor->GetName())
-				continue;
-			}
-		}
-
-		const FString& ClassName = TextureMappingAsset->ActorClassPairs[Actor->GetActorGuid()];
-
-		UE_LOG(LogEasySynth, Log, TEXT("%s: Painting actor '%s'"), *FString(__FUNCTION__), *Actor->GetName())
-
-		if (CurrentTextureStyle == ETextureStyle::COLOR)
-		{
-			// Changing to semantic view, store the original data
-			OriginalActorDescriptors.Add(Actor);
-		}
-		else if (CurrentTextureStyle == ETextureStyle::SEMANTIC)
-		{
-			if (!OriginalActorDescriptors.Contains(Actor))
-			{
-				UE_LOG(LogEasySynth, Error, TEXT("%s: Actor original descriptor not found"), *FString(__FUNCTION__))
-				continue;
-			}
-		}
-
-		// Set new materials
-		for (UActorComponent* ActorComponent : ActorComponents)
-		{
-			// Apply to each static mesh component
-			UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(ActorComponent);
-			if (MeshComponent == nullptr)
-			{
-				UE_LOG(LogEasySynth, Error, TEXT("%s: Got null static mesh component"), *FString(__FUNCTION__))
-				return;
-			}
-
-			if (CurrentTextureStyle == ETextureStyle::COLOR)
-			{
-				// Changing to semantic view, store the original data
-				OriginalActorDescriptors[Actor].Add(MeshComponent);
-			}
-			else if (CurrentTextureStyle == ETextureStyle::SEMANTIC)
-			{
-				if (!OriginalActorDescriptors[Actor].Contains(MeshComponent))
-				{
-					UE_LOG(LogEasySynth, Error, TEXT("%s: Actor's mesh component original descriptor not found"),
-						*FString(__FUNCTION__))
-					continue;
-				}
-				else if (OriginalActorDescriptors[Actor][MeshComponent].Num() != MeshComponent->GetNumMaterials())
-				{
-					UE_LOG(LogEasySynth, Error, TEXT("%s: %d instead of %d actor's mesh component materials found"),
-						*FString(__FUNCTION__),
-						OriginalActorDescriptors[Actor][MeshComponent].Num(),
-						MeshComponent->GetNumMaterials())
-					continue;
-				}
-			}
-
-			UE_LOG(LogEasySynth, Log, TEXT("%s: Painting mesh component '%s'"),
-				*FString(__FUNCTION__), *MeshComponent->GetName());
-
-			for (int i = 0; i < MeshComponent->GetNumMaterials(); i++)
-			{
-				// Apply to each material
-				if (CurrentTextureStyle == ETextureStyle::COLOR)
-				{
-					// Change to semantic material
-					OriginalActorDescriptors[Actor][MeshComponent].Add(MeshComponent->GetMaterial(i));
-					MeshComponent->SetMaterial(
-						i, GetSemanticClassMaterial(TextureMappingAsset->SemanticClasses[ClassName]));
-				}
-				else
-				{
-					// Revert to original material
-					MeshComponent->SetMaterial(i, OriginalActorDescriptors[Actor][MeshComponent][i]);
-				}
-			}
-		}
-	}
-
-	if (CurrentTextureStyle == ETextureStyle::SEMANTIC)
-	{
-		// Reset the original actor material storage as it is no longer needed
-		OriginalActorDescriptors.Empty();
+		CheckoutActorTexture(Actor, NewTextureStyle);
 	}
 
 	// Make sure any changes to the TextureMappingAsset are changed
@@ -494,74 +383,134 @@ void UTextureStyleManager::SetSemanticClassToActor(
 	// Immediately display the change when in the semantic mode
 	if (CurrentTextureStyle == ETextureStyle::SEMANTIC)
 	{
-		// Simplified checkout of the semantic view for this actor
-
-		// Get actor mesh components
-		TArray<UActorComponent*> ActorComponents;
-		const bool bIncludeFromChildActors = true;
-		Actor->GetComponents(UStaticMeshComponent::StaticClass(), ActorComponents, bIncludeFromChildActors);
-
-		// If no mesh components are found, ignore the actor
-		if (ActorComponents.Num() == 0)
+		if (bDelayAddingDescriptors)
 		{
+			// Adding with a delay is requested, add the actor to the delay buffer, start the timer,
+			// stop the current execution and the callback will handle the rest
+			DelayActorBuffer.Add(Actor);
+			const float DelaySeconds = 0.2f;
+			const bool bLoop = false;
+			GEditor->GetEditorWorldContext().World()->GetTimerManager().SetTimer(
+				DelayActorTimerHandle,
+				this,
+				&UTextureStyleManager::ProcessDelayActorBuffer,
+				DelaySeconds,
+				bLoop);
 			return;
 		}
 
-		// In case this actor has not already been added to the original descriptor,
-		// add its contents before changing the material
-		const bool bAddingNew = !OriginalActorDescriptors.Contains(Actor);
-		if (bAddingNew)
-		{
-			if (bDelayAddingDescriptors)
-			{
-				// Adding with a delay is requested, add the actor to the delay buffer, start the timer,
-				// stop the current execution and come back in a few millisecond
-				DelayActorBuffer.Add(Actor);
-				const float DelaySeconds = 0.2f;
-				const bool bLoop = false;
-				GEditor->GetEditorWorldContext().World()->GetTimerManager().SetTimer(
-					DelayActorTimerHandle,
-					this,
-					&UTextureStyleManager::ProcessDelayActorBuffer,
-					DelaySeconds,
-					bLoop);
-				return;
-			}
-			OriginalActorDescriptors.Add(Actor);
-		}
-
-		// Set new materials
-		for (UActorComponent* ActorComponent : ActorComponents)
-		{
-			// Apply to each static mesh component
-			UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(ActorComponent);
-			if (MeshComponent == nullptr)
-			{
-				UE_LOG(LogEasySynth, Error, TEXT("%s: Got null static mesh component"), *FString(__FUNCTION__))
-				return;
-			}
-
-			if (bAddingNew)
-			{
-				OriginalActorDescriptors[Actor].Add(MeshComponent);
-			}
-
-			// Store actor descriptors immediately
-			for (int i = 0; i < MeshComponent->GetNumMaterials(); i++)
-			{
-				// Apply to each material
-				if (bAddingNew)
-				{
-					OriginalActorDescriptors[Actor][MeshComponent].Add(MeshComponent->GetMaterial(i));
-				}
-
-				MeshComponent->SetMaterial(
-					i, GetSemanticClassMaterial(TextureMappingAsset->SemanticClasses[ClassName]));
-			}
-		}
+		// No delay is requested, checkout the semantic color
+		CheckoutActorTexture(Actor, ETextureStyle::SEMANTIC);
 	}
 
 	// No need to save the TextureMappingAsset for every actor, the caller will do it
+}
+
+void UTextureStyleManager::CheckoutActorTexture(AActor* Actor, const ETextureStyle NewTextureStyle)
+{
+	// Check if the actor has a semantic class assigned
+	const FGuid& ActorGuid = Actor->GetActorGuid();
+	if (!TextureMappingAsset->ActorClassPairs.Contains(ActorGuid))
+	{
+		if (NewTextureStyle == ETextureStyle::SEMANTIC)
+		{
+			// If semantic view is being selected, assign the default class to the actor
+			// This method will be recalled by the following method
+			SetSemanticClassToActor(Actor, UndefinedSemanticClassName);
+		}
+		return;
+	}
+
+	// Get the name of the semantic class assigned to the actor
+	const FString& ClassName = TextureMappingAsset->ActorClassPairs[ActorGuid];
+
+	// Make sure the semantic class name is valid
+	if (!TextureMappingAsset->SemanticClasses.Contains(ClassName))
+	{
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Uknown class name '%s'"), *FString(__FUNCTION__), *ClassName)
+		return;
+	}
+
+	// Get actor mesh components
+	TArray<UActorComponent*> ActorComponents;
+	const bool bIncludeFromChildActors = true;
+	Actor->GetComponents(UStaticMeshComponent::StaticClass(), ActorComponents, bIncludeFromChildActors);
+
+	// If no mesh components are found, ignore the actor
+	if (ActorComponents.Num() == 0)
+	{
+		return;
+	}
+
+	// Check whether the actor currently has its original materials active
+	// It it does, the original materials will be backed up
+	const bool bOriginalTextureActive = !OriginalActorDescriptors.Contains(Actor);
+
+	// If the actor has original texture and is changing to the same on, ignore the actor
+	if (bOriginalTextureActive && NewTextureStyle == ETextureStyle::COLOR)
+	{
+		return;
+	}
+
+	// Actor is changing from color to semantic, create its descriptor
+	if (bOriginalTextureActive && NewTextureStyle == ETextureStyle::SEMANTIC)
+	{
+		OriginalActorDescriptors.Add(Actor);
+	})
+
+	// Set new materials
+	for (UActorComponent* ActorComponent : ActorComponents)
+	{
+		// Apply to each static mesh component
+		UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(ActorComponent);
+		if (MeshComponent == nullptr)
+		{
+			UE_LOG(LogEasySynth, Error, TEXT("%s: Got null static mesh component"), *FString(__FUNCTION__))
+			return;
+		}
+
+		if (bOriginalTextureActive)
+		{
+			OriginalActorDescriptors[Actor].Add(MeshComponent);
+		}
+
+		// Check whether number of stored materials is correct, if they are needed
+		if (!bOriginalTextureActive &&
+			NewTextureStyle == ETextureStyle::COLOR &&
+			OriginalActorDescriptors[Actor][MeshComponent].Num() != MeshComponent->GetNumMaterials())
+		{
+			UE_LOG(LogEasySynth, Error, TEXT("%s: %d instead of %d actor's mesh component materials found"),
+				*FString(__FUNCTION__),
+				OriginalActorDescriptors[Actor][MeshComponent].Num(),
+				MeshComponent->GetNumMaterials())
+			return;
+		}
+
+		// Store all mesh component materials
+		for (int i = 0; i < MeshComponent->GetNumMaterials(); i++)
+		{
+			// Apply to each material
+			if (bNewMeshComponent)
+			{
+				OriginalActorDescriptors[Actor][MeshComponent].Add(MeshComponent->GetMaterial(i));
+			}
+
+			// Apply to each material
+			if (NewTextureStyle == ETextureStyle::SEMANTIC)
+			{
+				// Change to semantic material
+				OriginalActorDescriptors[Actor][MeshComponent].Add(MeshComponent->GetMaterial(i));
+				MeshComponent->SetMaterial(
+					i, GetSemanticClassMaterial(TextureMappingAsset->SemanticClasses[ClassName]));
+			}
+			else
+			{
+				// Revert to original material
+				MeshComponent->SetMaterial(i, OriginalActorDescriptors[Actor][MeshComponent][i]);
+				OriginalActorDescriptors.Remove(Actor);
+			}
+		}
+	}
 }
 
 void UTextureStyleManager::ProcessDelayActorBuffer()
