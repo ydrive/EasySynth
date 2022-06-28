@@ -9,7 +9,7 @@ class UTextureStyleManager;
 
 /**
  * Class that manages the widget for manipulating semantic classes
- * The class contains numerous delagate handlers which do not allow
+ * The class contains numerous delegate handlers which do not allow
  * for some of the parameters to be referenced, only const
 */
 class FSemanticClassesWidgetManager
@@ -66,7 +66,7 @@ private:
     /** Handles semantic class management done click */
 	FReply OnDoneClicked();
 
-    /** Refreshes contnet of the existing semantic colors array */
+    /** Refreshes content of the existing semantic colors array */
     void RefreshSemanticClasses();
 
     /** The widget window weak pointer */
