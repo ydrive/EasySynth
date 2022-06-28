@@ -26,7 +26,7 @@ private:
 	/** Extract camera transforms using the sequencer wrapper */
 	bool ExtractCameraTransforms();
 
-	/** Saves the estracted camera poses to a file */
+	/** Saves the extracted camera poses to a file */
 	bool SavePosesToCSV(const FString& OutputDir);
 
 	/** Sequencer wrapper needed to acces the level sequence properties */

@@ -121,7 +121,7 @@ FReply FSemanticClassesWidgetManager::OnUpdateClassColorClicked(
 	const FPointerEvent& MouseEvent,
 	const FString ClassName)
 {
-	CurrenltyEditedClass = ClassName;
+	CurrentlyEditedClass = ClassName;
 
 	if (MouseEvent.GetEffectingButton() != EKeys::LeftMouseButton)
 	{
@@ -155,9 +155,9 @@ void FSemanticClassesWidgetManager::OnUpdateClassColorCommited(const FLinearColo
 	FColor NewColor = NewLinearColor.ToFColor(bSRGB);
 	NewColor.A = 255;
 
-	TextureStyleManager->UpdateClassColor(CurrenltyEditedClass, NewColor);
+	TextureStyleManager->UpdateClassColor(CurrentlyEditedClass, NewColor);
 
-	CurrenltyEditedClass = "";
+	CurrentlyEditedClass = "";
 }
 
 FReply FSemanticClassesWidgetManager::OnDeleteClassClicked(const FString ClassName)

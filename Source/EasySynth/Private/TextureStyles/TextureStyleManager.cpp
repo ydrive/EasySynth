@@ -301,12 +301,12 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 	for (AActor* Actor : LevelActors)
 	{
 		// Get actor mesh components
-		TArray<UActorComponent*> ActorComponenets;
+		TArray<UActorComponent*> ActorComponents;
 		const bool bIncludeFromChildActors = true;
-		Actor->GetComponents(UStaticMeshComponent::StaticClass(), ActorComponenets, bIncludeFromChildActors);
+		Actor->GetComponents(UStaticMeshComponent::StaticClass(), ActorComponents, bIncludeFromChildActors);
 
-		// If no mesh componenets are found, ignore the actor
-		if (ActorComponenets.Num() == 0)
+		// If no mesh components are found, ignore the actor
+		if (ActorComponents.Num() == 0)
 		{
 			continue;
 		}
@@ -322,7 +322,7 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 			else if (CurrentTextureStyle == ETextureStyle::SEMANTIC)
 			{
 				// Moving from semantic to original colors, cross the fingers and ignore the actor for now
-				UE_LOG(LogEasySynth, Warning, TEXT("%s: Found unknown actor '%s' while transitionsing from semantic to original color mode, ignoring it"),
+				UE_LOG(LogEasySynth, Warning, TEXT("%s: Found unknown actor '%s' while transitioning from semantic to original color mode, ignoring it"),
 					*FString(__FUNCTION__), *Actor->GetName())
 				continue;
 			}
@@ -347,9 +347,9 @@ void UTextureStyleManager::CheckoutTextureStyle(ETextureStyle NewTextureStyle)
 		}
 
 		// Set new materials
-		for (UActorComponent* ActorComponent : ActorComponenets)
+		for (UActorComponent* ActorComponent : ActorComponents)
 		{
-			// Apply to each static mesh componenet
+			// Apply to each static mesh component
 			UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(ActorComponent);
 			if (MeshComponent == nullptr)
 			{
@@ -424,7 +424,7 @@ void UTextureStyleManager::LoadOrCreateTextureMappingAsset()
 		UE_LOG(LogEasySynth, Log, TEXT("%s: Texture mapping asset not found, creating a new one"),
 			*FString(__FUNCTION__));
 
-		// Register the plugin directroy with the editor
+		// Register the plugin directory with the editor
 		FAssetRegistryModule& AssetRegistryModule =
 			FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 		AssetRegistryModule.Get().AddPath(FPathUtils::ProjectPluginContentDir());
@@ -457,7 +457,7 @@ void UTextureStyleManager::OnLevelActorAdded(AActor* Actor)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Adding actor '%s'"), *FString(__FUNCTION__), *Actor->GetName())
 
-	// Preemprively assign the undefined semantic class to the new actor
+	// Preemptively assign the undefined semantic class to the new actor
 	// In the case of the semantic mode being selected, assigned class will be immediately displayed
 	const bool bDelayAddingDescriptors = true;
 	SetSemanticClassToActor(Actor, UndefinedSemanticClassName, bDelayAddingDescriptors);
@@ -497,12 +497,12 @@ void UTextureStyleManager::SetSemanticClassToActor(
 		// Simplified checkout of the semantic view for this actor
 
 		// Get actor mesh components
-		TArray<UActorComponent*> ActorComponenets;
+		TArray<UActorComponent*> ActorComponents;
 		const bool bIncludeFromChildActors = true;
-		Actor->GetComponents(UStaticMeshComponent::StaticClass(), ActorComponenets, bIncludeFromChildActors);
+		Actor->GetComponents(UStaticMeshComponent::StaticClass(), ActorComponents, bIncludeFromChildActors);
 
-		// If no mesh componenets are found, ignore the actor
-		if (ActorComponenets.Num() == 0)
+		// If no mesh components are found, ignore the actor
+		if (ActorComponents.Num() == 0)
 		{
 			return;
 		}
@@ -531,9 +531,9 @@ void UTextureStyleManager::SetSemanticClassToActor(
 		}
 
 		// Set new materials
-		for (UActorComponent* ActorComponent : ActorComponenets)
+		for (UActorComponent* ActorComponent : ActorComponents)
 		{
-			// Apply to each static mesh componenet
+			// Apply to each static mesh component
 			UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(ActorComponent);
 			if (MeshComponent == nullptr)
 			{

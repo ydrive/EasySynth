@@ -62,7 +62,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 	// Bind events now that the editor has finished starting up
 	TextureStyleManager->BindEvents();
 
-	// Load saved optsion states now, also to make sure editor is ready
+	// Load saved option states now, also to make sure editor is ready
 	LoadWidgetOptionStates();
 
 	// Update combo box semantic class names
@@ -181,7 +181,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			.Padding(2)
 			[
 				SNew(STextBlock)
-				.Text(LOCTEXT("ChoseTargesSectionTitle", "Chose targets to be rendered"))
+				.Text(LOCTEXT("ChoseTargetsSectionTitle", "Chose targets to be rendered"))
 			]
 			+SScrollBox::Slot()
 			.Padding(2)
@@ -498,7 +498,7 @@ void FWidgetManager::LoadWidgetOptionStates()
 		UE_LOG(LogEasySynth, Log, TEXT("%s: Texture mapping asset not found, creating a new one"),
 			*FString(__FUNCTION__));
 
-		// Register the plugin directroy with the editor
+		// Register the plugin directory with the editor
 		FAssetRegistryModule& AssetRegistryModule =
 			FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 		AssetRegistryModule.Get().AddPath(FPathUtils::ProjectPluginContentDir());

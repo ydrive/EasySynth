@@ -23,13 +23,13 @@ enum class ETextureStyle : uint8
 };
 
 
-/** Structure wrapping TArray of static mesh componenet materials */
+/** Structure wrapping TArray of static mesh component materials */
 USTRUCT()
 struct FOriginalComponentDescriptor
 {
 	GENERATED_USTRUCT_BODY()
 
-	/** The array of meterial interfaces */
+	/** The array of material interfaces */
 	UPROPERTY()
 	TArray<UMaterialInterface*> MaterialInterfaces;
 
@@ -44,9 +44,9 @@ struct FOriginalComponentDescriptor
 };
 
 
-/** Structure wrapping TMap of static mesh componenets to their original materials */
+/** Structure wrapping TMap of static mesh components to their original materials */
 USTRUCT()
-struct FOrignalActorDescriptor
+struct FOriginalActorDescriptor
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -103,7 +103,7 @@ public:
 	/** Returns array of const pointers to semantic classes */
 	TArray<const FSemanticClass*> SemanticClasses() const;
 
-	/** Apllies desired class to all selected actors */
+	/** Applies desired class to all selected actors */
 	void ApplySemanticClassToSelectedActors(const FString& ClassName);
 
 	/** Update mesh materials to show requested texture styles */
@@ -161,10 +161,10 @@ private:
 	 * Storage of the original actor materials while semantics are displayed
 	 * Mimics the behavior of the structure defined as
 	 * TMap<AActor*, TMap<UStaticMeshComponent*, TArray<UMaterialInterface*>>>
-	 * which throws the UE specific complie error "Nested containers are not supported."
+	 * which throws the UE specific compile error "Nested containers are not supported."
 	*/
 	UPROPERTY()
-	TMap<AActor*, FOrignalActorDescriptor> OriginalActorDescriptors;
+	TMap<AActor*, FOriginalActorDescriptor> OriginalActorDescriptors;
 
 	/**
 	 * Buffer used to store actors that need to have the semantic class set with a delay

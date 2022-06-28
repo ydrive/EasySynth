@@ -34,7 +34,7 @@ bool FCameraPoseExporter::ExportCameraPoses(
 	// Extract the camera pose transforms
 	if (!ExtractCameraTransforms())
 	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Camera pose extaction failed"), *FString(__FUNCTION__))
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Camera pose extraction failed"), *FString(__FUNCTION__))
 		return false;
 	}
 
@@ -55,7 +55,7 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
 
 	// Get level sequence ticks per second
 	// Engine likes to update much more often than the video frame rate,
-	// so this is needed to calculate engine ticks that corespond to frames
+	// so this is needed to calculate engine ticks that correspond to frames
 	const FFrameRate TickResolutions = SequencerWrapper.GetMovieScene()->GetTickResolution();
 
 	// Calculate ticks per frame
@@ -68,7 +68,7 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
 		// Get the current cut section camera binding id
 		const FMovieSceneObjectBindingID& CameraBindingID = CutSection->GetCameraBindingID();
 
-		// Get the camera componenet
+		// Get the camera component
 		UCameraComponent* Camera = CutSection->GetFirstCamera(
 			*SequencerWrapper.GetSequencer(),
 			SequencerWrapper.GetSequencer()->GetFocusedTemplateID());
@@ -78,7 +78,7 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
 			return false;
 		}
 
-		// Find the track inside the level sequence that coresponds to the
+		// Find the track inside the level sequence that corresponds to the
 		// pose transformation of the camera
 		UMovieScene3DTransformTrack* CameraTransformTrack = nullptr;
 		for (const FMovieSceneBinding& Binding : SequencerWrapper.GetMovieScene()->GetBindings())

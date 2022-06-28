@@ -76,7 +76,7 @@ private:
     TWeakPtr<SVerticalBox> ClassesBox;
 
     /** Stores which existing semantic class is being edited */
-    FString CurrenltyEditedClass;
+    FString CurrentlyEditedClass;
 
     /** Timer handle for the window reopen timer */
     FTimerHandle ReopenTimerHandle;
