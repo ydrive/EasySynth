@@ -251,7 +251,7 @@ void UTextureStyleManager::ApplySemanticClassToSelectedActors(const FString& Cla
 {
 	if (!TextureMappingAsset->SemanticClasses.Contains(ClassName))
 	{
-		UE_LOG(LogEasySynth, Log, TEXT("%s: Received semantic class '%s' not found"),
+		UE_LOG(LogEasySynth, Warning, TEXT("%s: Received semantic class '%s' not found"),
 			*FString(__FUNCTION__), *ClassName);
 		return;
 	}
