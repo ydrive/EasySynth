@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "PathUtils.h"
+#include "TextureStyles/TextureBackupManager.h"
 #include "TextureStyles/TextureMappingAsset.h"
 
 
@@ -21,6 +22,7 @@ UTextureStyleManager::UTextureStyleManager() :
 	PlainColorMaterial(DuplicateObject<UMaterial>(
 		LoadObject<UMaterial>(nullptr, *FPathUtils::PlainColorMaterialPath()), nullptr)),
 	CurrentTextureStyle(ETextureStyle::COLOR),
+	TextureBackupManager(NewObject<UTextureBackupManager>()),
 	bEventsBound(false)
 {
 	// Check if the plain color material is loaded correctly
@@ -28,6 +30,13 @@ UTextureStyleManager::UTextureStyleManager() :
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not load the PlainColorMaterial"), *FString(__FUNCTION__))
 		check(PlainColorMaterial)
+	}
+
+	// Check if the TextureBackupManager is initialized correctly
+	if (TextureBackupManager == nullptr)
+	{
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not create the TextureBackupManager"), *FString(__FUNCTION__))
+		check(TextureBackupManager)
 	}
 
 	// Prepare the texture mapping asset
@@ -348,15 +357,16 @@ void UTextureStyleManager::OnLevelActorAdded(AActor* Actor)
 
 	// Preemptively assign the undefined semantic class to the new actor
 	// In the case of the semantic mode being selected, assigned class will be immediately displayed
+	const bool bForceDisplaySemanticClass = false;
 	const bool bDelayAddingDescriptors = true;
-	SetSemanticClassToActor(Actor, UndefinedSemanticClassName, bDelayAddingDescriptors);
+	SetSemanticClassToActor(Actor, UndefinedSemanticClassName, bForceDisplaySemanticClass, bDelayAddingDescriptors);
 }
 
 void UTextureStyleManager::OnLevelActorDeleted(AActor* Actor)
 {
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Removing actor '%s'"), *FString(__FUNCTION__), *Actor->GetName())
 	TextureMappingAsset->ActorClassPairs.Remove(Actor->GetActorGuid());
-	OriginalActorDescriptors.Remove(Actor);
+	TextureBackupManager->RemoveActor(Actor);
 }
 
 void UTextureStyleManager::OnEditorClose()
@@ -372,6 +382,7 @@ void UTextureStyleManager::OnEditorClose()
 void UTextureStyleManager::SetSemanticClassToActor(
 	AActor* Actor,
 	const FString& ClassName,
+	const bool bForceDisplaySemanticClass,
 	const bool bDelayAddingDescriptors)
 {
 	// Remove class if already assigned
@@ -398,8 +409,11 @@ void UTextureStyleManager::SetSemanticClassToActor(
 				bLoop);
 			return;
 		}
+	}
 
-		// No delay is requested, checkout the semantic color
+	// No delay is requested, checkout the semantic color
+	if (bForceDisplaySemanticClass || CurrentTextureStyle == ETextureStyle::SEMANTIC)
+	{
 		CheckoutActorTexture(Actor, ETextureStyle::SEMANTIC);
 	}
 
@@ -416,7 +430,8 @@ void UTextureStyleManager::CheckoutActorTexture(AActor* Actor, const ETextureSty
 		{
 			// If semantic view is being selected, assign the default class to the actor
 			// This method will be recalled by the following method
-			SetSemanticClassToActor(Actor, UndefinedSemanticClassName);
+			const bool bForceDisplaySemanticClass = true;
+			SetSemanticClassToActor(Actor, UndefinedSemanticClassName, bForceDisplaySemanticClass);
 		}
 		return;
 	}
@@ -431,86 +446,25 @@ void UTextureStyleManager::CheckoutActorTexture(AActor* Actor, const ETextureSty
 		return;
 	}
 
-	// Get actor mesh components
-	TArray<UActorComponent*> ActorComponents;
-	const bool bIncludeFromChildActors = true;
-	Actor->GetComponents(UStaticMeshComponent::StaticClass(), ActorComponents, bIncludeFromChildActors);
-
-	// If no mesh components are found, ignore the actor
-	if (ActorComponents.Num() == 0)
-	{
-		return;
-	}
-
 	// Check whether the actor currently has its original materials active
 	// It it does, the original materials will be backed up
-	const bool bOriginalTextureActive = !OriginalActorDescriptors.Contains(Actor);
+	const bool bOriginalTextureActive = !TextureBackupManager->ContainsActor(Actor);
 
-	// If the actor has original texture and is changing to the same on, ignore the actor
+	// If the actor has original texture and is changing to the same one, ignore the actor
 	if (bOriginalTextureActive && NewTextureStyle == ETextureStyle::COLOR)
 	{
 		return;
 	}
 
-	// Actor is changing from color to semantic, create its descriptor
-	if (bOriginalTextureActive && NewTextureStyle == ETextureStyle::SEMANTIC)
+	// Update the actor texture
+	const bool bDoAdd = bOriginalTextureActive;
+	const bool bDoPaint = true;
+	UMaterialInstanceDynamic* Material = nullptr;
+	if (NewTextureStyle == ETextureStyle::SEMANTIC)
 	{
-		OriginalActorDescriptors.Add(Actor);
-	})
-
-	// Set new materials
-	for (UActorComponent* ActorComponent : ActorComponents)
-	{
-		// Apply to each static mesh component
-		UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(ActorComponent);
-		if (MeshComponent == nullptr)
-		{
-			UE_LOG(LogEasySynth, Error, TEXT("%s: Got null static mesh component"), *FString(__FUNCTION__))
-			return;
-		}
-
-		if (bOriginalTextureActive)
-		{
-			OriginalActorDescriptors[Actor].Add(MeshComponent);
-		}
-
-		// Check whether number of stored materials is correct, if they are needed
-		if (!bOriginalTextureActive &&
-			NewTextureStyle == ETextureStyle::COLOR &&
-			OriginalActorDescriptors[Actor][MeshComponent].Num() != MeshComponent->GetNumMaterials())
-		{
-			UE_LOG(LogEasySynth, Error, TEXT("%s: %d instead of %d actor's mesh component materials found"),
-				*FString(__FUNCTION__),
-				OriginalActorDescriptors[Actor][MeshComponent].Num(),
-				MeshComponent->GetNumMaterials())
-			return;
-		}
-
-		// Store all mesh component materials
-		for (int i = 0; i < MeshComponent->GetNumMaterials(); i++)
-		{
-			// Apply to each material
-			if (bNewMeshComponent)
-			{
-				OriginalActorDescriptors[Actor][MeshComponent].Add(MeshComponent->GetMaterial(i));
-			}
-
-			// Apply to each material
-			if (NewTextureStyle == ETextureStyle::SEMANTIC)
-			{
-				// Change to semantic material
-				OriginalActorDescriptors[Actor][MeshComponent].Add(MeshComponent->GetMaterial(i));
-				MeshComponent->SetMaterial(
-					i, GetSemanticClassMaterial(TextureMappingAsset->SemanticClasses[ClassName]));
-			}
-			else
-			{
-				// Revert to original material
-				MeshComponent->SetMaterial(i, OriginalActorDescriptors[Actor][MeshComponent][i]);
-				OriginalActorDescriptors.Remove(Actor);
-			}
-		}
+		Material = GetSemanticClassMaterial(TextureMappingAsset->SemanticClasses[ClassName]);
 	}
+	TextureBackupManager->AddAndPaint(Actor, bDoAdd, bDoPaint, Material);
 }
 
 void UTextureStyleManager::ProcessDelayActorBuffer()

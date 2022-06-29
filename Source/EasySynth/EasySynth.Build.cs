@@ -35,14 +35,15 @@ public class EasySynth : ModuleRules
 			new string[]
 			{
 				// Default modules
-				"Projects",
-				"InputCore",
-				"UnrealEd",
-				"ToolMenus",
 				"CoreUObject",
 				"Engine",
+				"InputCore",
+				"Landscape",
+				"Projects",
 				"Slate",
 				"SlateCore",
+				"ToolMenus",
+				"UnrealEd",
 				// Editor bindings
 				"EditorScriptingUtilities",
 				"UnrealEd",

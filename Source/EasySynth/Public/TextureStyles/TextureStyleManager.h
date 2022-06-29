@@ -8,9 +8,9 @@
 
 class AActor;
 class UMaterial;
-class UStaticMeshComponent;
 
 struct FSemanticClass;
+class UTextureBackupManager;
 class UTextureMappingAsset;
 
 
@@ -23,48 +23,6 @@ enum class ETextureStyle : uint8
 };
 
 
-/** Structure wrapping TArray of static mesh component materials */
-USTRUCT()
-struct FOriginalComponentDescriptor
-{
-	GENERATED_USTRUCT_BODY()
-
-	/** The array of material interfaces */
-	UPROPERTY()
-	TArray<UMaterialInterface*> MaterialInterfaces;
-
-	/** Wrap TArray Add method */
-	void Add(UMaterialInterface* MaterialInterface) { MaterialInterfaces.Add(MaterialInterface); }
-
-	/** Wrap TArray Num method */
-	int Num() const { return MaterialInterfaces.Num(); }
-
-	/** Wrap TArray [] operator */
-	UMaterialInterface* operator[](int i) { return MaterialInterfaces[i]; }
-};
-
-
-/** Structure wrapping TMap of static mesh components to their original materials */
-USTRUCT()
-struct FOriginalActorDescriptor
-{
-	GENERATED_USTRUCT_BODY()
-
-	/** The map of component descriptors */
-	UPROPERTY()
-	TMap<UStaticMeshComponent*, FOriginalComponentDescriptor> CompDescriptors;
-
-	/** Wrap TMap Add method */
-	void Add(UStaticMeshComponent* Component) { CompDescriptors.Add(Component); }
-
-	/** Wrap TMap Contains method */
-	bool Contains(UStaticMeshComponent* Component) const { return CompDescriptors.Contains(Component); }
-
-	/** Wrap TMap [] operator */
-	FOriginalComponentDescriptor& operator[](UStaticMeshComponent* Component) { return CompDescriptors[Component]; }
-};
-
-
 /**
  * Class for managing mesh texture appearances,
  * such as colored and semantic views
@@ -73,6 +31,7 @@ UCLASS()
 class UTextureStyleManager : public UObject
 {
 	GENERATED_BODY()
+
 public:
 	UTextureStyleManager();
 
@@ -135,7 +94,11 @@ private:
 	void OnEditorClose();
 
 	/** Sets a semantic class to the actor */
-	void SetSemanticClassToActor(AActor* Actor, const FString& ClassName, const bool bDelayAddingDescriptors = false);
+	void SetSemanticClassToActor(
+		AActor* Actor,
+		const FString& ClassName,
+		const bool bForceDisplaySemanticClass = false,
+		const bool bDelayAddingDescriptors = false);
 
 	/** Set active actor texture style to original or semantic color */
 	void CheckoutActorTexture(AActor* Actor, const ETextureStyle NewTextureStyle);
@@ -160,14 +123,9 @@ private:
 	/** Currently selected texture style */
 	ETextureStyle CurrentTextureStyle;
 
-	/**
-	 * Storage of the original actor materials while semantics are displayed
-	 * Mimics the behavior of the structure defined as
-	 * TMap<AActor*, TMap<UStaticMeshComponent*, TArray<UMaterialInterface*>>>
-	 * which throws the UE specific compile error "Nested containers are not supported."
-	*/
+	/***/
 	UPROPERTY()
-	TMap<AActor*, FOriginalActorDescriptor> OriginalActorDescriptors;
+	UTextureBackupManager* TextureBackupManager;
 
 	/**
 	 * Buffer used to store actors that need to have the semantic class set with a delay
