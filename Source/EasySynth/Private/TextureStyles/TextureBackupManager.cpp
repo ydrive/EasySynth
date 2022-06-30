@@ -115,6 +115,12 @@ void UTextureBackupManager::AddDefaultActor(
 	{
 		OriginalActorDescriptors.Add(Actor);
 	}
+	else if (!OriginalActorDescriptors.Contains(Actor))
+	{
+		UE_LOG(LogEasySynth, Warning, TEXT("%s: Actor expected but not found in OriginalActorDescriptors"), 
+			*FString(__FUNCTION__))
+		return;
+	}
 
 	// Get actor mesh components
 	TArray<UActorComponent*> ActorComponents;
@@ -131,8 +137,8 @@ void UTextureBackupManager::AddDefaultActor(
 	for (UActorComponent* ActorComponent : ActorComponents)
 	{
 		// Apply to each static mesh component
-		UPrimitiveComponent* MeshComponent = Cast<UPrimitiveComponent>(ActorComponent);
-		if (MeshComponent == nullptr)
+		UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(ActorComponent);
+		if (PrimitiveComponent == nullptr)
 		{
 			UE_LOG(LogEasySynth, Error, TEXT("%s: Got null static mesh component"), *FString(__FUNCTION__))
 			return;
@@ -140,29 +146,35 @@ void UTextureBackupManager::AddDefaultActor(
 
 		if (bDoAdd)
 		{
-			OriginalActorDescriptors[Actor].Add(MeshComponent);
+			OriginalActorDescriptors[Actor].Add(PrimitiveComponent);
+		}
+		else if (!OriginalActorDescriptors[Actor].Contains(PrimitiveComponent))
+		{
+			UE_LOG(LogEasySynth, Warning, TEXT("%s: PrimitiveComponent expected but not found in OriginalActorDescriptors"), 
+				*FString(__FUNCTION__))
+			return;
 		}
 
 		// Check whether number of stored materials is correct, if they are needed
 		if (!bDoAdd && bDoRestore &&
-			OriginalActorDescriptors[Actor][MeshComponent].Num() != MeshComponent->GetNumMaterials())
+			OriginalActorDescriptors[Actor][PrimitiveComponent].Num() != PrimitiveComponent->GetNumMaterials())
 		{
 			UE_LOG(LogEasySynth, Error, TEXT("%s: %d instead of %d actor's mesh component materials found"),
 				*FString(__FUNCTION__),
-				OriginalActorDescriptors[Actor][MeshComponent].Num(),
-				MeshComponent->GetNumMaterials())
+				OriginalActorDescriptors[Actor][PrimitiveComponent].Num(),
+				PrimitiveComponent->GetNumMaterials())
 			return;
 		}
 
 		// Store all mesh component materials
-		for (int i = 0; i < MeshComponent->GetNumMaterials(); i++)
+		for (int i = 0; i < PrimitiveComponent->GetNumMaterials(); i++)
 		{
 			if (bDoRestore)
 			{
 				// Revert to original material
 				if (bDoPaint)
 				{
-					MeshComponent->SetMaterial(i, OriginalActorDescriptors[Actor][MeshComponent][i]);
+					PrimitiveComponent->SetMaterial(i, OriginalActorDescriptors[Actor][PrimitiveComponent][i]);
 				}
 			}
 			else
@@ -170,14 +182,14 @@ void UTextureBackupManager::AddDefaultActor(
 				// Change to semantic material
 				if (bDoAdd)
 				{
-					OriginalActorDescriptors[Actor][MeshComponent].Add(MeshComponent->GetMaterial(i));
+					OriginalActorDescriptors[Actor][PrimitiveComponent].Add(PrimitiveComponent->GetMaterial(i));
 				}
 				if (bDoPaint)
 				{
 					UMaterialInterface* MaterialInterface = Cast<UMaterialInterface>(Material);
 					if (MaterialInterface != nullptr)
 					{
-						MeshComponent->SetMaterial(i, MaterialInterface);
+						PrimitiveComponent->SetMaterial(i, MaterialInterface);
 					}
 					else
 					{
