@@ -40,16 +40,16 @@ struct FOriginalActorDescriptor
 
 	/** The map of component descriptors */
 	UPROPERTY()
-	TMap<UStaticMeshComponent*, FOriginalComponentDescriptor> CompDescriptors;
+	TMap<UPrimitiveComponent*, FOriginalComponentDescriptor> CompDescriptors;
 
 	/** Wrap TMap Add method */
-	void Add(UStaticMeshComponent* Component) { CompDescriptors.Add(Component); }
+	void Add(UPrimitiveComponent* Component) { CompDescriptors.Add(Component); }
 
 	/** Wrap TMap Contains method */
-	bool Contains(UStaticMeshComponent* Component) const { return CompDescriptors.Contains(Component); }
+	bool Contains(UPrimitiveComponent* Component) const { return CompDescriptors.Contains(Component); }
 
 	/** Wrap TMap [] operator */
-	FOriginalComponentDescriptor& operator[](UStaticMeshComponent* Component) { return CompDescriptors[Component]; }
+	FOriginalComponentDescriptor& operator[](UPrimitiveComponent* Component) { return CompDescriptors[Component]; }
 };
 
 /**
@@ -98,7 +98,7 @@ private:
 	/**
 	 * Storage of the original actor materials while semantics are displayed
 	 * Mimics the behavior of the structure defined as
-	 * TMap<AActor*, TMap<UStaticMeshComponent*, TArray<UMaterialInterface*>>>
+	 * TMap<AActor*, TMap<UPrimitiveComponent*, TArray<UMaterialInterface*>>>
 	 * which throws the UE specific compile error "Nested containers are not supported."
 	*/
 	UPROPERTY()

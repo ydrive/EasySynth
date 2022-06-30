@@ -119,7 +119,7 @@ void UTextureBackupManager::AddDefaultActor(
 	// Get actor mesh components
 	TArray<UActorComponent*> ActorComponents;
 	const bool bIncludeFromChildActors = true;
-	Actor->GetComponents(UStaticMeshComponent::StaticClass(), ActorComponents, bIncludeFromChildActors);
+	Actor->GetComponents(UPrimitiveComponent::StaticClass(), ActorComponents, bIncludeFromChildActors);
 
 	// If no mesh components are found, ignore the actor
 	if (ActorComponents.Num() == 0)
@@ -131,7 +131,7 @@ void UTextureBackupManager::AddDefaultActor(
 	for (UActorComponent* ActorComponent : ActorComponents)
 	{
 		// Apply to each static mesh component
-		UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(ActorComponent);
+		UPrimitiveComponent* MeshComponent = Cast<UPrimitiveComponent>(ActorComponent);
 		if (MeshComponent == nullptr)
 		{
 			UE_LOG(LogEasySynth, Error, TEXT("%s: Got null static mesh component"), *FString(__FUNCTION__))
