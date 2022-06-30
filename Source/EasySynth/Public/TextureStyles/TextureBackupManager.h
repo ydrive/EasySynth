@@ -7,7 +7,7 @@
 #include "TextureBackupManager.generated.h"
 
 class ALandscapeProxy;
-class UMaterialInstanceDynamic;
+class UMaterialInstanceConstant;
 class UMaterialInterface;
 
 
@@ -72,7 +72,7 @@ public:
         AActor* Actor,
         const bool bDoAdd,
         const bool bDoPaint,
-        UMaterialInstanceDynamic* Material = nullptr);
+        UMaterialInstanceConstant* Material = nullptr);
 
     /** Checks whether the actor exists inside any of the caches */
     bool ContainsActor(AActor* Actor);
@@ -86,14 +86,14 @@ private:
         ALandscapeProxy* LandscapeProxy,
         const bool bDoAdd,
         const bool bDoPaint,
-        UMaterialInstanceDynamic* Material);
+        UMaterialInstanceConstant* Material);
 
     /** Sub-method of the AddAndPaint that handles default static mesh actors */
     void AddDefaultActor(
         AActor* Actor,
         const bool bDoAdd,
         const bool bDoPaint,
-        UMaterialInstanceDynamic* Material);
+        UMaterialInstanceConstant* Material);
 
 	/**
 	 * Storage of the original actor materials while semantics are displayed
@@ -106,5 +106,5 @@ private:
 
     /** Storage of the original landscape materials while semantics are displayed */
 	UPROPERTY()
-	TMap<ALandscapeProxy*, UMaterialInterface*> LandscapeActorDescriptors;
+	TMap<ALandscapeProxy*, UMaterialInstanceConstant*> LandscapeActorDescriptors;
 };

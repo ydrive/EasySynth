@@ -6,9 +6,11 @@
 #include "Components/StaticMeshComponent.h"
 #include "EditorAssetLibrary.h"
 #include "Engine/Selection.h"
+#include "Factories/MaterialInstanceConstantFactoryNew.h"
 #include "FileHelpers.h"
 #include "HAL/FileManagerGeneric.h"
 #include "Kismet/GameplayStatics.h"
+#include "Materials/MaterialInstanceConstant.h"
 
 #include "PathUtils.h"
 #include "TextureStyles/TextureBackupManager.h"
@@ -422,6 +424,11 @@ void UTextureStyleManager::SetSemanticClassToActor(
 
 void UTextureStyleManager::CheckoutActorTexture(AActor* Actor, const ETextureStyle NewTextureStyle)
 {
+	if (!IsValid(Actor))
+	{
+		return;
+	}
+
 	// Check if the actor has a semantic class assigned
 	const FGuid& ActorGuid = Actor->GetActorGuid();
 	if (!TextureMappingAsset->ActorClassPairs.Contains(ActorGuid))
@@ -459,7 +466,7 @@ void UTextureStyleManager::CheckoutActorTexture(AActor* Actor, const ETextureSty
 	// Update the actor texture
 	const bool bDoAdd = bOriginalTextureActive;
 	const bool bDoPaint = true;
-	UMaterialInstanceDynamic* Material = nullptr;
+	UMaterialInstanceConstant* Material = nullptr;
 	if (NewTextureStyle == ETextureStyle::SEMANTIC)
 	{
 		Material = GetSemanticClassMaterial(TextureMappingAsset->SemanticClasses[ClassName]);
@@ -486,19 +493,35 @@ void UTextureStyleManager::ProcessDelayActorBuffer()
 	}
 }
 
-UMaterialInstanceDynamic* UTextureStyleManager::GetSemanticClassMaterial(FSemanticClass& SemanticClass)
+UMaterialInstanceConstant* UTextureStyleManager::GetSemanticClassMaterial(FSemanticClass& SemanticClass)
 {
 	// If the plain color material is null, create it
 	if (SemanticClass.PlainColorMaterialInstance == nullptr)
 	{
-		SemanticClass.PlainColorMaterialInstance = UMaterialInstanceDynamic::Create(PlainColorMaterial, nullptr);
+		UMaterialInstanceConstantFactoryNew* Factory = NewObject<UMaterialInstanceConstantFactoryNew>();
+		Factory->InitialParent = PlainColorMaterial;
+
+		const FString PackageFileName = FString::Printf(TEXT("M_%s"), *(SemanticClass.Name));
+		const FString PackagePath =
+			FPathUtils::ProjectPluginContentDir() / FString(TEXT("ConstMaterials")) / PackageFileName;
+		UPackage* Package = CreatePackage(*PackagePath);
+		SemanticClass.PlainColorMaterialInstance = Cast<UMaterialInstanceConstant>(Factory->FactoryCreateNew(
+			UMaterialInstanceConstant::StaticClass(),
+			Package,
+			*PackageFileName,
+			RF_Public | RF_Transient,
+			NULL,
+			GWarn));
+
 		if (SemanticClass.PlainColorMaterialInstance == nullptr)
 		{
 			UE_LOG(LogTemp, Error, TEXT("%s: Could not create the plain color material instance"),
 				*FString(__FUNCTION__))
 			check(SemanticClass.PlainColorMaterialInstance)
 		}
-		SemanticClass.PlainColorMaterialInstance->SetVectorParameterValue(*SemanticColorParameter, SemanticClass.Color);
+		SemanticClass.PlainColorMaterialInstance->SetVectorParameterValueEditorOnly(
+			*SemanticColorParameter,
+			SemanticClass.Color);
 	}
 
 	return SemanticClass.PlainColorMaterialInstance;

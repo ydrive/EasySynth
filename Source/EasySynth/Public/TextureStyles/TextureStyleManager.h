@@ -10,6 +10,7 @@ class AActor;
 class UMaterial;
 
 struct FSemanticClass;
+class UMaterialInstanceConstant;
 class UTextureBackupManager;
 class UTextureMappingAsset;
 
@@ -107,7 +108,7 @@ private:
 	void ProcessDelayActorBuffer();
 
 	/** Generates the semantic class material if needed and returns it */
-	UMaterialInstanceDynamic* GetSemanticClassMaterial(FSemanticClass& SemanticClass);
+	UMaterialInstanceConstant* GetSemanticClassMaterial(FSemanticClass& SemanticClass);
 
 	/** Semantic classes updated event dispatcher */
 	FSemanticClassesUpdatedEvent SemanticClassesUpdatedEvent;

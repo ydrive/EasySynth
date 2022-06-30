@@ -9,9 +9,12 @@ void UTextureBackupManager::AddAndPaint(
 	AActor* Actor,
 	const bool bDoAdd,
 	const bool bDoPaint,
-    UMaterialInstanceDynamic* Material)
+    UMaterialInstanceConstant* Material)
 {
-	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
+	if (!IsValid(Actor))
+	{
+		return;
+	}
 
 	ALandscapeProxy* LandscapeProxy = Cast<ALandscapeProxy>(Actor);
 	if (LandscapeProxy != nullptr)
@@ -50,13 +53,58 @@ void UTextureBackupManager::AddLandscapeActor(
 	ALandscapeProxy* LandscapeProxy,
 	const bool bDoAdd,
 	const bool bDoPaint,
-    UMaterialInstanceDynamic* Material)
+    UMaterialInstanceConstant* Material)
 {
 	const bool bDoRestore = (Material == nullptr);
 
-	if (bDoAdd)
+	if (bDoRestore)
 	{
-		LandscapeActorDescriptors.Add(LandscapeProxy);
+		// Revert to original material
+		if (bDoPaint)
+		{
+			LandscapeProxy->LandscapeMaterial = Cast<UMaterialInstance>(LandscapeActorDescriptors[LandscapeProxy]);
+			if (LandscapeProxy->LandscapeMaterial != nullptr)
+			{
+				FPropertyChangedEvent PropertyChangedEvent(FindFieldChecked<FProperty>(LandscapeProxy->GetClass(), FName("LandscapeMaterial")));
+				LandscapeProxy->PostEditChangeProperty(PropertyChangedEvent);
+				LandscapeActorDescriptors.Remove(LandscapeProxy);
+			}
+			else
+			{
+				UE_LOG(LogEasySynth, Error, TEXT("%s: Failed cast to UMaterialInstance"), *FString(__FUNCTION__))
+			}
+		}
+	}
+	else
+	{
+		// Change to semantic material
+		if (bDoAdd)
+		{
+			UMaterialInstanceConstant* MaterialInstanceConstant =
+				Cast<UMaterialInstanceConstant>(LandscapeProxy->GetLandscapeMaterial());
+			if (MaterialInstanceConstant != nullptr)
+			{
+				LandscapeActorDescriptors.Add(LandscapeProxy, MaterialInstanceConstant);
+			}
+			else
+			{
+				UE_LOG(LogEasySynth, Error, TEXT("%s: Failed cast to UMaterialInstanceConstant"), *FString(__FUNCTION__))
+			}
+		}
+		if (bDoPaint)
+		{
+			UMaterialInterface* MaterialInterface = Cast<UMaterialInterface>(Material);
+			if (MaterialInterface != nullptr)
+			{
+				LandscapeProxy->LandscapeMaterial = MaterialInterface;
+				FPropertyChangedEvent PropertyChangedEvent(FindFieldChecked<FProperty>(LandscapeProxy->GetClass(), FName("LandscapeMaterial")));
+				LandscapeProxy->PostEditChangeProperty(PropertyChangedEvent);
+			}
+			else
+			{
+				UE_LOG(LogEasySynth, Error, TEXT("%s: Failed cast to UMaterialInterface"), *FString(__FUNCTION__))
+			}
+		}
 	}
 }
 
@@ -64,7 +112,7 @@ void UTextureBackupManager::AddDefaultActor(
 	AActor* Actor,
 	const bool bDoAdd,
 	const bool bDoPaint,
-    UMaterialInstanceDynamic* Material)
+    UMaterialInstanceConstant* Material)
 {
 	const bool bDoRestore = (Material == nullptr);
 
@@ -131,7 +179,15 @@ void UTextureBackupManager::AddDefaultActor(
 				}
 				if (bDoPaint)
 				{
-					MeshComponent->SetMaterial(i, Material);
+					UMaterialInterface* MaterialInterface = Cast<UMaterialInterface>(Material);
+					if (MaterialInterface != nullptr)
+					{
+						MeshComponent->SetMaterial(i, MaterialInterface);
+					}
+					else
+					{
+						UE_LOG(LogEasySynth, Error, TEXT("%s: Failed cast to UMaterialInterface"), *FString(__FUNCTION__))
+					}
 				}
 			}
 		}
