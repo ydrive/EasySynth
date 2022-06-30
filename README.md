@@ -92,6 +92,9 @@ Image rendering relies on a user-defined `Level Sequence`, which represents a mo
 - https://docs.unrealengine.com/4.27/en-US/AnimatingObjects/Sequencer/Overview/
 - https://youtu.be/-NmHXAFX-3M
 
+The following tutorial is a good starting point for working with skeletal meshes inside the sequencer:
+- https://youtu.be/Xbts4YbhwbE
+
 Setting up rendering options inside the EasySynth widget:
 
 ![Plugin widget](/ReadmeContent/Widget.png)
