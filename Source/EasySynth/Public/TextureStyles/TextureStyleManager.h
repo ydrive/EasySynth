@@ -124,7 +124,7 @@ private:
 	/** Currently selected texture style */
 	ETextureStyle CurrentTextureStyle;
 
-	/***/
+	/** Object that manages backing up of the original actor textures */
 	UPROPERTY()
 	UTextureBackupManager* TextureBackupManager;
 
