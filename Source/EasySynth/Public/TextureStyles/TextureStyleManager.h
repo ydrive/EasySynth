@@ -132,6 +132,7 @@ private:
 	 * Buffer used to store actors that need to have the semantic class set with a delay
 	 * This is needed when immediately setting the undefined class to just spawned actor
 	*/
+	UPROPERTY()
 	TArray<AActor*> DelayActorBuffer;
 
 	/** The handle for the timer that managers DelayActorBuffer */

@@ -424,11 +424,6 @@ void UTextureStyleManager::SetSemanticClassToActor(
 
 void UTextureStyleManager::CheckoutActorTexture(AActor* Actor, const ETextureStyle NewTextureStyle)
 {
-	if (!IsValid(Actor))
-	{
-		return;
-	}
-
 	// Check if the actor has a semantic class assigned
 	const FGuid& ActorGuid = Actor->GetActorGuid();
 	if (!TextureMappingAsset->ActorClassPairs.Contains(ActorGuid))

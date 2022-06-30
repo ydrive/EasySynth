@@ -11,11 +11,6 @@ void UTextureBackupManager::AddAndPaint(
 	const bool bDoPaint,
     UMaterialInstanceConstant* Material)
 {
-	if (!IsValid(Actor))
-	{
-		return;
-	}
-
 	ALandscapeProxy* LandscapeProxy = Cast<ALandscapeProxy>(Actor);
 	if (LandscapeProxy != nullptr)
 	{
