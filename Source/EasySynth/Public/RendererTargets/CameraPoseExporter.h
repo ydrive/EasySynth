@@ -20,14 +20,15 @@ public:
 	bool ExportCameraPoses(
 		ULevelSequence* LevelSequence,
 		const FIntPoint OutputImageResolution,
-		const FString& OutputDir);
+		const FString& OutputDir,
+		const int RigCameraId);
 
 private:
 	/** Extract camera transforms using the sequencer wrapper */
 	bool ExtractCameraTransforms();
 
 	/** Saves the extracted camera poses to a file */
-	bool SavePosesToCSV(const FString& OutputDir);
+	bool SavePosesToCSV(const FString& OutputDir, const int RigCameraId);
 
 	/** Sequencer wrapper needed to acces the level sequence properties */
 	FSequencerWrapper SequencerWrapper;

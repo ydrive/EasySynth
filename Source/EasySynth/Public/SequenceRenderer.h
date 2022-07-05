@@ -140,7 +140,10 @@ private:
 	/** Movie rendering finished handle */
 	void OnExecutorFinished(UMoviePipelineExecutorBase* InPipelineExecutor, bool bSuccess);
 
-	/** Handles finding the next target to be rendered */
+	/** Handles finding the next rig camera to be used for rendering all requested targets */
+	void FindNextCamera();
+
+	/** Handles finding the next target to be rendered by the current camera */
 	void FindNextTarget();
 
 	/** Runs the rendering of the currently selected target */
@@ -163,11 +166,28 @@ private:
 	UPROPERTY()
 	ULevelSequence* RenderingSequence;
 
+	/** Keeps current rendering options */
+	FRendererTargetOptions RendererTargetOptions;
+
 	/** TextureStyleManager needed to be finalize the rendering */
 	UTextureStyleManager* TextureStyleManager;
 
 	/** Used to revert to this style after finishing the rendering */
 	ETextureStyle OriginalTextureStyle;
+
+	/** Points to the actor that serves as a camera source for the sequencer */
+	UPROPERTY()
+	AActor* CameraRigActor;
+
+	/** Keeps all CameraRigActor's camera components during rendering to avoid getting them each time */
+	UPROPERTY()
+	TArray<UCameraComponent*> RigCameras;
+
+	/** Keeps the original camera transform so it can be restored at the end */
+	FTransform OriginalCameraTransform;
+
+	/** Keeps the currently selected rig camera */
+	int CurrentRigCameraId;
 
 	/** Queue of targets to be rendered */
 	TQueue<TSharedPtr<FRendererTarget>> TargetsQueue;

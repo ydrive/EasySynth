@@ -20,7 +20,8 @@
 bool FCameraPoseExporter::ExportCameraPoses(
 	ULevelSequence* LevelSequence,
 	const FIntPoint OutputImageResolution,
-	const FString& OutputDir)
+	const FString& OutputDir,
+	const int RigCameraId)
 {
 	// Open the received level sequence inside the sequencer wrapper
 	if (!SequencerWrapper.OpenSequence(LevelSequence))
@@ -39,7 +40,7 @@ bool FCameraPoseExporter::ExportCameraPoses(
 	}
 
 	// Store to file
-	if (!SavePosesToCSV(OutputDir))
+	if (!SavePosesToCSV(OutputDir, RigCameraId))
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed while saving camera poses to the file"), *FString(__FUNCTION__))
 		return false;
@@ -65,9 +66,6 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
 	TArray<UMovieSceneCameraCutSection*>& CutSections = SequencerWrapper.GetMovieSceneCutSections();
 	for (auto CutSection : CutSections)
 	{
-		// Get the current cut section camera binding id
-		const FMovieSceneObjectBindingID& CameraBindingID = CutSection->GetCameraBindingID();
-
 		// Get the camera component
 		UCameraComponent* Camera = CutSection->GetFirstCamera(
 			*SequencerWrapper.GetSequencer(),
@@ -77,6 +75,9 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
 			UE_LOG(LogEasySynth, Error, TEXT("%s: Cut section camera component is null"), *FString(__FUNCTION__))
 			return false;
 		}
+		
+		// Get the current cut section camera binding id
+		const FMovieSceneObjectBindingID& CameraBindingID = CutSection->GetCameraBindingID();
 
 		// Find the track inside the level sequence that corresponds to the
 		// pose transformation of the camera
@@ -134,6 +135,11 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
                 return false;
             }
 
+			for (FTransform& Transform : TempTransforms)
+			{
+				Transform.Accumulate(Camera->GetRelativeTransform());
+			}
+
 		    CameraTransforms.Append(TempTransforms);
 
 			// Record the camera focal length using the unit of output image pixels
@@ -147,7 +153,7 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
 	return true;
 }
 
-bool FCameraPoseExporter::SavePosesToCSV(const FString& OutputDir)
+bool FCameraPoseExporter::SavePosesToCSV(const FString& OutputDir, const int RigCameraId)
 {
 	// Create the file content
 	TArray<FString> Lines;
@@ -176,7 +182,7 @@ bool FCameraPoseExporter::SavePosesToCSV(const FString& OutputDir)
 	}
 
 	// Save the file
-	const FString SaveFilePath = FPathUtils::CameraPosesFilePath(OutputDir);
+	const FString SaveFilePath = FPathUtils::CameraPosesFilePath(OutputDir, RigCameraId);
 	if (!FFileHelper::SaveStringArrayToFile(
 		Lines,
 		*SaveFilePath,

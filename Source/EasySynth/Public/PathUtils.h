@@ -99,10 +99,16 @@ public:
 		return FPaths::Combine(FPaths::ProjectSavedDir(), RenderingOutputDirName);
 	}
 
+	/** Path to the specific rig camera output directory */
+	static FString RigCameraDir(const FString& Directory, const int RigCameraId) 
+	{ 
+		return Directory / FString::Printf(TEXT("Camera_%d"), RigCameraId); 
+	}
+
 	/** Full path to the camera poses output file */
-	static FString CameraPosesFilePath(const FString& Directory)
+	static FString CameraPosesFilePath(const FString& Directory, const int RigCameraId)
 	{
-		return FPaths::Combine(Directory, CameraPosesFileName);
+		return FPaths::Combine(RigCameraDir(Directory, RigCameraId), CameraPosesFileName);
 	}
 
 	/** Clean name of the rendering output directory */
