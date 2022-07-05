@@ -10,6 +10,7 @@
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Text/STextBlock.h"
 
+#include "CameraRigYamlInterface.h"
 #include "Widgets/WidgetStateAsset.h"
 
 
@@ -158,6 +159,17 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				[
 					SNew(STextBlock)
 					.Text(LOCTEXT("PickMeshTextureStyleComboBoxText", "Pick a mesh texture style"))
+				]
+			]
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(SButton)
+				.OnClicked_Raw(&FCameraRigYamlInterface(), &FCameraRigYamlInterface::OnImportCameraRigClicked)
+				.Content()
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("ImportCameraRigButtonText", "Import camera rig YAML file"))
 				]
 			]
 			+SScrollBox::Slot()
