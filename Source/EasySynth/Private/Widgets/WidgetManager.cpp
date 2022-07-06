@@ -10,7 +10,7 @@
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Text/STextBlock.h"
 
-#include "CameraRigYamlInterface.h"
+#include "CameraRig/CameraRigYamlInterface.h"
 #include "Widgets/WidgetStateAsset.h"
 
 
@@ -446,7 +446,7 @@ FReply FWidgetManager::OnRenderImagesClicked()
 		const FText MessageBoxTitle = LOCTEXT("StartRenderingErrorMessageBoxTitle", "Could not start rendering");
 		FMessageDialog::Open(
 			EAppMsgType::Ok,
-			FText::FromString(*SequenceRenderer->GetErrorMessage()),
+			FText::FromString(SequenceRenderer->GetErrorMessage()),
 			&MessageBoxTitle);
 	}
 
@@ -493,7 +493,7 @@ void FWidgetManager::OnRenderingFinished(bool bSuccess)
 		const FText MessageBoxTitle = LOCTEXT("RenderingErrorMessageBoxTitle", "Rendering failed");
 		FMessageDialog::Open(
 			EAppMsgType::Ok,
-			FText::FromString(*SequenceRenderer->GetErrorMessage()),
+			FText::FromString(SequenceRenderer->GetErrorMessage()),
 			&MessageBoxTitle);
 	}
 }

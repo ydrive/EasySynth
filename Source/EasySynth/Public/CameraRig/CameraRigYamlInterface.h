@@ -4,15 +4,16 @@
 
 #include "CoreMinimal.h"
 
+#include "CameraRig/CameraRigData.h"
+
 
 /**
- *
+ * Class containing interface methods for parsing and generating
+ * camera rig yaml files.
  */
 class FCameraRigYamlInterface
 {
 public:
-	FCameraRigYamlInterface() {};
-
-	/** Handles  */
+	/** Handles importing camera ring from a yaml file */
 	FReply OnImportCameraRigClicked();
 };
