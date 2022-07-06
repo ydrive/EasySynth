@@ -58,6 +58,7 @@ public class EasySynth : ModuleRules
 				"Sequencer",
 				// Editor tab functionality
 				"AppFramework",
+				"DesktopPlatform",
 				"DesktopWidgets",
 				"MainFrame",
 				"PropertyEditor",

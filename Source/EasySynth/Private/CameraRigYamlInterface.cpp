@@ -2,6 +2,10 @@
 
 #include "CameraRigYamlInterface.h"
 
+#include "DesktopPlatformModule.h"
+#include "Misc/FileHelper.h"
+#include "IDesktopPlatform.h"
+
 #include "EasySynth.h"
 
 
@@ -9,31 +13,37 @@ FReply FCameraRigYamlInterface::OnImportCameraRigClicked()
 {
     UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
 
-    // FString SelectedDir = "";
-	// void* ParentWindowPtr = FSlateApplication::Get().GetActiveTopLevelWindow()->GetNativeWindow()->GetOSWindowHandle();
-	// IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
-	// if (DesktopPlatform)
-	// {
-	// 	// TODO: Default path
-	// 	bool IsDirSelected = DesktopPlatform->OpenDirectoryDialog(
-	// 		ParentWindowPtr,
-	// 		"Import YDrive Workspace",
-	// 		OpenWorkspacePath_,
-	// 		SelectedDir);
+    FString SelectedDir = "";
+	void* ParentWindowPtr = FSlateApplication::Get().GetActiveTopLevelWindow()->GetNativeWindow()->GetOSWindowHandle();
+	IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get();
+	if (DesktopPlatform == nullptr)
+	{
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Could not get the desktop platform"), *FString(__FUNCTION__))
+		return FReply::Handled();
+	}
 
-	// 	if (IsDirSelected)
-	// 	{
-	// 		SelectedDir = FLoaderUtils::AddTailingSlash(SelectedDir);
-	// 		const int ParentDirIndex =
-	// 			SelectedDir.Find(TEXT("/"), ESearchCase::CaseSensitive, ESearchDir::FromEnd, SelectedDir.Len() - 2);
-	// 		OpenWorkspacePath_ = SelectedDir.Mid(0, ParentDirIndex + 1);
-	// 	}
-	// }
+	TArray<FString> OutFilenames;
+	const bool IsFileSelected = DesktopPlatform->OpenFileDialog(
+		ParentWindowPtr,
+		TEXT("Import camera rig"),
+		TEXT(""),
+		TEXT(""),
+		TEXT("Camera Rig YAML (*.yaml)|*.yaml"),
+		EFileDialogFlags::None,
+		OutFilenames);
+	if (!IsFileSelected)
+	{
+		return FReply::Handled();
+	}
 
-	// if (SelectedDir.Len() == 0)
-	// {
-	// 	return;
-	// }
+	FString FileContent;
+	if (!FFileHelper::LoadFileToString(FileContent, *OutFilenames[0]))
+	{
+		UE_LOG(LogEasySynth, Warning, TEXT("%s: Could not load the selected file"), *FString(__FUNCTION__))
+		return FReply::Handled();
+	}
+
+	UE_LOG(LogEasySynth, Log, TEXT("%s: %s"), *FString(__FUNCTION__), *FileContent)
 
     return FReply::Handled();
 }
