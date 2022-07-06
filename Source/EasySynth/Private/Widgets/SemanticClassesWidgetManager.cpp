@@ -20,7 +20,7 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 	if (!FModuleManager::Get().IsModuleLoaded("MainFrame"))
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed to load the main frame module"), *FString(__FUNCTION__))
-		return FReply::Unhandled();
+		return FReply::Handled();
 	}
 	IMainFrameModule& MainFrame = FModuleManager::LoadModuleChecked<IMainFrameModule>("MainFrame");
 
@@ -97,7 +97,7 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 	if (!ParentWindow.IsValid())
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed to get the parent window"), *FString(__FUNCTION__))
-		return FReply::Unhandled();
+		return FReply::Handled();
 	}
 	FSlateApplication::Get().AddModalWindow(Window, ParentWindow, false);
 
@@ -125,7 +125,7 @@ FReply FSemanticClassesWidgetManager::OnUpdateClassColorClicked(
 
 	if (MouseEvent.GetEffectingButton() != EKeys::LeftMouseButton)
 	{
-		return FReply::Unhandled();
+		return FReply::Handled();
 	}
 
 	FColorPickerArgs PickerArgs;
@@ -176,7 +176,7 @@ FReply FSemanticClassesWidgetManager::OnNewClassColorClicked(
 {
 	if (MouseEvent.GetEffectingButton() != EKeys::LeftMouseButton)
 	{
-		return FReply::Unhandled();
+		return FReply::Handled();
 	}
 
 	FColorPickerArgs PickerArgs;
