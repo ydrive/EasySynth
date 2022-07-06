@@ -35,6 +35,7 @@ public class EasySynth : ModuleRules
 			new string[]
 			{
 				// Default modules
+				"CinematicCamera",
 				"CoreUObject",
 				"Engine",
 				"InputCore",

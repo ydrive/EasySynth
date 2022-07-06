@@ -7,14 +7,14 @@ bool FCameraRigYamlParser::Parse(const FString& InputString, FCameraRigData& Out
 {
 	InitializeParser(InputString);
 
-	if (true)
+	if (false)
 	{
 		ErrorMessage = "Some error";
 		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 		return false;
 	}
 
-	return false;
+	return true;
 }
 
 void FCameraRigYamlParser::InitializeParser(const FString& InputString)

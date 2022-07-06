@@ -14,6 +14,8 @@
 class FCameraRigYamlInterface
 {
 public:
+	FCameraRigYamlInterface() {}
+
 	/** Handles importing camera ring from a yaml file */
 	FReply OnImportCameraRigClicked();
 };
