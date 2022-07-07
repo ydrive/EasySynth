@@ -13,7 +13,7 @@ bool FCameraRigYamlParser::Parse(const FString& InputString, FCameraRigData& Out
 
 	int Cursor = 0;
 
-	if (!ParseHeader(InputString, Cursor))
+	if (!ParseHeader(PreprocessedInputString, Cursor))
 	{
 		return false;
 	}
@@ -43,6 +43,7 @@ FString FCameraRigYamlParser::PreprocessInput(const FString InputString)
 		}
 		else if (Current == '[')
 		{
+			// Mark brackets open
 			bInsideBrackets = true;
 			bPreviousSpace = false;
 			bPreviousSemicolon = false;
@@ -50,6 +51,7 @@ FString FCameraRigYamlParser::PreprocessInput(const FString InputString)
 		}
 		else if (Current == ']')
 		{
+			// Mark brackets closed
 			bInsideBrackets = false;
 			bPreviousSpace = false;
 			bPreviousSemicolon = false;
@@ -79,6 +81,11 @@ FString FCameraRigYamlParser::PreprocessInput(const FString InputString)
 		}
 	}
 
+	if (NewString.Last() != ';')
+	{
+		NewString.Add(';');
+	}
+
 	// Add string termination
 	NewString.Add(0);
 
@@ -87,5 +94,18 @@ FString FCameraRigYamlParser::PreprocessInput(const FString InputString)
 
 bool FCameraRigYamlParser::ParseHeader(const FString& InputString, int& Cursor)
 {
+	// Parse the first two lines
+	const int FirstSemi = InputString.Find(";", ESearchCase::IgnoreCase, ESearchDir::FromStart, Cursor);
+	const int SecondSemi = InputString.Find(";", ESearchCase::IgnoreCase, ESearchDir::FromStart, FirstSemi + 1);
+	UE_LOG(LogEasySynth, Error, TEXT("%s: %d %d"), *FString(__FUNCTION__), FirstSemi, SecondSemi)
+
+	if (InputString.Left(SecondSemi + 1) != "%YAML:1.0;---;")
+	{
+		ErrorMessage = "Invalid yaml file header";
+		UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		return false;
+	}
+
+	Cursor = SecondSemi + 1;
 	return true;
 }
