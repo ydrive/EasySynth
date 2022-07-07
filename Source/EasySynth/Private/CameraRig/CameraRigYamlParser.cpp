@@ -2,22 +2,90 @@
 
 #include "CameraRig/CameraRigYamlParser.h"
 
+#include "Misc/StringBuilder.h"
+
 
 bool FCameraRigYamlParser::Parse(const FString& InputString, FCameraRigData& OutCameraRigData)
 {
-	InitializeParser(InputString);
+	ErrorMessage = "";
 
-	if (false)
+	FString PreprocessedInputString = PreprocessInput(InputString);
+
+	int Cursor = 0;
+
+	if (!ParseHeader(InputString, Cursor))
 	{
-		ErrorMessage = "Some error";
-		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 		return false;
 	}
 
 	return true;
 }
 
-void FCameraRigYamlParser::InitializeParser(const FString& InputString)
+FString FCameraRigYamlParser::PreprocessInput(const FString InputString)
 {
-	ParsingString = InputString;
+	TArray<char> NewString;
+
+	bool bInsideBrackets = false;
+	bool bPreviousSpace = false;
+	bool bPreviousSemicolon = false;
+	for (int i = 0; i < InputString.Len(); i++)
+	{
+		const char Current = InputString[i];
+		if (Current == ' ')
+		{
+			// Remove consecutive spaces
+			if (!bPreviousSpace)
+			{
+				bPreviousSpace = true;
+				bPreviousSemicolon = false;
+				NewString.Add(Current);
+			}
+		}
+		else if (Current == '[')
+		{
+			bInsideBrackets = true;
+			bPreviousSpace = false;
+			bPreviousSemicolon = false;
+			NewString.Add(Current);
+		}
+		else if (Current == ']')
+		{
+			bInsideBrackets = false;
+			bPreviousSpace = false;
+			bPreviousSemicolon = false;
+			NewString.Add(Current);
+		}
+		else if (Current == '\n')
+		{
+			// Replace new lines with ;
+			// Omit the ; inside the []
+			if (!bInsideBrackets && !bPreviousSemicolon)
+			{
+				bPreviousSpace = false;
+				bPreviousSemicolon = true;
+				NewString.Add(';');
+			}
+		}
+		else if (Current == '\r')
+		{
+			// Just ignore
+		}
+		else
+		{
+			// Copy all other characters
+			bPreviousSpace = false;
+			bPreviousSemicolon = false;
+			NewString.Add(Current);
+		}
+	}
+
+	// Add string termination
+	NewString.Add(0);
+
+	return FString(ANSI_TO_TCHAR(NewString.GetData()));
+}
+
+bool FCameraRigYamlParser::ParseHeader(const FString& InputString, int& Cursor)
+{
+	return true;
 }

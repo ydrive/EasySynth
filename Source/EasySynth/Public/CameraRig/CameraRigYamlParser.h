@@ -16,16 +16,16 @@ public:
 	/** Entry method for parsing the yaml string */
 	bool Parse(const FString& InputString, FCameraRigData& OutCameraRigData);
 
-	/** Returns the error message */
+	/** Returns the latest error message */
 	const FString& GetErrorMessage() const { return ErrorMessage; }
 
 private:
-	/** Initializes the parser with a new input string */
-	void InitializeParser(const FString& InputString);
+	/** Formats the input text so it is easier to parse */
+	FString PreprocessInput(const FString InputString);
 
-	/** Stores the input string */
-	FString ParsingString;
+	/** Parses the file header */
+	bool ParseHeader(const FString& InputString, int& Cursor);
 
-	/** Stores the error message */
+	/** Stores the latest error message */
 	FString ErrorMessage;
 };
