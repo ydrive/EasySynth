@@ -29,26 +29,25 @@ public:
 	/** Path to the plain color material asset */
 	static FString PlainColorMaterialPath()
 	{
-		// TODO: Replace combine with /
-		return FPaths::Combine(PluginContentDir(), PlainColorMaterialAssetName);
+		return PluginContentDir() / PlainColorMaterialAssetName;
 	}
 
 	/** Path to the plugin specific movie pipeline config preset */
 	static FString DefaultMoviePipelineConfigPath()
 	{
-		return FPaths::Combine(PluginContentDir(), DefaultMoviePipelineConfigAssetName);
+		return PluginContentDir() / DefaultMoviePipelineConfigAssetName;
 	}
 
 	/** Directory containing post-process materials for render targets */
 	static FString PostProcessMaterialsDir()
 	{
-		return FPaths::Combine(PluginContentDir(), TEXT("PostProcessMaterials"));
+		return PluginContentDir() / PostProcessMaterialDirName;
 	}
 
 	/** Path to the specific post-process material */
 	static FString PostProcessMaterialPath(const FString& TargetName)
 	{
-		return FPaths::Combine(PostProcessMaterialsDir(), FString::Printf(TEXT("M_PP%s"), *TargetName));
+		return PostProcessMaterialsDir() / FString::Printf(TEXT("M_PP%s"), *TargetName);
 	}
 
 	/** Clean name of the plan color material asset */
@@ -56,6 +55,9 @@ public:
 
 	/** Clean name of the movie pipeline config asset */
 	static const FString DefaultMoviePipelineConfigAssetName;
+
+	/** Clean name of the movie pipeline config asset */
+	static const FString PostProcessMaterialDirName;
 
 	/**
 	 * Specific project content utils
@@ -69,19 +71,19 @@ public:
 	static FString ProjectPluginContentDir(const bool bIsAbsolute = false)
 	{
 		const FString Prefix = (bIsAbsolute ? FPaths::ProjectContentDir() : TEXT("/Game"));
-		return FPaths::Combine(Prefix, PluginName);
+		return Prefix / PluginName;
 	}
 
 	/** Path to the project-specific texture mapping asset */
 	static FString TextureMappingAssetPath()
 	{
-		return FPaths::Combine(ProjectPluginContentDir(), TextureMappingAssetName);
+		return ProjectPluginContentDir() / TextureMappingAssetName;
 	}
 
 	/** Path to the project-specific widget state asset */
 	static FString WidgetStateAssetPath()
 	{
-		return FPaths::Combine(ProjectPluginContentDir(), WidgetStateAssetName);
+		return ProjectPluginContentDir() / WidgetStateAssetName;
 	}
 
 	/** Clean name of the texture mapping asset */
@@ -97,7 +99,7 @@ public:
 	/** Path to the default rendering output directory */
 	static FString DefaultRenderingOutputPath()
 	{
-		return FPaths::Combine(FPaths::ProjectSavedDir(), RenderingOutputDirName);
+		return FPaths::ProjectSavedDir() / RenderingOutputDirName;
 	}
 
 	/** Full path to the camera rig yaml file */
@@ -115,7 +117,7 @@ public:
 	/** Full path to the camera poses output file */
 	static FString CameraPosesFilePath(const FString& Directory, const int RigCameraId)
 	{
-		return FPaths::Combine(RigCameraDir(Directory, RigCameraId), CameraPosesFileName);
+		return RigCameraDir(Directory, RigCameraId) / CameraPosesFileName;
 	}
 
 	/** Clean name of the rendering output directory */

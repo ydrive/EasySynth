@@ -275,6 +275,8 @@ void USequenceRenderer::FindNextCamera()
 	RendererTargetOptions.GetSelectedTargets(TextureStyleManager, TargetsQueue);
 	CurrentTarget = nullptr;
 
+	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering camera %d/%d"), *FString(__FUNCTION__), CurrentRigCameraId + 1, RigCameras.Num())
+
 	// Find the next target and start rendering
 	FindNextTarget();
 }
