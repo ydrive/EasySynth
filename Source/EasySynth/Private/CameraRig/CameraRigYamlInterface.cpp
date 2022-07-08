@@ -97,6 +97,9 @@ FReply FCameraRigYamlInterface::OnImportCameraRigClicked()
 		CameraComponent->RegisterComponent();
 
 		CameraComponent->SetRelativeTransform(Camera.Transform);
+
+		// Make camera components smaller so that the rig is easier to visualize
+		CameraComponent->SetRelativeScale3D(FVector(0.4f, 0.4f, 0.4f));
 	}
 
 	// Spawn the camera rig actor
