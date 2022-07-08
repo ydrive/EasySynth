@@ -107,4 +107,26 @@ FReply FCameraRigYamlInterface::OnImportCameraRigClicked()
     return FReply::Handled();
 }
 
+bool FCameraRigYamlInterface::ExportCameraRig(const FString& OutputDir)
+{
+	TArray<FString> Lines;
+	Lines.Add("a");
+	Lines.Add("b");
+
+	// Save the file
+	const FString SaveFilePath = FPathUtils::CameraRigFilePath(OutputDir);
+	if (!FFileHelper::SaveStringArrayToFile(
+		Lines,
+		*SaveFilePath,
+		FFileHelper::EEncodingOptions::AutoDetect,
+		&IFileManager::Get(),
+		EFileWrite::FILEWRITE_None))
+	{
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed while saving the file %s"), *FString(__FUNCTION__), *SaveFilePath)
+        return false;
+	}
+
+	return true;
+}
+
 #undef LOCTEXT_NAMESPACE

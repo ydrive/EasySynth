@@ -18,4 +18,7 @@ public:
 
 	/** Handles importing camera ring from a yaml file */
 	FReply OnImportCameraRigClicked();
+
+	/** Handles exporting camera rig into a yaml file */
+	bool ExportCameraRig(const FString& OutputDir);
 };

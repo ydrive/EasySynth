@@ -29,6 +29,7 @@ public:
 	/** Path to the plain color material asset */
 	static FString PlainColorMaterialPath()
 	{
+		// TODO: Replace combine with /
 		return FPaths::Combine(PluginContentDir(), PlainColorMaterialAssetName);
 	}
 
@@ -99,10 +100,16 @@ public:
 		return FPaths::Combine(FPaths::ProjectSavedDir(), RenderingOutputDirName);
 	}
 
+	/** Full path to the camera rig yaml file */
+	static FString CameraRigFilePath(const FString& Directory)
+	{
+		return Directory / CameraRigFileName;
+	}
+
 	/** Path to the specific rig camera output directory */
-	static FString RigCameraDir(const FString& Directory, const int RigCameraId) 
-	{ 
-		return Directory / FString::Printf(TEXT("Camera_%d"), RigCameraId); 
+	static FString RigCameraDir(const FString& Directory, const int RigCameraId)
+	{
+		return Directory / FString::Printf(TEXT("Camera_%d"), RigCameraId);
 	}
 
 	/** Full path to the camera poses output file */
@@ -113,6 +120,9 @@ public:
 
 	/** Clean name of the rendering output directory */
 	static const FString RenderingOutputDirName;
+
+	/** Clean name of the camera rig yaml output file */
+	static const FString CameraRigFileName;
 
 	/** Clean name of the camera poses output file */
 	static const FString CameraPosesFileName;

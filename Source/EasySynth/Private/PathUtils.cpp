@@ -12,4 +12,5 @@ const FString FPathUtils::TextureMappingAssetName(TEXT("TextureMappingAsset"));
 const FString FPathUtils::WidgetStateAssetName(TEXT("WidgetStateAsset"));
 
 const FString FPathUtils::RenderingOutputDirName(TEXT("RenderingOutput"));
+const FString FPathUtils::CameraRigFileName(TEXT("CameraRig.yaml"));
 const FString FPathUtils::CameraPosesFileName(TEXT("CameraPoses.csv"));

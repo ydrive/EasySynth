@@ -198,8 +198,13 @@ bool USequenceRenderer::RenderSequence(
 		UE_LOG(LogEasySynth, Error, TEXT("%s: kamera %d %d"), *FString(__FUNCTION__), CameraComponent, CameraComponent->IsActive())
 		RigCameras.Add(CameraComponent);
 	}
+	// TODO: Make sure camera rig array is sorted by the camera id
 
 	OriginalTextureStyle = TextureStyleManager->SelectedTextureStyle();
+
+	// Export camera rig information
+	FCameraRigYamlInterface CameraRigYamlInterface;
+	CameraRigYamlInterface.ExportCameraRig(RenderingDirectory);
 
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering..."), *FString(__FUNCTION__))
 	bCurrentlyRendering = true;
