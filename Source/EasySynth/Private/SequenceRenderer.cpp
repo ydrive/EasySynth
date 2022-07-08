@@ -195,10 +195,13 @@ bool USequenceRenderer::RenderSequence(
 			UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 			return false;
 		}
-		UE_LOG(LogEasySynth, Error, TEXT("%s: kamera %d %d"), *FString(__FUNCTION__), CameraComponent, CameraComponent->IsActive())
 		RigCameras.Add(CameraComponent);
 	}
-	// TODO: Make sure camera rig array is sorted by the camera id
+
+	// Make sure the camera rig array is sorted by the camera id
+	RigCameras.Sort([](UCameraComponent& A, UCameraComponent& B) {
+		return A.GetReadableName().Compare(B.GetReadableName()) < 0;
+	});
 
 	// Export camera rig information
 	FCameraRigYamlInterface CameraRigYamlInterface;
