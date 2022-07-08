@@ -153,29 +153,25 @@ bool FCameraRigYamlParser::ParseCamera(
 	FCameraRigData::FCameraData& OutCameraData)
 {
 	TArray<double> CameraMatrix;
-	const FString CameraMatrixName = FString::Printf(TEXT("cameraMatrix%d"), CameraId);
-	if (!ParseMatrix(InputString, Cursor, CameraMatrixName, 3, 3, CameraMatrix))
+	if (!ParseMatrix(InputString, Cursor, FYamlFileStructure::CameraMatrixName(CameraId), 3, 3, CameraMatrix))
 	{
 		return false;
 	}
 
-	TArray<double> DistortionCoefficients;
-	const FString DistortionCoefficientsName = FString::Printf(TEXT("distortionCoefficients%d"), CameraId);
-	if (!ParseMatrix(InputString, Cursor, DistortionCoefficientsName, 14, 1, DistortionCoefficients))
+	TArray<double> DistortionCoeff;
+	if (!ParseMatrix(InputString, Cursor, FYamlFileStructure::DistortionCoeffName(CameraId), 14, 1, DistortionCoeff))
 	{
 		return false;
 	}
 
 	TArray<double> TVec;
-	const FString TVecName = FString::Printf(TEXT("t_vec%d"), CameraId);
-	if (!ParseMatrix(InputString, Cursor, TVecName, 3, 1, TVec))
+	if (!ParseMatrix(InputString, Cursor, FYamlFileStructure::TVecName(CameraId), 3, 1, TVec))
 	{
 		return false;
 	}
 
 	TArray<double> QVec;
-	const FString QVecName = FString::Printf(TEXT("q_vec%d"), CameraId);
-	if (!ParseMatrix(InputString, Cursor, QVecName, 4, 1, QVec))
+	if (!ParseMatrix(InputString, Cursor, FYamlFileStructure::QVecName(CameraId), 4, 1, QVec))
 	{
 		return false;
 	}
@@ -207,30 +203,29 @@ bool FCameraRigYamlParser::ParseMatrix(
 		return false;
 	};
 
-	const FString FirstLine = FString::Printf(TEXT("%s: !!opencv-matrix;"), *ExpectedName);
-	if (!CheckStringLiteral(InputString, Cursor, FirstLine))
+	const bool bForParser = true;
+
+	if (!CheckStringLiteral(InputString, Cursor, FYamlFileStructure::NameLine(ExpectedName, bForParser)))
 	{
 		return GenerateError();
 	}
 
-	const FString SecondLine = FString::Printf(TEXT("rows: %d;"), ExpectedRows);
-	if (!CheckStringLiteral(InputString, Cursor, SecondLine))
+	if (!CheckStringLiteral(InputString, Cursor, FYamlFileStructure::RowsLine(ExpectedRows, bForParser)))
 	{
 		return GenerateError();
 	}
 
-	const FString ThirdLine = FString::Printf(TEXT("cols: %d;"), ExpectedCols);
-	if (!CheckStringLiteral(InputString, Cursor, ThirdLine))
+	if (!CheckStringLiteral(InputString, Cursor, FYamlFileStructure::RowsLine(ExpectedCols, bForParser)))
 	{
 		return GenerateError();
 	}
 
-	if (!CheckStringLiteral(InputString, Cursor, "dt: d;"))
+	if (!CheckStringLiteral(InputString, Cursor, FYamlFileStructure::DTLine(bForParser)))
 	{
 		return GenerateError();
 	}
 
-	if (!CheckStringLiteral(InputString, Cursor, "data: ["))
+	if (!CheckStringLiteral(InputString, Cursor, FYamlFileStructure::DataLineStart(bForParser)))
 	{
 		return GenerateError();
 	}
@@ -270,7 +265,7 @@ bool FCameraRigYamlParser::ParseMatrix(
 		Cursor = ClosedBracket;
 	}
 
-	if (!CheckStringLiteral(InputString, Cursor, "];"))
+	if (!CheckStringLiteral(InputString, Cursor, FYamlFileStructure::DataLineEnd(bForParser)))
 	{
 		return GenerateError();
 	}

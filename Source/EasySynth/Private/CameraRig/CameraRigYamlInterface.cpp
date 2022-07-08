@@ -107,11 +107,17 @@ FReply FCameraRigYamlInterface::OnImportCameraRigClicked()
     return FReply::Handled();
 }
 
-bool FCameraRigYamlInterface::ExportCameraRig(const FString& OutputDir)
+bool FCameraRigYamlInterface::ExportCameraRig(const FString& OutputDir, TArray<UCameraComponent*> RigCameras)
 {
 	TArray<FString> Lines;
-	Lines.Add("a");
-	Lines.Add("b");
+	Lines.Add("%YAML:1.0");
+	Lines.Add("---");
+
+	for (int i = 0; i < RigCameras.Num(); i++)
+	{
+		// Add each camera
+		AddCamera(i, RigCameras[i], Lines);
+	}
 
 	// Save the file
 	const FString SaveFilePath = FPathUtils::CameraRigFilePath(OutputDir);
@@ -127,6 +133,73 @@ bool FCameraRigYamlInterface::ExportCameraRig(const FString& OutputDir)
 	}
 
 	return true;
+}
+
+void FCameraRigYamlInterface::AddCamera(const int CameraId, UCameraComponent* Camera, TArray<FString>& OutLines)
+{
+	// Add camera matrix section
+	TArray<double> CameraMatrixValues;
+	CameraMatrixValues.Add(768.);
+	CameraMatrixValues.Add(0.);
+	CameraMatrixValues.Add(1.0201599731445312e+03);
+	CameraMatrixValues.Add(0.);
+	CameraMatrixValues.Add(768.);
+    CameraMatrixValues.Add(6.4039001464843750e+02);
+	CameraMatrixValues.Add(0.);
+	CameraMatrixValues.Add(0.);
+	CameraMatrixValues.Add(1);
+	AddMatrix(FYamlFileStructure::CameraMatrixName(CameraId), 3, 1, CameraMatrixValues, OutLines);
+
+	// Add distortion coefficients section
+	TArray<double> DistortionCoeffValues;
+	DistortionCoeffValues.Init(0, 14);
+	AddMatrix(FYamlFileStructure::DistortionCoeffName(CameraId), 14, 1, DistortionCoeffValues, OutLines);
+
+	FTransform Transform = Camera->GetRelativeTransform();
+	// Remove the scaling that makes no impact on camera functionality,
+	// but my be used to scale the camera placeholder mesh as user desires
+	Transform.SetScale3D(FVector(1.0f, 1.0f, 1.0f));
+	Transform = Transform.Inverse();
+	// TODO: Centralize coordinate system conversions
+	const FVector Location = Transform.GetLocation() * 1.0e-2f;
+	const FQuat Rotation = Transform.GetRotation();
+
+	// Add t_vec section
+	TArray<double> TVecValues;
+	TVecValues.Add(Location.Y);
+	TVecValues.Add(-Location.Z);
+	TVecValues.Add(Location.X);
+	AddMatrix(FYamlFileStructure::TVecName(CameraId), 3, 1, TVecValues, OutLines);
+
+	// Add q_vec section
+	TArray<double> QVecValues;
+	QVecValues.Add(Rotation.W);
+	QVecValues.Add(-Rotation.Y);
+	QVecValues.Add(Rotation.Z);
+	QVecValues.Add(-Rotation.X);
+	AddMatrix(FYamlFileStructure::QVecName(CameraId), 3, 1, QVecValues, OutLines);
+}
+
+void FCameraRigYamlInterface::AddMatrix(
+	const FString& MatrixName,
+	const int Rows,
+	const int Cols,
+	const TArray<double>& Values,
+	TArray<FString>& OutLines)
+{
+	OutLines.Add(FYamlFileStructure::NameLine(MatrixName));
+	OutLines.Add(FYamlFileStructure::RowsLine(3));
+	OutLines.Add(FYamlFileStructure::ColsLine(3));
+	OutLines.Add(FYamlFileStructure::DTLine());
+
+	// Create the values line
+	FString ValuesLine = FString::Printf(TEXT("%s %f"), *FYamlFileStructure::DataLineStart(), Values[0]);
+	for (int i = 1; i < Values.Num(); i++)
+	{
+		ValuesLine = FString::Printf(TEXT("%s, %f"), *ValuesLine, Values[i]);
+	}
+	ValuesLine = FString::Printf(TEXT("%s %s"), *ValuesLine, *FYamlFileStructure::DataLineEnd());
+	OutLines.Add(ValuesLine);
 }
 
 #undef LOCTEXT_NAMESPACE

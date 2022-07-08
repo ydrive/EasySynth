@@ -200,11 +200,16 @@ bool USequenceRenderer::RenderSequence(
 	}
 	// TODO: Make sure camera rig array is sorted by the camera id
 
-	OriginalTextureStyle = TextureStyleManager->SelectedTextureStyle();
-
 	// Export camera rig information
 	FCameraRigYamlInterface CameraRigYamlInterface;
-	CameraRigYamlInterface.ExportCameraRig(RenderingDirectory);
+	if (!CameraRigYamlInterface.ExportCameraRig(RenderingDirectory, RigCameras))
+	{
+		ErrorMessage = "Could not save the camera rig yaml file";
+		UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		return false;
+	}
+
+	OriginalTextureStyle = TextureStyleManager->SelectedTextureStyle();
 
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering..."), *FString(__FUNCTION__))
 	bCurrentlyRendering = true;

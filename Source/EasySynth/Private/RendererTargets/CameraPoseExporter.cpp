@@ -75,7 +75,7 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
 			UE_LOG(LogEasySynth, Error, TEXT("%s: Cut section camera component is null"), *FString(__FUNCTION__))
 			return false;
 		}
-		
+
 		// Get the current cut section camera binding id
 		const FMovieSceneObjectBindingID& CameraBindingID = CutSection->GetCameraBindingID();
 
@@ -163,9 +163,9 @@ bool FCameraPoseExporter::SavePosesToCSV(const FString& OutputDir, const int Rig
 	{
         const FTransform& Transform = CameraTransforms[i];
 		// Get location in the UE coordinate system and convert from centimeters to meters
-		const FVector& Location = Transform.GetLocation() * 1.0e-2f;
+		const FVector Location = Transform.GetLocation() * 1.0e-2f;
 		// Get rotation quaternion in the UE coordinate system
-		const FQuat& Rotation = Transform.GetRotation();
+		const FQuat Rotation = Transform.GetRotation();
 		const FVector2D& FocalLength = PixelFocalLengths[i];
 		// Print the camera pose line and convert the pose and the rotation to a different coordinate system
 		// When looking through a camera with zero rotation in the target coordinate system:
