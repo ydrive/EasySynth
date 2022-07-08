@@ -40,7 +40,7 @@ private:
 		const FString ExpectedName,
 		const int ExpectedRows,
 		const int ExpectedCols,
-		TArray<double> OutValues);
+		TArray<double>& OutValues);
 
 	/** Checks if the following characters match the received string */
 	bool CheckStringLiteral(const FString& InputString, int& Cursor, const FString& ExpectedString);

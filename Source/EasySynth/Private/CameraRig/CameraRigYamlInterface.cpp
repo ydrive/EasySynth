@@ -64,16 +64,6 @@ FReply FCameraRigYamlInterface::OnImportCameraRigClicked()
 		return FReply::Handled();
 	}
 
-	return FReply::Handled();
-
-	CameraRigData = FCameraRigData();
-	FCameraRigData::FCameraData CameraData1;
-	CameraData1.Transform = FTransform(FVector(100.0, 0.0, 0.0));
-	CameraRigData.Cameras.Add(CameraData1);
-	FCameraRigData::FCameraData CameraData2;
-	CameraData2.Transform = FTransform(FVector(-100.0, 0.0, 0.0));
-	CameraRigData.Cameras.Add(CameraData2);
-
 	AActor* CameraRigActor = Cast<AActor>(
 		GEditor->AddActor(
 			GEditor->GetEditorWorldContext().World()->GetCurrentLevel(),

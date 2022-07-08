@@ -168,7 +168,16 @@ bool FCameraRigYamlParser::ParseCamera(
 		return false;
 	}
 
-	// Store parsed values inside the camera data structure
+	// Apply needed transformations to the loaded translation and location
+	// These transformations are the inverse of the ones used by the CameraPoseExporter
+
+	// Change the coordinate system and convert from meters to centimeters
+	const FVector Translation = FVector(TVec[2], TVec[0], -TVec[1]) * 100.0;
+	// Change the coordinate system
+	const FQuat Rotation = FQuat(-QVec[3], -QVec[1], QVec[2], QVec[0]);
+	OutCameraData.Transform.SetTranslation(Translation);
+	OutCameraData.Transform.SetRotation(Rotation);
+	OutCameraData.Transform = OutCameraData.Transform.Inverse();
 
 	return true;
 }
@@ -179,7 +188,7 @@ bool FCameraRigYamlParser::ParseMatrix(
 	const FString ExpectedName,
 	const int ExpectedRows,
 	const int ExpectedCols,
-	TArray<double> OutValues)
+	TArray<double>& OutValues)
 {
 	auto GenerateError = [&]() {
 		ErrorMessage = FString::Printf(TEXT("Error while parsing matrix \"%s\"\n%s"), *ExpectedName, *ErrorMessage);
