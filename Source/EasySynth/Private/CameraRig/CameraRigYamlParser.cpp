@@ -119,9 +119,21 @@ FString FCameraRigYamlParser::PreprocessInput(const FString InputString)
 bool FCameraRigYamlParser::ParseHeader(const FString& InputString, int& Cursor)
 {
 	// Parse the first two lines
-	// TODO: Check valid id
-	const int FirstSemi = InputString.Find(";", ESearchCase::IgnoreCase, ESearchDir::FromStart, Cursor);
-	const int SecondSemi = InputString.Find(";", ESearchCase::IgnoreCase, ESearchDir::FromStart, FirstSemi + 1);
+	const int32 FirstSemi = InputString.Find(";", ESearchCase::IgnoreCase, ESearchDir::FromStart, Cursor);
+	if (FirstSemi == INDEX_NONE)
+	{
+		ErrorMessage = "First new line not found";
+		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		return false;
+	}
+
+	const int32 SecondSemi = InputString.Find(";", ESearchCase::IgnoreCase, ESearchDir::FromStart, FirstSemi + 1);
+	if (SecondSemi == INDEX_NONE)
+	{
+		ErrorMessage = "Second new line not found";
+		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		return false;
+	}
 
 	if (InputString.Left(SecondSemi + 1) != "%YAML:1.0;---;")
 	{
@@ -225,26 +237,34 @@ bool FCameraRigYamlParser::ParseMatrix(
 
 	for (int i = 0; i < ExpectedRows * ExpectedCols - 1; i++)
 	{
-		// TODO: Check valid id
-		const int NextComma = InputString.Find(",", ESearchCase::IgnoreCase, ESearchDir::FromStart, Cursor);
-		UE_LOG(LogEasySynth, Warning, TEXT("%s: %d %d"), *FString(__FUNCTION__), Cursor, NextComma)
+		// Parse all matrix values (except the last one)
+		const int32 NextComma = InputString.Find(",", ESearchCase::IgnoreCase, ESearchDir::FromStart, Cursor);
+		if (NextComma == INDEX_NONE)
+		{
+			ErrorMessage = FString::Printf(TEXT("Comma number %d not found while parsing matrix data"), i + 1);
+			UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+			return false;
+		}
+
 		const FString StringValue = InputString.Mid(Cursor, NextComma - Cursor);
-		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *StringValue)
 		double Value = FCString::Atod(*StringValue);
-		UE_LOG(LogEasySynth, Warning, TEXT("%s: %f"), *FString(__FUNCTION__), Value)
 		OutValues.Add(Value);
 
 		Cursor = NextComma + 1;
 	}
 
 	{
-		// TODO: Check valid id
-		const int ClosedBracket = InputString.Find("]", ESearchCase::IgnoreCase, ESearchDir::FromStart, Cursor);
-		UE_LOG(LogEasySynth, Warning, TEXT("%s: %d %d"), *FString(__FUNCTION__), Cursor, ClosedBracket)
+		// Parse the last matrix value
+		const int32 ClosedBracket = InputString.Find("]", ESearchCase::IgnoreCase, ESearchDir::FromStart, Cursor);
+		if (ClosedBracket == INDEX_NONE)
+		{
+			ErrorMessage = "Closed bracket not found while parsing matrix data";
+			UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+			return false;
+		}
+
 		const FString StringValue = InputString.Mid(Cursor, ClosedBracket - Cursor);
-		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *StringValue)
 		double Value = FCString::Atod(*StringValue);
-		UE_LOG(LogEasySynth, Warning, TEXT("%s: %f"), *FString(__FUNCTION__), Value)
 		OutValues.Add(Value);
 
 		Cursor = ClosedBracket;
@@ -262,6 +282,7 @@ bool FCameraRigYamlParser::CheckStringLiteral(const FString& InputString, int& C
 {
 	EatWhitespace(InputString, Cursor);
 
+	// Check if the following InputString character exactly match the ExpectedString
 	if (Cursor + ExpectedString.Len() > InputString.Len() ||
 		InputString.Mid(Cursor, ExpectedString.Len()) != ExpectedString)
 	{
