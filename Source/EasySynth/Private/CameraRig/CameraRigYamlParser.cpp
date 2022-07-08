@@ -177,15 +177,8 @@ bool FCameraRigYamlParser::ParseCamera(
 	}
 
 	// Apply needed transformations to the loaded translation and location
-	// These transformations are the inverse of the ones used by the CameraPoseExporter
-
-	// Change the coordinate system and convert from meters to centimeters
-	const FVector Translation = FVector(TVec[2], TVec[0], -TVec[1]) * 100.0;
-	// Change the coordinate system
-	const FQuat Rotation = FQuat(-QVec[3], -QVec[1], QVec[2], QVec[0]);
-	OutCameraData.Transform.SetTranslation(Translation);
-	OutCameraData.Transform.SetRotation(Rotation);
-	OutCameraData.Transform = OutCameraData.Transform.Inverse();
+	const bool bDoInverse = true;
+	OutCameraData.Transform = FCoordinateSystemConverter::ExternalToUE(TVec, QVec, bDoInverse);
 
 	return true;
 }

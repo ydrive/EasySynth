@@ -161,22 +161,15 @@ bool FCameraPoseExporter::SavePosesToCSV(const FString& OutputDir, const int Rig
 
     for (int i = 0; i < CameraTransforms.Num(); i++)
 	{
-        const FTransform& Transform = CameraTransforms[i];
-		// Get location in the UE coordinate system and convert from centimeters to meters
-		const FVector Location = Transform.GetLocation() * 1.0e-2f;
-		// Get rotation quaternion in the UE coordinate system
-		const FQuat Rotation = Transform.GetRotation();
+		TArray<double> Location;
+		TArray<double> Rotation;
+		FCoordinateSystemConverter::UEToExternal(CameraTransforms[i], Location, Rotation);
 		const FVector2D& FocalLength = PixelFocalLengths[i];
-		// Print the camera pose line and convert the pose and the rotation to a different coordinate system
-		// When looking through a camera with zero rotation in the target coordinate system:
-		// - X axis points to the right
-		// - Y axis points down
-		// - Z axis points straight away from the camera
-		// Rotations follow right-handed rule with respect to the defined axes
+
 		Lines.Add(FString::Printf(TEXT("%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d"),
 			i,
-			Location.Y, -Location.Z, Location.X,
-			Rotation.W, -Rotation.Y, Rotation.Z, -Rotation.X,
+			Location[0], Location[1], Location[2],
+			Rotation[0], Rotation[1], Rotation[2], Rotation[3],
 			FocalLength.X, FocalLength.Y,
 			OutputResolution.X / 2, OutputResolution.Y / 2));
 	}
