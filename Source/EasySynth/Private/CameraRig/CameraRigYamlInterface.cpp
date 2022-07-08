@@ -148,7 +148,7 @@ void FCameraRigYamlInterface::AddCamera(const int CameraId, UCameraComponent* Ca
 	CameraMatrixValues.Add(0.);
 	CameraMatrixValues.Add(0.);
 	CameraMatrixValues.Add(1);
-	AddMatrix(FYamlFileStructure::CameraMatrixName(CameraId), 3, 1, CameraMatrixValues, OutLines);
+	AddMatrix(FYamlFileStructure::CameraMatrixName(CameraId), 3, 3, CameraMatrixValues, OutLines);
 
 	// Add distortion coefficients section
 	TArray<double> DistortionCoeffValues;
@@ -177,7 +177,7 @@ void FCameraRigYamlInterface::AddCamera(const int CameraId, UCameraComponent* Ca
 	QVecValues.Add(-Rotation.Y);
 	QVecValues.Add(Rotation.Z);
 	QVecValues.Add(-Rotation.X);
-	AddMatrix(FYamlFileStructure::QVecName(CameraId), 3, 1, QVecValues, OutLines);
+	AddMatrix(FYamlFileStructure::QVecName(CameraId), 4, 1, QVecValues, OutLines);
 }
 
 void FCameraRigYamlInterface::AddMatrix(
@@ -188,8 +188,8 @@ void FCameraRigYamlInterface::AddMatrix(
 	TArray<FString>& OutLines)
 {
 	OutLines.Add(FYamlFileStructure::NameLine(MatrixName));
-	OutLines.Add(FYamlFileStructure::RowsLine(3));
-	OutLines.Add(FYamlFileStructure::ColsLine(3));
+	OutLines.Add(FYamlFileStructure::RowsLine(Rows));
+	OutLines.Add(FYamlFileStructure::ColsLine(Cols));
 	OutLines.Add(FYamlFileStructure::DTLine());
 
 	// Create the values line

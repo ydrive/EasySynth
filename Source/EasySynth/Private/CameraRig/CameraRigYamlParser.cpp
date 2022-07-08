@@ -215,7 +215,7 @@ bool FCameraRigYamlParser::ParseMatrix(
 		return GenerateError();
 	}
 
-	if (!CheckStringLiteral(InputString, Cursor, FYamlFileStructure::RowsLine(ExpectedCols, bForParser)))
+	if (!CheckStringLiteral(InputString, Cursor, FYamlFileStructure::ColsLine(ExpectedCols, bForParser)))
 	{
 		return GenerateError();
 	}
