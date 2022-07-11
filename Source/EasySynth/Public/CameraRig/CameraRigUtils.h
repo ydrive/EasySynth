@@ -30,7 +30,9 @@ struct FCameraRigData
 };
 
 
-/***/
+/**
+ * Class that provides access to the camera rig YAML file string literals
+ */
 class FYamlFileStructure
 {
 public:
