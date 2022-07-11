@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 
-#include "CameraRig/CameraRigData.h"
-
 class UCameraComponent;
 
 

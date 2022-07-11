@@ -7,7 +7,7 @@
 #include "Misc/FileHelper.h"
 #include "IDesktopPlatform.h"
 
-#include "CameraRig/CameraRigData.h"
+#include "CameraRig/CameraRigUtils.h"
 #include "CameraRig/CameraRigYamlParser.h"
 #include "EasySynth.h"
 
