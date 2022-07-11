@@ -1,6 +1,6 @@
 # EasySynth
 
-EasySynth is an Unreal Engine plugin for easy creation of image datasets from a moving camera, requiring no C++ or Blueprint knowledge. It leverages native Unreal Engine components to create compelling machine learning datasets, without relying on 3rd party tools.
+EasySynth is an Unreal Engine plugin for easy creation of image datasets from a moving camera rig, requiring no C++ or Blueprint knowledge. It leverages native Unreal Engine components to create compelling machine learning datasets, without relying on 3rd party tools.
 
 The plugin works by automatically starting the rendering of a user-defined level sequence, with different camera post-process settings. The outputs are camera poses, including position, rotation, and calibration parameters, together with the following image types:
 
@@ -115,6 +115,12 @@ Start the rendering by clicking the `Render Images` button.
 
 <b>IMPORTANT:</b> Do not close a window that opens during rendering. Closing the window will result in the successful rendering being falsely reported, as it is not possible to know if the window has been closed from the plugin side.
 
+### Multi-camera rigs
+
+EasySynth seamlessly supports rendering using rigs that contain multiple cameras. To create a rig, add an empty actor to the level, and then add any number of individual camera components to the actor, position them as desired relative to the actor position. Then, add the actor to the level sequence and assign it to the camera cut track. When you start rendering, outputs from all of the rig cameras will be created in succession.
+
+Camera rig information can be imported and exported using OpenCV YAML files with a specific structure. Clicking on the button `Import camera rig YAML file` and choosing a valid file will create an actor that represents the described rig inside the level. The camera rig YAML file is also exported during rendering to the selected output directory. The YAML file structure will be described below.
+
 ### Workflow tips
 
 - You can use affordable asset marketplaces such as [Unreal Engine Marketplace](https://www.unrealengine.com/marketplace) or [CGTrader](https://www.cgtrader.com/) to obtain template levels. Ones that provide assets in the Unreal Engine `.uasset` format are preferred. Formats such as `FBX` or `OBJ` can lose their textures when imported into the UE editor.
@@ -185,6 +191,62 @@ for i, pose in poses_df.iterrows():
 
     # Convert camera pose to a camera view matrix
     view_mat = np.linalg.inv(mat4)
+```
+
+### Camera rig YAML file
+
+Camera rig YAML files contain spacial data that uses the same coordinate system described in the `Camera pose output` section. It contains a set of 4 matrices for each rig camera:
+
+- Camera matrix
+- Distortion coefficients
+- Translation vector in relation to the rig origin
+- Rotation quaternion in relation to the rig rotation
+
+Following is a YAML file example for a rig with two parallel cameras facing forward. The difference can be found in the sign of the translation vector X-axis.
+
+``` YAML
+%YAML:1.0
+---
+cameraMatrix0: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 768.0, 0.0, 960.0, 0.0, 768.0, 540.0, 0.0, 0.0, 1.0 ]
+distortionCoefficients0: !!opencv-matrix
+   rows: 14
+   cols: 1
+   dt: d
+   data: [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]
+t_vec0: !!opencv-matrix
+   rows: 3
+   cols: 1
+   dt: d
+   data: [ -0.25, -0.0, 0.0 ]
+q_vec0: !!opencv-matrix
+   rows: 4
+   cols: 1
+   dt: d
+   data: [ 1.0, 0.0, -0.0, 0.0 ]
+cameraMatrix1: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 768.0, 0.0, 960.0, 0.0, 768.0, 540.0, 0.0, 0.0, 1.0 ]
+distortionCoefficients1: !!opencv-matrix
+   rows: 14
+   cols: 1
+   dt: d
+   data: [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]
+t_vec1: !!opencv-matrix
+   rows: 3
+   cols: 1
+   dt: d
+   data: [ 0.25, -0.0, 0.0 ]
+q_vec1: !!opencv-matrix
+   rows: 4
+   cols: 1
+   dt: d
+   data: [ 1.0, 0.0, -0.0, 0.0 ]
 ```
 
 ### Optical flow images
