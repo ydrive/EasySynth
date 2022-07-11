@@ -185,7 +185,7 @@ bool USequenceRenderer::RenderSequence(
 		return false;
 	}
 
-	// Store pointers to all cameras inside the rig for later control of their active flag
+	// Store pointers to all cameras inside the rig for later selection of the active camera
 	for (UActorComponent* ActorComponent : ActorComponents)
 	{
 		UCameraComponent* CameraComponent = Cast<UCameraComponent>(ActorComponent);

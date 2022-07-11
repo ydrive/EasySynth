@@ -270,7 +270,7 @@ bool FCameraRigYamlParser::CheckStringLiteral(const FString& InputString, int& C
 {
 	EatWhitespace(InputString, Cursor);
 
-	// Check if the following InputString character exactly match the ExpectedString
+	// Check if the following InputString characters exactly match the ExpectedString
 	if (Cursor + ExpectedString.Len() > InputString.Len() ||
 		InputString.Mid(Cursor, ExpectedString.Len()) != ExpectedString)
 	{

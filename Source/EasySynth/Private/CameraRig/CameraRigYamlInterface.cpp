@@ -64,6 +64,7 @@ FReply FCameraRigYamlInterface::OnImportCameraRigClicked()
 		return FReply::Handled();
 	}
 
+	// Spawn the camera rig actor
 	AActor* CameraRigActor = Cast<AActor>(
 		GEditor->AddActor(
 			GEditor->GetEditorWorldContext().World()->GetCurrentLevel(),
@@ -74,6 +75,7 @@ FReply FCameraRigYamlInterface::OnImportCameraRigClicked()
 				FVector(1, 1, 1))));
 	CameraRigActor->SetActorLabel("CameraRigActor");
 
+	// Create the rig actor root component
 	USceneComponent* RootComponent = NewObject<USceneComponent>(
 		CameraRigActor,
 		USceneComponent::GetDefaultSceneRootVariableName(),
@@ -82,6 +84,7 @@ FReply FCameraRigYamlInterface::OnImportCameraRigClicked()
 	CameraRigActor->AddInstanceComponent(RootComponent);
 	RootComponent->RegisterComponent();
 
+	// Add camera components to the rig actor
 	for (int i = 0; i < CameraRigData.Cameras.Num(); i++)
 	{
 		const FCameraRigData::FCameraData& Camera = CameraRigData.Cameras[i];
@@ -101,8 +104,6 @@ FReply FCameraRigYamlInterface::OnImportCameraRigClicked()
 		// Make camera components smaller so that the rig is easier to visualize
 		CameraComponent->SetRelativeScale3D(FVector(0.4f, 0.4f, 0.4f));
 	}
-
-	// Spawn the camera rig actor
 
     return FReply::Handled();
 }
