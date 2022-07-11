@@ -130,6 +130,7 @@ Camera rig information can be imported and exported using OpenCV YAML files with
 - If you want images to be spaced out more inside the level sequence (instead of being very close in order to provide a smooth video), you can set the custom level sequence FPS to a small value (1 FPS or lower) inside the Sequencer editor.
 - To avoid adding keyframes manually, select the <img src="ReadmeContent/KeyButton.png" alt="Color image" width="20"/> button inside the sequence editor toolbar. After you create the first keyframe, this will automatically add one at the current time for any moved asset.
 - To avoid potential artifacts, make sure the camera trajectory line is always smooth and does not contain "edged" turns - except when that is done intentionally.
+- To avoid slow camera acceleration at the sequence start, create an additional keyframe for the camera actor `Location` before the 0th frame in the timeline and place the actor a little bit behind its place at the beginning of the sequence. These negative time frames will not be rendered, but the camera actor will have initial speed in the first rendered frame instead of starting from a standstill.
 - Although changing the `CameraComponenet` offset/translation in relation to the `CameraActor` is possible, the exported camera poses will be `CameraActor` poses. If the relative translation is not zero, exported poses will not match locations where the actual image is taken from and you will have to compensate for that manually.
 
 ## Outputs' structure details
