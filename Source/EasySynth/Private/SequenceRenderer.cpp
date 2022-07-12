@@ -143,7 +143,8 @@ bool USequenceRenderer::RenderSequence(
 	FSequencerWrapper SequencerWrapper;
 	if (!SequencerWrapper.OpenSequence(LevelSequence))
 	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Sequencer wrapper opening failed"), *FString(__FUNCTION__))
+		ErrorMessage = "Sequencer wrapper opening failed";
+		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 		return false;
 	}
 
@@ -156,7 +157,8 @@ bool USequenceRenderer::RenderSequence(
 		SequencerWrapper.GetSequencer()->GetFocusedTemplateID());
 	if (SourceObjects.Num() == 0)
 	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: No sources assigned to the sequencer"), *FString(__FUNCTION__))
+		ErrorMessage = "No sources assigned to the sequencer";
+		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 		return false;
 	}
 
@@ -164,7 +166,8 @@ bool USequenceRenderer::RenderSequence(
 	CameraRigActor = Cast<AActor>(SourceObjects[0].Get());
 	if (CameraRigActor == nullptr)
 	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Expected an actor as a sequence source"), *FString(__FUNCTION__))
+		ErrorMessage = "Expected an actor as a sequence source";
+		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 		return false;
 	}
 
@@ -180,7 +183,7 @@ bool USequenceRenderer::RenderSequence(
 	// If no mesh components are found, ignore the actor
 	if (ActorComponents.Num() == 0)
 	{
-		ErrorMessage = "...";
+		ErrorMessage = "No cameras found inside the actor";
 		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 		return false;
 	}
@@ -191,7 +194,7 @@ bool USequenceRenderer::RenderSequence(
 		UCameraComponent* CameraComponent = Cast<UCameraComponent>(ActorComponent);
 		if (CameraComponent == nullptr)
 		{
-			ErrorMessage = "Got null static mesh component";
+			ErrorMessage = "Got null camera component";
 			UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 			return false;
 		}
