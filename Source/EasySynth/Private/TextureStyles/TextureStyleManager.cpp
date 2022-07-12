@@ -314,6 +314,12 @@ void UTextureStyleManager::CheckoutTextureStyle(const ETextureStyle NewTextureSt
 	CurrentTextureStyle = NewTextureStyle;
 }
 
+bool UTextureStyleManager::ExportSemanticClasses(const FString& OutputDir)
+{
+	FSemanticCsvInterface SemanticCsvInterface;
+	return SemanticCsvInterface.ExportSemanticClasses(OutputDir, TextureMappingAsset);
+}
+
 void UTextureStyleManager::LoadOrCreateTextureMappingAsset()
 {
 	// Try to load

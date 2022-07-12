@@ -11,6 +11,7 @@
 #include "PathUtils.h"
 #include "RendererTargets/CameraPoseExporter.h"
 #include "RendererTargets/RendererTarget.h"
+#include "TextureStyles/SemanticCsvInterface.h"
 
 
 const float FRendererTargetOptions::DefaultDepthRangeMetersValue = 100.0f;
@@ -210,9 +211,20 @@ bool USequenceRenderer::RenderSequence(
 	FCameraRigYamlInterface CameraRigYamlInterface;
 	if (!CameraRigYamlInterface.ExportCameraRig(RenderingDirectory, RigCameras))
 	{
-		ErrorMessage = "Could not save the camera rig yaml file";
+		ErrorMessage = "Could not save the camera rig YAML file";
 		UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 		return false;
+	}
+
+	// Export semantic class information if semantic rendering is selected
+	if (RendererTargetOptions.TargetSelected(FRendererTargetOptions::TargetType::SEMANTIC_IMAGE))
+	{
+		if (!TextureStyleManager->ExportSemanticClasses(RenderingDirectory))
+		{
+			ErrorMessage = "Could not save the semantic class CSV file";
+			UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+			return false;
+		}
 	}
 
 	OriginalTextureStyle = TextureStyleManager->SelectedTextureStyle();

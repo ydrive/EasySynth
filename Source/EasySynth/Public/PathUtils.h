@@ -102,10 +102,16 @@ public:
 		return FPaths::ProjectSavedDir() / RenderingOutputDirName;
 	}
 
-	/** Full path to the camera rig yaml file */
+	/** Full path to the camera rig YAML file */
 	static FString CameraRigFilePath(const FString& Directory)
 	{
 		return Directory / CameraRigFileName;
+	}
+
+	/** Full path to the semantic classes CSV file */
+	static FString SemanticClassesFilePath(const FString& Directory)
+	{
+		return Directory / SemanticClassesFileName;
 	}
 
 	/** Path to the specific rig camera output directory */
@@ -123,8 +129,11 @@ public:
 	/** Clean name of the rendering output directory */
 	static const FString RenderingOutputDirName;
 
-	/** Clean name of the camera rig yaml output file */
+	/** Clean name of the camera rig YAML output file */
 	static const FString CameraRigFileName;
+
+	/** Clean name of the semantic classes CSV output file */
+	static const FString SemanticClassesFileName;
 
 	/** Clean name of the camera poses output file */
 	static const FString CameraPosesFileName;

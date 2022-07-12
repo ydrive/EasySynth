@@ -78,6 +78,9 @@ public:
 	/** Returns a reference to the event for others to bind */
 	FSemanticClassesUpdatedEvent& OnSemanticClassesUpdated() { return SemanticClassesUpdatedEvent; }
 
+	/** Export current semantic classes to a CSV file */
+	bool ExportSemanticClasses(const FString& OutputDir);
+
 private:
 	/** Load or create texture mapping asset on startup */
 	void LoadOrCreateTextureMappingAsset();

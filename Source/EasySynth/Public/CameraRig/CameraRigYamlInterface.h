@@ -9,7 +9,7 @@ class UCameraComponent;
 
 /**
  * Class containing interface methods for parsing and generating
- * camera rig yaml files.
+ * camera rig yaml files
  */
 class FCameraRigYamlInterface
 {
