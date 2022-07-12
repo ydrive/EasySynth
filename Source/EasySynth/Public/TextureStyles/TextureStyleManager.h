@@ -57,6 +57,9 @@ public:
 	/** Remove a semantic class */
 	bool RemoveSemanticClass(const FString& ClassName);
 
+	/** Remove all semantic classes except for the default one */
+	void RemoveAllSemanticCLasses();
+
 	/** Returns names of existing semantic classes */
 	TArray<FString> SemanticClassNames() const;
 

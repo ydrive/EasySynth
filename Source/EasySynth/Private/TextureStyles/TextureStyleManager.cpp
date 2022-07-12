@@ -215,6 +215,12 @@ bool UTextureStyleManager::RemoveSemanticClass(const FString& ClassName)
 		return false;
 	}
 
+	if (ClassName == UndefinedSemanticClassName)
+	{
+		// Just ignore removing the necessary undefined semantic class
+		return true;
+	}
+
 	// Reset all actor to the undefined class
 	TArray<AActor*> LevelActors;
 	UGameplayStatics::GetAllActorsOfClass(GEditor->GetEditorWorldContext().World(), AActor::StaticClass(), LevelActors);
@@ -236,6 +242,19 @@ bool UTextureStyleManager::RemoveSemanticClass(const FString& ClassName)
 	SemanticClassesUpdatedEvent.Broadcast();
 
 	return true;
+}
+
+void UTextureStyleManager::RemoveAllSemanticCLasses()
+{
+	for (auto& Element : TextureMappingAsset->SemanticClasses)
+	{
+		const FString& ClassName = Element.Key;
+		// Skip the default undefined semantic class
+		if (ClassName != UndefinedSemanticClassName)
+		{
+			RemoveSemanticClass(ClassName);
+		}
+	}
 }
 
 TArray<FString> UTextureStyleManager::SemanticClassNames() const

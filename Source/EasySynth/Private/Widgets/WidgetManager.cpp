@@ -8,6 +8,7 @@
 #include "Widgets/Input/SDirectoryPicker.h"
 #include "Widgets/Input/SSpinBox.h"
 #include "Widgets/Layout/SScrollBox.h"
+#include "Widgets/Layout/SSeparator.h"
 #include "Widgets/Text/STextBlock.h"
 
 #include "CameraRig/CameraRigYamlInterface.h"
@@ -122,6 +123,36 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			.Padding(2)
 			[
 				SNew(SButton)
+				.OnClicked_Raw(
+					&FSemanticCsvInterface(),
+					&FSemanticCsvInterface::OnImportSemanticClassesClicked,
+					TextureStyleManager)
+				.Content()
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("ImportSemanticClassesButtonText", "Import semantic classes CSV file"))
+				]
+			]
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(SButton)
+				.OnClicked_Raw(&FCameraRigYamlInterface(), &FCameraRigYamlInterface::OnImportCameraRigClicked)
+				.Content()
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("ImportCameraRigButtonText", "Import camera rig YAML file"))
+				]
+			]
+			+SScrollBox::Slot()
+			.Padding(0, 2, 0, 2)
+			[
+				SNew(SSeparator)
+			]
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(SButton)
 				.OnClicked_Raw(&SemanticsWidget, &FSemanticClassesWidgetManager::OnManageSemanticClassesClicked)
 				.Content()
 				[
@@ -159,17 +190,6 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 				[
 					SNew(STextBlock)
 					.Text(LOCTEXT("PickMeshTextureStyleComboBoxText", "Pick a mesh texture style"))
-				]
-			]
-			+SScrollBox::Slot()
-			.Padding(2)
-			[
-				SNew(SButton)
-				.OnClicked_Raw(&FCameraRigYamlInterface(), &FCameraRigYamlInterface::OnImportCameraRigClicked)
-				.Content()
-				[
-					SNew(STextBlock)
-					.Text(LOCTEXT("ImportCameraRigButtonText", "Import camera rig YAML file"))
 				]
 			]
 			+SScrollBox::Slot()
