@@ -135,6 +135,14 @@ Camera rig information can be imported and exported using OpenCV YAML files with
 
 ## Outputs' structure details
 
+### Depth images
+
+Depth image pixel values represent the proportional distance between the camera plane and scene objects.
+
+- A camera plane is a plane that contains the camera position and is normal to the camera direction vector.
+- Depth is equal to the length of a normal from a scene object on the camera plane. This means we use linear depth, in contrast to the radial depth which would imply that the depth is equal to the distance between the object and the camera position.
+- Depth values are scaled between 0 and the specified `Depth range` value.
+
 ### Camera pose output
 
 If requested, the plugin exports camera poses to the same output directory as rendered images.
