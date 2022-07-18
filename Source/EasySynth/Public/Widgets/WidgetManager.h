@@ -6,6 +6,8 @@
 
 #include "SequenceRenderer.h"
 
+#include "CameraRig/CameraRigYamlInterface.h"
+#include "TextureStyles/SemanticCsvInterface.h"
 #include "Widgets/SemanticClassesWidgetManager.h"
 
 class ULevelSequence;
@@ -15,7 +17,7 @@ class UWidgetStateAsset;
 
 
 /**
- * Class that manages main UI widget interatcion
+ * Class that manages main UI widget interaction
 */
 class FWidgetManager
 {
@@ -39,13 +41,13 @@ private:
 	/** Callback function handling the choosing of the texture style inside the combo box */
 	void OnTextureStyleComboBoxSelectionChanged(TSharedPtr<FString> StringItem, ESelectInfo::Type SelectInfo);
 
-	/** Callback funcion handling the update of the selected sequencer */
+	/** Callback function handling the update of the selected sequencer */
 	void OnSequencerSelected(const FAssetData& AssetData) { LevelSequenceAssetData = AssetData; }
 
-	/** Callback funcion providing the path to the selected sequencer asset */
+	/** Callback function providing the path to the selected sequencer asset */
 	FString GetSequencerPath() const;
 
-	/** Checks whether renderer terget check box should be checked */
+	/** Checks whether renderer target check box should be checked */
 	ECheckBoxState RenderTargetsCheckedState(const FRendererTargetOptions::TargetType TargetType) const;
 
 	/** Target render images checkbox handling */
@@ -84,6 +86,12 @@ private:
 
 	/** Save widget options states */
 	void SaveWidgetOptionStates(UWidgetStateAsset* WidgetStateAsset = nullptr);
+
+	/** Interface that handles importing semantic classes from CSV */
+	FSemanticCsvInterface SemanticCsvInterface;
+
+	/** Interface that handles importing camera rigs from YAML */
+	FCameraRigYamlInterface CameraRigYamlInterface;
 
 	/** Manager that handles semantic class widget */
 	FSemanticClassesWidgetManager SemanticsWidget;

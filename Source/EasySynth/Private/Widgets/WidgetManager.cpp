@@ -11,7 +11,6 @@
 #include "Widgets/Layout/SSeparator.h"
 #include "Widgets/Text/STextBlock.h"
 
-#include "CameraRig/CameraRigYamlInterface.h"
 #include "Widgets/WidgetStateAsset.h"
 
 
@@ -124,7 +123,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			[
 				SNew(SButton)
 				.OnClicked_Raw(
-					&FSemanticCsvInterface(),
+					&SemanticCsvInterface,
 					&FSemanticCsvInterface::OnImportSemanticClassesClicked,
 					TextureStyleManager)
 				.Content()
@@ -137,7 +136,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			.Padding(2)
 			[
 				SNew(SButton)
-				.OnClicked_Raw(&FCameraRigYamlInterface(), &FCameraRigYamlInterface::OnImportCameraRigClicked)
+				.OnClicked_Raw(&CameraRigYamlInterface, &FCameraRigYamlInterface::OnImportCameraRigClicked)
 				.Content()
 				[
 					SNew(STextBlock)
