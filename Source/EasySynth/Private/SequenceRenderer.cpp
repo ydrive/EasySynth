@@ -208,10 +208,10 @@ bool USequenceRenderer::RenderSequence(
 	});
 
 	// Export camera rig information
-	FCameraRigYamlInterface CameraRigYamlInterface;
-	if (!CameraRigYamlInterface.ExportCameraRig(RenderingDirectory, RigCameras))
+	FCameraRigRosInterface CameraRigRosInterface;
+	if (!CameraRigRosInterface.ExportCameraRig(RenderingDirectory, RigCameras))
 	{
-		ErrorMessage = "Could not save the camera rig YAML file";
+		ErrorMessage = "Could not save the camera rig ROS JSON file";
 		UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 		return false;
 	}

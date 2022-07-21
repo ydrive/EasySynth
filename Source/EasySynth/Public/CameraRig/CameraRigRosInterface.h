@@ -24,5 +24,5 @@ public:
 
 private:
 	/** Adds lines describing a single camera to the output array */
-	void AddCamera(const int CameraId, UCameraComponent* Camera, TArray<FString>& OutLines);
+	void AddCamera(const int CameraId, UCameraComponent* Camera, TArray<FString>& OutLines, const bool bAddComma);
 };

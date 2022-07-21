@@ -132,7 +132,7 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 		}
 
 		// Get focal length
-		const FString CameraMatrixField = "calibrated_intrinsics";
+		const FString CameraMatrixField = "intrinsics";
 		const TArray<TSharedPtr<FJsonValue>>* CameraMatrix;
 		if (!(*CameraJsonObject)->TryGetArrayField(CameraMatrixField, CameraMatrix))
 		{
@@ -256,14 +256,17 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 bool FCameraRigRosInterface::ExportCameraRig(const FString& OutputDir, TArray<UCameraComponent*> RigCameras)
 {
 	TArray<FString> Lines;
-	Lines.Add("%YAML:1.0");
-	Lines.Add("---");
+	Lines.Add("{");
+	Lines.Add("  \"cameras\": {");
 
 	for (int i = 0; i < RigCameras.Num(); i++)
 	{
 		// Add each camera
-		AddCamera(i, RigCameras[i], Lines);
+		AddCamera(i, RigCameras[i], Lines, i != RigCameras.Num() - 1);
 	}
+
+	Lines.Add("  }");
+	Lines.Add("}");
 
 	// Save the file
 	const FString SaveFilePath = FPathUtils::CameraRigFilePath(OutputDir);
@@ -281,39 +284,56 @@ bool FCameraRigRosInterface::ExportCameraRig(const FString& OutputDir, TArray<UC
 	return true;
 }
 
-void FCameraRigRosInterface::AddCamera(const int CameraId, UCameraComponent* Camera, TArray<FString>& OutLines)
+void FCameraRigRosInterface::AddCamera(const int CameraId, UCameraComponent* Camera, TArray<FString>& OutLines, const bool bAddComma)
 {
-	// Add camera matrix section
-	TArray<double> CameraMatrixValues;
-	CameraMatrixValues.Add(768.);
-	CameraMatrixValues.Add(0.);
-	CameraMatrixValues.Add(1.0201599731445312e+03);
-	CameraMatrixValues.Add(0.);
-	CameraMatrixValues.Add(768.);
-    CameraMatrixValues.Add(6.4039001464843750e+02);
-	CameraMatrixValues.Add(0.);
-	CameraMatrixValues.Add(0.);
-	CameraMatrixValues.Add(1);
-	AddMatrix(FYamlFileStructure::CameraMatrixName(CameraId), 3, 3, CameraMatrixValues, OutLines);
+	FString CameraName = Camera->GetReadableName();
+	CameraName = CameraName.Right(CameraName.Len() - CameraName.Find(".") - 1);
+	OutLines.Add(FString::Printf(TEXT("    \"%s\": {"), *CameraName));
 
-	// Add distortion coefficients section
-	TArray<double> DistortionCoeffValues;
-	DistortionCoeffValues.Init(0, 14);
-	AddMatrix(FYamlFileStructure::DistortionCoeffName(CameraId), 14, 1, DistortionCoeffValues, OutLines);
+	// Add intrinsics
+	float FocalLength = 1134;
+	float PrincipalPointX = 1020;
+	float PrincipalPointY = 640;
+	OutLines.Add(FString::Printf(TEXT("      \"intrinsics\": [%f, 0.0, %f, 0.0, %f, %f, 0.0, 0.0, 1.0],"), FocalLength, PrincipalPointX, FocalLength, PrincipalPointY));
+
+	// Add coordinate system
+	OutLines.Add("      \"coord_sys\": \"RDF\",");
 
 	// Covert between coordinate systems
 	FTransform Transform = Camera->GetRelativeTransform();
 	// Remove the scaling that makes no impact on camera functionality,
 	// but my be used to scale the camera placeholder mesh as user desires
 	Transform.SetScale3D(FVector(1.0f, 1.0f, 1.0f));
-	TArray<double> TVecValues;
-	TArray<double> QVecValues;
-	const bool bDoInverse = true;
-	FCoordinateSystemConverter::UEToExternal(Transform, TVecValues, QVecValues, bDoInverse);
+	TArray<double> Translation;
+	TArray<double> Quaternion;
+	const bool bDoInverse = false;
+	FCoordinateSystemConverter::UEToExternal(Transform, Translation, Quaternion, bDoInverse);
 
-	// Add t_vec and q_vec sections
-	AddMatrix(FYamlFileStructure::TVecName(CameraId), 3, 1, TVecValues, OutLines);
-	AddMatrix(FYamlFileStructure::QVecName(CameraId), 4, 1, QVecValues, OutLines);
+	// Add rotation
+	FTransform RotationTransform;
+	RotationTransform.SetRotation(FQuat(Quaternion[0], Quaternion[1], Quaternion[2], Quaternion[3]));
+	const FMatrix Mat = RotationTransform.ToMatrixNoScale();
+	OutLines.Add(FString::Printf(TEXT("      \"rotation\": [[%f, %f, %f], [%f, %f, %f], [%f, %f, %f]],"),
+		Mat.M[0][0], Mat.M[0][1], Mat.M[0][2],
+		Mat.M[1][0], Mat.M[1][1], Mat.M[1][2],
+		Mat.M[2][0], Mat.M[2][1], Mat.M[2][2]));
+
+	// Add translation
+	OutLines.Add(FString::Printf(TEXT("      \"translation\": [%f, %f, %f],"), Translation[0], Translation[1], Translation[2]));
+
+	// Add sensor size
+	float ImageWidth = 2048;
+	float ImageHeight = 1280;
+	OutLines.Add(FString::Printf(TEXT("      \"sensor_size\": [%f, %f]"), ImageWidth, ImageHeight));
+
+	if (bAddComma)
+	{
+		OutLines.Add("    },");
+	}
+	else
+	{
+		OutLines.Add("    }");
+	}
 }
 
 #undef LOCTEXT_NAMESPACE
