@@ -16,10 +16,10 @@ struct FCameraRigData
 	 */
 	struct FCameraData
 	{
-		float FocalX;
-		float FocalY;
-		float CenterX;
-		float CenterY;
+		FString CameraName;
+		float FocalLength;
+		int SensorWidth;
+		int SensorHeight;
 		FTransform Transform;
 	};
 

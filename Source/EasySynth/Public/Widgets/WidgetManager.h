@@ -6,7 +6,7 @@
 
 #include "SequenceRenderer.h"
 
-#include "CameraRig/CameraRigYamlInterface.h"
+#include "CameraRig/CameraRigRosInterface.h"
 #include "TextureStyles/SemanticCsvInterface.h"
 #include "Widgets/SemanticClassesWidgetManager.h"
 
@@ -91,7 +91,7 @@ private:
 	FSemanticCsvInterface SemanticCsvInterface;
 
 	/** Interface that handles importing camera rigs from YAML */
-	FCameraRigYamlInterface CameraRigYamlInterface;
+	FCameraRigRosInterface CameraRigRosInterface;
 
 	/** Manager that handles semantic class widget */
 	FSemanticClassesWidgetManager SemanticsWidget;

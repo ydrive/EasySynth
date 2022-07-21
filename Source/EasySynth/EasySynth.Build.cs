@@ -65,6 +65,8 @@ public class EasySynth : ModuleRules
 				"PropertyEditor",
 				// Image formats
 				"UEOpenExrRTTI",
+				// JSON parsing
+				"Json",
 				// ... add private dependencies that you statically link with here ...
 			}
 			);

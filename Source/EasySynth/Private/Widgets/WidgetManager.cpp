@@ -136,11 +136,11 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			.Padding(2)
 			[
 				SNew(SButton)
-				.OnClicked_Raw(&CameraRigYamlInterface, &FCameraRigYamlInterface::OnImportCameraRigClicked)
+				.OnClicked_Raw(&CameraRigRosInterface, &FCameraRigRosInterface::OnImportCameraRigClicked)
 				.Content()
 				[
 					SNew(STextBlock)
-					.Text(LOCTEXT("ImportCameraRigButtonText", "Import camera rig YAML file"))
+					.Text(LOCTEXT("ImportCameraRigButtonText", "Import camera rig ROS JSON file"))
 				]
 			]
 			+SScrollBox::Slot()
