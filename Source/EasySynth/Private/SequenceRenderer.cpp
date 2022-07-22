@@ -209,7 +209,7 @@ bool USequenceRenderer::RenderSequence(
 
 	// Export camera rig information
 	FCameraRigRosInterface CameraRigRosInterface;
-	if (!CameraRigRosInterface.ExportCameraRig(RenderingDirectory, RigCameras))
+	if (!CameraRigRosInterface.ExportCameraRig(RenderingDirectory, RigCameras, OutputImageResolution))
 	{
 		ErrorMessage = "Could not save the camera rig ROS JSON file";
 		UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
@@ -280,6 +280,7 @@ void USequenceRenderer::FindNextCamera()
 	// Export camera poses if requested
 	if (RendererTargetOptions.ExportCameraPoses())
 	{
+		// TODO: Export rig-only poses
 		FCameraPoseExporter CameraPoseExporter;
 		if (!CameraPoseExporter.ExportCameraPoses(
 			RenderingSequence, OutputResolution, RenderingDirectory, CurrentRigCameraId))
@@ -411,6 +412,7 @@ bool USequenceRenderer::PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipel
 		return false;
 	}
 	// Update the image output directory
+	// TODO: Real camera names
 	OutputSetting->OutputDirectory.Path =
 		FPathUtils::RigCameraDir(RenderingDirectory, CurrentRigCameraId) / CurrentTarget->Name();
 	OutputSetting->OutputResolution = OutputResolution;

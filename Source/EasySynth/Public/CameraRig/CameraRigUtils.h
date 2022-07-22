@@ -20,8 +20,7 @@ struct FCameraRigData
 		double FocalLength;
 		double PrincipalPointX;
 		double PrincipalPointY;
-		int SensorWidth;
-		int SensorHeight;
+		FIntPoint SensorSize;
 		FTransform Transform;
 	};
 
@@ -37,6 +36,7 @@ struct FCameraRigData
  */
 class FYamlFileStructure
 {
+	// TODO: To YAML dir
 public:
 	/**
 	 * Component names
@@ -139,6 +139,7 @@ private:
  */
 class FCoordinateSystemConverter
 {
+	// TODO: To global utility
 public:
 	/** Converts a transform from UE to external coordinate system */
 	static void UEToExternal(

@@ -107,11 +107,11 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 			UE_LOG(LogEasySynth, Error, TEXT("%s: 5-"), *FString(__FUNCTION__))
 			return FReply::Handled();
 		}
-		CameraData.SensorWidth = (*SensorSize)[0]->AsNumber();
-		CameraData.SensorHeight = (*SensorSize)[1]->AsNumber();
+		CameraData.SensorSize.X = (*SensorSize)[0]->AsNumber();
+		CameraData.SensorSize.Y = (*SensorSize)[1]->AsNumber();
 
 		// Ignore the "camera" if its sensor size is 0
-		if (CameraData.SensorWidth * CameraData.SensorHeight == 0)
+		if (CameraData.SensorSize.X * CameraData.SensorSize.Y == 0)
 		{
 			continue;
 		}
@@ -250,7 +250,7 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 		CameraComponent->SetRelativeTransform(Camera.Transform);
 
 		// Calculate field of view in degrees
-		const double FOV = 2 * UKismetMathLibrary::DegAtan2(Camera.SensorWidth, Camera.FocalLength * 2.0f);
+		const double FOV = 2 * UKismetMathLibrary::DegAtan2(Camera.SensorSize.X, Camera.FocalLength * 2.0f);
 		CameraComponent->SetFieldOfView(FOV);
 
 		// Make camera components smaller so that the rig is easier to visualize
@@ -260,7 +260,10 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
     return FReply::Handled();
 }
 
-bool FCameraRigRosInterface::ExportCameraRig(const FString& OutputDir, TArray<UCameraComponent*> RigCameras)
+bool FCameraRigRosInterface::ExportCameraRig(
+	const FString& OutputDir,
+	TArray<UCameraComponent*> RigCameras,
+	const FIntPoint& SensorSize)
 {
 	TArray<FString> Lines;
 	Lines.Add("{");
@@ -269,7 +272,7 @@ bool FCameraRigRosInterface::ExportCameraRig(const FString& OutputDir, TArray<UC
 	for (int i = 0; i < RigCameras.Num(); i++)
 	{
 		// Add each camera
-		AddCamera(i, RigCameras[i], Lines, i != RigCameras.Num() - 1);
+		AddCamera(i, RigCameras[i], SensorSize, i != RigCameras.Num() - 1, Lines);
 	}
 
 	Lines.Add("  }");
@@ -291,16 +294,21 @@ bool FCameraRigRosInterface::ExportCameraRig(const FString& OutputDir, TArray<UC
 	return true;
 }
 
-void FCameraRigRosInterface::AddCamera(const int CameraId, UCameraComponent* Camera, TArray<FString>& OutLines, const bool bAddComma)
+void FCameraRigRosInterface::AddCamera(
+	const int CameraId,
+	UCameraComponent* Camera,
+	const FIntPoint& SensorSize,
+	const bool bAddComma,
+	TArray<FString>& OutLines)
 {
 	FString CameraName = Camera->GetReadableName();
 	CameraName = CameraName.Right(CameraName.Len() - CameraName.Find(".") - 1);
 	OutLines.Add(FString::Printf(TEXT("    \"%s\": {"), *CameraName));
 
 	// Add intrinsics
-	float FocalLength = 1134;
-	float PrincipalPointX = 1020;
-	float PrincipalPointY = 640;
+	const double FocalLength = SensorSize.X / UKismetMathLibrary::DegTan(Camera->FieldOfView / 2.0f) / 2.0f;
+	const double PrincipalPointX = SensorSize.X / 2.0f;
+	const double PrincipalPointY = SensorSize.Y / 2.0f;
 	OutLines.Add(FString::Printf(TEXT("      \"intrinsics\": [%f, 0.0, %f, 0.0, %f, %f, 0.0, 0.0, 1.0],"), FocalLength, PrincipalPointX, FocalLength, PrincipalPointY));
 
 	// Add coordinate system
@@ -329,9 +337,7 @@ void FCameraRigRosInterface::AddCamera(const int CameraId, UCameraComponent* Cam
 	OutLines.Add(FString::Printf(TEXT("      \"translation\": [%f, %f, %f],"), Translation[0], Translation[1], Translation[2]));
 
 	// Add sensor size
-	float ImageWidth = 2048;
-	float ImageHeight = 1280;
-	OutLines.Add(FString::Printf(TEXT("      \"sensor_size\": [%f, %f]"), ImageWidth, ImageHeight));
+	OutLines.Add(FString::Printf(TEXT("      \"sensor_size\": [%f, %f]"), (float)SensorSize.X, (float)SensorSize.Y));
 
 	if (bAddComma)
 	{

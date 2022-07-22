@@ -20,9 +20,17 @@ public:
 	FReply OnImportCameraRigClicked();
 
 	/** Handles exporting camera rig into a ROS JSON file */
-	bool ExportCameraRig(const FString& OutputDir, TArray<UCameraComponent*> RigCameras);
+	bool ExportCameraRig(
+		const FString& OutputDir,
+		TArray<UCameraComponent*> RigCameras,
+		const FIntPoint& SensorSize);
 
 private:
 	/** Adds lines describing a single camera to the output array */
-	void AddCamera(const int CameraId, UCameraComponent* Camera, TArray<FString>& OutLines, const bool bAddComma);
+	void AddCamera(
+		const int CameraId,
+		UCameraComponent* Camera,
+		const FIntPoint& SensorSize,
+		const bool bAddComma,
+		TArray<FString>& OutLines);
 };
