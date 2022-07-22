@@ -9,6 +9,7 @@
 
 #include "CameraRig/CameraRigUtils.h"
 #include "CameraRig/CameraRigYamlParser.h"
+#include "CoordinateSystemConverter.h"
 #include "EasySynth.h"
 
 

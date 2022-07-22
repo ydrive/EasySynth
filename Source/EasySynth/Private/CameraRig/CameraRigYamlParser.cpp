@@ -5,6 +5,8 @@
 #include "GenericPlatform/GenericPlatformMath.h"
 #include "Misc/StringBuilder.h"
 
+#include "CoordinateSystemConverter.h"
+
 
 bool FCameraRigYamlParser::Parse(const FString& InputString, FCameraRigData& OutCameraRigData)
 {

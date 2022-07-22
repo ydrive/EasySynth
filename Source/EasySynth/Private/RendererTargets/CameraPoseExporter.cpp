@@ -16,6 +16,8 @@
 #include "Subsystems/AssetEditorSubsystem.h"
 #include "Tracks/MovieScene3DTransformTrack.h"
 
+#include "CoordinateSystemConverter.h"
+
 
 bool FCameraPoseExporter::ExportCameraPoses(
 	ULevelSequence* LevelSequence,

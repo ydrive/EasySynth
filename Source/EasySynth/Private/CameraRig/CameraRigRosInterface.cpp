@@ -11,6 +11,7 @@
 #include "Serialization/JsonSerializer.h"
 
 #include "CameraRig/CameraRigUtils.h"
+#include "CoordinateSystemConverter.h"
 #include "EasySynth.h"
 
 
