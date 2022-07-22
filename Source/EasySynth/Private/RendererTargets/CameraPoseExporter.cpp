@@ -65,6 +65,8 @@ bool FCameraPoseExporter::ExtractCameraTransforms(const bool bAccumulateCameraOf
 {
 	// Get level sequence fps
 	const FFrameRate DisplayRate = SequencerWrapper.GetMovieScene()->GetDisplayRate();
+	const double FrameTime = 1.0f / DisplayRate.AsDecimal();
+	double AccumulatedFrameTime = 0.0f;
 
 	// Get level sequence ticks per second
 	// Engine likes to update much more often than the video frame rate,
@@ -147,12 +149,15 @@ bool FCameraPoseExporter::ExtractCameraTransforms(const bool bAccumulateCameraOf
                 return false;
             }
 
-			if (bAccumulateCameraOffset)
+			for (FTransform& Transform : TempTransforms)
 			{
-				for (FTransform& Transform : TempTransforms)
+				if (bAccumulateCameraOffset)
 				{
 					Transform.Accumulate(Camera->GetRelativeTransform());
 				}
+
+				AccumulatedFrameTime += FrameTime;
+				Timestamps.Add(AccumulatedFrameTime);
 			}
 
 		    CameraTransforms.Append(TempTransforms);
@@ -166,7 +171,7 @@ bool FCameraPoseExporter::SavePosesToCSV(const FString& FilePath)
 {
 	// Create the file content
 	TArray<FString> Lines;
-	Lines.Add("id,tx,ty,tz,qw,qx,qy,qz");
+	Lines.Add("id,tx,ty,tz,qw,qx,qy,qz,t");
 
     for (int i = 0; i < CameraTransforms.Num(); i++)
 	{
@@ -174,10 +179,11 @@ bool FCameraPoseExporter::SavePosesToCSV(const FString& FilePath)
 		TArray<double> Rotation;
 		FCoordinateSystemConverter::UEToExternal(CameraTransforms[i], Location, Rotation);
 
-		Lines.Add(FString::Printf(TEXT("%d,%f,%f,%f,%f,%f,%f,%f"),
+		Lines.Add(FString::Printf(TEXT("%d,%f,%f,%f,%f,%f,%f,%f,%f"),
 			i,
 			Location[0], Location[1], Location[2],
-			Rotation[0], Rotation[1], Rotation[2], Rotation[3]));
+			Rotation[0], Rotation[1], Rotation[2], Rotation[3],
+			Timestamps[i]));
 	}
 
 	// Save the file

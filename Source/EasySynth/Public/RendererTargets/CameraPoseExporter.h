@@ -42,4 +42,7 @@ private:
 
 	/** Extracted camera pose transforms */
 	TArray<FTransform> CameraTransforms;
+
+	/** Frame timestamps */
+	TArray<double> Timestamps;
 };

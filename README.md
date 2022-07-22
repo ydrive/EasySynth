@@ -162,6 +162,7 @@ Output is the `CameraPoses.csv` file, in which the first line contains column na
 | 6      | float | qx   | Rotation quaternion X      |
 | 7      | float | qy   | Rotation quaternion Y      |
 | 8      | float | qz   | Rotation quaternion Z      |
+| 9      | float | t    | Timestamp in seconds       |
 
 The coordinate system for saving camera positions and rotation quaternions is a right-handed coordinate system. When looking through a camera with zero rotation in the target coordinate system:
 - X axis points to the right
