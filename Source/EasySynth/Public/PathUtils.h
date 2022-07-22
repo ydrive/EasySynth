@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 
+#include "Camera/CameraComponent.h"
+
 
 class FPathUtils
 {
@@ -114,16 +116,23 @@ public:
 		return Directory / SemanticClassesFileName;
 	}
 
-	/** Path to the specific rig camera output directory */
-	static FString RigCameraDir(const FString& Directory, const int RigCameraId)
+	/** Gets original camera name from the received camera component */
+	static FString GetCameraName(UCameraComponent* CameraComponent)
 	{
-		return Directory / FString::Printf(TEXT("Camera_%d"), RigCameraId);
+		const FString CameraName = CameraComponent->GetReadableName();
+		return CameraName.Right(CameraName.Len() - CameraName.Find(".") - 1);
+	}
+
+	/** Path to the specific rig camera output directory */
+	static FString RigCameraDir(const FString& Directory, UCameraComponent* CameraComponent)
+	{
+		return Directory / GetCameraName(CameraComponent);
 	}
 
 	/** Full path to the camera poses output file */
-	static FString CameraPosesFilePath(const FString& Directory, const int RigCameraId)
+	static FString CameraPosesFilePath(const FString& Directory, UCameraComponent* CameraComponent)
 	{
-		return RigCameraDir(Directory, RigCameraId) / CameraPosesFileName;
+		return RigCameraDir(Directory, CameraComponent) / CameraPosesFileName;
 	}
 
 	/** Clean name of the rendering output directory */

@@ -283,7 +283,7 @@ void USequenceRenderer::FindNextCamera()
 		// TODO: Export rig-only poses
 		FCameraPoseExporter CameraPoseExporter;
 		if (!CameraPoseExporter.ExportCameraPoses(
-			RenderingSequence, OutputResolution, RenderingDirectory, CurrentRigCameraId))
+			RenderingSequence, OutputResolution, RenderingDirectory, RigCameras[CurrentRigCameraId]))
 		{
 			ErrorMessage = "Could not export camera poses";
 			return BroadcastRenderingFinished(false);
@@ -414,7 +414,7 @@ bool USequenceRenderer::PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipel
 	// Update the image output directory
 	// TODO: Real camera names
 	OutputSetting->OutputDirectory.Path =
-		FPathUtils::RigCameraDir(RenderingDirectory, CurrentRigCameraId) / CurrentTarget->Name();
+		FPathUtils::RigCameraDir(RenderingDirectory, RigCameras[CurrentRigCameraId]) / CurrentTarget->Name();
 	OutputSetting->OutputResolution = OutputResolution;
 
 	// Get the queue of sequences to be renderer

@@ -23,7 +23,7 @@ bool FCameraPoseExporter::ExportCameraPoses(
 	ULevelSequence* LevelSequence,
 	const FIntPoint OutputImageResolution,
 	const FString& OutputDir,
-	const int RigCameraId)
+	UCameraComponent* CameraComponent)
 {
 	// Open the received level sequence inside the sequencer wrapper
 	if (!SequencerWrapper.OpenSequence(LevelSequence))
@@ -42,7 +42,8 @@ bool FCameraPoseExporter::ExportCameraPoses(
 	}
 
 	// Store to file
-	if (!SavePosesToCSV(OutputDir, RigCameraId))
+	const FString SaveFilePath = FPathUtils::CameraPosesFilePath(OutputDir, CameraComponent);
+	if (!SavePosesToCSV(SaveFilePath))
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed while saving camera poses to the file"), *FString(__FUNCTION__))
 		return false;
@@ -155,7 +156,7 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
 	return true;
 }
 
-bool FCameraPoseExporter::SavePosesToCSV(const FString& OutputDir, const int RigCameraId)
+bool FCameraPoseExporter::SavePosesToCSV(const FString& FilePath)
 {
 	// Create the file content
 	TArray<FString> Lines;
@@ -177,15 +178,14 @@ bool FCameraPoseExporter::SavePosesToCSV(const FString& OutputDir, const int Rig
 	}
 
 	// Save the file
-	const FString SaveFilePath = FPathUtils::CameraPosesFilePath(OutputDir, RigCameraId);
 	if (!FFileHelper::SaveStringArrayToFile(
 		Lines,
-		*SaveFilePath,
+		*FilePath,
 		FFileHelper::EEncodingOptions::AutoDetect,
 		&IFileManager::Get(),
 		EFileWrite::FILEWRITE_None))
 	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed while saving the file %s"), *FString(__FUNCTION__), *SaveFilePath)
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed while saving the file %s"), *FString(__FUNCTION__), *FilePath)
         return false;
 	}
 

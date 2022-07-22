@@ -302,9 +302,7 @@ void FCameraRigRosInterface::AddCamera(
 	const bool bAddComma,
 	TArray<FString>& OutLines)
 {
-	FString CameraName = Camera->GetReadableName();
-	CameraName = CameraName.Right(CameraName.Len() - CameraName.Find(".") - 1);
-	OutLines.Add(FString::Printf(TEXT("    \"%s\": {"), *CameraName));
+	OutLines.Add(FString::Printf(TEXT("    \"%s\": {"), *FPathUtils::GetCameraName(Camera)));
 
 	// Add intrinsics
 	const double FocalLength = SensorSize.X / UKismetMathLibrary::DegTan(Camera->FieldOfView / 2.0f) / 2.0f;
