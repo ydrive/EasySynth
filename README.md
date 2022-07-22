@@ -82,6 +82,7 @@ This editor allows you to:
 
 Next, you should assign semantic classes to all of the level actors. To do this:
 - Select one or more actors of the same class in the editor window or by using the World Outliner
+- Supported mesh types are static mesh, skeletal mesh and landscapes
 - Assign them a class by clicking on the `Pick a semantic class` button and picking the class
 
 To toggle between original and semantic color, use the `Pick a mesh texture style` button. Make sure that you never save your project while the semantic view mode is selected.
@@ -99,6 +100,8 @@ Setting up rendering options inside the EasySynth widget:
 
 ![Plugin widget](/ReadmeContent/Widget.png)
 
+- <em>Optionally</em> import semantic classes from a CSV file (or create them manually)
+- <em>Optionally</em> import camera rig from a ROS format JSON file (or create it manually)
 - Pick the created level sequence
 - Choose the desired rendering targets using checkboxes
 - Choose the output image format for each target
@@ -121,7 +124,7 @@ Start the rendering by clicking the `Render Images` button.
 
 EasySynth seamlessly supports rendering using rigs that contain multiple cameras. To create a rig, add an empty actor to the level, and then add any number of individual camera components to the actor, position them as desired relative to the actor position. Then, add the actor to the level sequence and assign it to the camera cut track. When you start rendering, outputs from all of the rig cameras will be created in succession.
 
-Camera rig information can be imported and exported using OpenCV YAML files with a specific structure. Clicking on the button `Import camera rig YAML file` and choosing a valid file will create an actor that represents the described rig inside the level. The camera rig YAML file is also exported during rendering to the selected output directory. The YAML file structure will be described below.
+Camera rig information can be imported and exported using ROS format JSON files with a specific structure. Clicking on the button `Import camera rig ROS JSON file` and choosing a valid file will create an actor that represents the described rig inside the level. The camera rig file is also exported during rendering to the selected output directory. Its structure will be described below.
 
 ### Workflow tips
 
@@ -204,60 +207,38 @@ for i, pose in poses_df.iterrows():
     view_mat = np.linalg.inv(mat4)
 ```
 
-### Camera rig YAML file
+### Camera rig ROS JSON file
 
-Camera rig YAML files contain spacial data that uses the same coordinate system described in the `Camera pose output` section. It contains a set of 4 matrices for each rig camera:
+Camera rig JSON files contain spacial data that uses the same coordinate system described in the `Camera pose output` section. It contains 5 fields for each rig camera:
 
-- Camera matrix
-- Distortion coefficients
-- Translation vector in relation to the rig origin
-- Rotation quaternion in relation to the rig rotation
+- `intrinsics` - Camera matrix
+- `coord_sys` - Type of the coordinate system, `RDF` is required
+- `rotation` - Rotation matrix relative to the rig origin
+- `translation` - Translation vector relative to the rig origin
+- `sensor_size` - Sensor width and height in pixels, used to calculate camera FOV
 
-Following is a YAML file example for a rig with two parallel cameras facing forward. The difference can be found in the sign of the translation vector X-axis.
+Following is a ROS JSON file example for a rig with two parallel cameras facing forward. The difference can be found in the sign of the translation vector X-axis.
 
-``` YAML
-%YAML:1.0
----
-cameraMatrix0: !!opencv-matrix
-   rows: 3
-   cols: 3
-   dt: d
-   data: [ 768.0, 0.0, 960.0, 0.0, 768.0, 540.0, 0.0, 0.0, 1.0 ]
-distortionCoefficients0: !!opencv-matrix
-   rows: 14
-   cols: 1
-   dt: d
-   data: [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]
-t_vec0: !!opencv-matrix
-   rows: 3
-   cols: 1
-   dt: d
-   data: [ -0.25, -0.0, 0.0 ]
-q_vec0: !!opencv-matrix
-   rows: 4
-   cols: 1
-   dt: d
-   data: [ 1.0, 0.0, -0.0, 0.0 ]
-cameraMatrix1: !!opencv-matrix
-   rows: 3
-   cols: 3
-   dt: d
-   data: [ 768.0, 0.0, 960.0, 0.0, 768.0, 540.0, 0.0, 0.0, 1.0 ]
-distortionCoefficients1: !!opencv-matrix
-   rows: 14
-   cols: 1
-   dt: d
-   data: [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]
-t_vec1: !!opencv-matrix
-   rows: 3
-   cols: 1
-   dt: d
-   data: [ 0.25, -0.0, 0.0 ]
-q_vec1: !!opencv-matrix
-   rows: 4
-   cols: 1
-   dt: d
-   data: [ 1.0, 0.0, -0.0, 0.0 ]
+``` JSON
+{
+  "cameras": {
+    "c0": {
+      "intrinsics": [2828.283203, 0.0, 960.000000, 0.0, 2828.283203, 540.000000, 0.0, 0.0, 1.0],
+      "coord_sys": "RDF",
+      "rotation": [[1.000000, -0.000000, 0.000000], [0.000000, -1.000000, -0.000000], [0.000000, 0.000000, -1.000000]],
+      "translation": [-0.300000, -0.000000, 0.000000],
+      "sensor_size": [1920.000000, 1080.000000]
+    },
+    "c1": {
+      "intrinsics": [2828.283203, 0.0, 960.000000, 0.0, 2828.283203, 540.000000, 0.0, 0.0, 1.0],
+      "coord_sys": "RDF",
+      "rotation": [[1.000000, -0.000000, 0.000000], [0.000000, -1.000000, -0.000000], [0.000000, 0.000000, -1.000000]],
+      "translation": [0.300000, -0.000000, 0.000000],
+      "sensor_size": [1920.000000, 1080.000000]
+    }
+  }
+}
+
 ```
 
 ### Optical flow images
