@@ -10,7 +10,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
-#include "CameraRig/CameraRigUtils.h"
+#include "CameraRig/CameraRigData.h"
 #include "CoordinateSystemConverter.h"
 #include "EasySynth.h"
 

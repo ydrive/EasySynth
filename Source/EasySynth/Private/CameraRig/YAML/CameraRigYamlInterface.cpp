@@ -1,14 +1,14 @@
 // Copyright (c) 2022 YDrive Inc. All rights reserved.
 
-#include "CameraRig/CameraRigYamlInterface.h"
+#include "CameraRig/YAML/CameraRigYamlInterface.h"
 
 #include "CineCameraComponent.h"
 #include "DesktopPlatformModule.h"
 #include "Misc/FileHelper.h"
 #include "IDesktopPlatform.h"
 
-#include "CameraRig/CameraRigUtils.h"
-#include "CameraRig/CameraRigYamlParser.h"
+#include "CameraRig/YAML/YamlFileStructure.h"
+#include "CameraRig/YAML/CameraRigYamlParser.h"
 #include "CoordinateSystemConverter.h"
 #include "EasySynth.h"
 

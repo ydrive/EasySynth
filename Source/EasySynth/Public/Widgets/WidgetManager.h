@@ -90,7 +90,7 @@ private:
 	/** Interface that handles importing semantic classes from CSV */
 	FSemanticCsvInterface SemanticCsvInterface;
 
-	/** Interface that handles importing camera rigs from YAML */
+	/** Interface that handles importing camera rigs from ROS JSON files */
 	FCameraRigRosInterface CameraRigRosInterface;
 
 	/** Manager that handles semantic class widget */

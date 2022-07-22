@@ -1,10 +1,11 @@
 // Copyright (c) 2022 YDrive Inc. All rights reserved.
 
-#include "CameraRig/CameraRigYamlParser.h"
+#include "CameraRig/YAML/CameraRigYamlParser.h"
 
 #include "GenericPlatform/GenericPlatformMath.h"
 #include "Misc/StringBuilder.h"
 
+#include "CameraRig/YAML/YamlFileStructure.h"
 #include "CoordinateSystemConverter.h"
 
 

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-#include "CameraRig/CameraRigUtils.h"
+#include "CameraRig/CameraRigData.h"
 
 
 /**

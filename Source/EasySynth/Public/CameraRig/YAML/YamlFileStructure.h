@@ -6,37 +6,10 @@
 
 
 /**
- * Structure that contains intrinsic and extrinsic information
- * for each camera inside the camera rig
- */
-struct FCameraRigData
-{
-	/**
-	 * Structure that contains information on a single camera
-	 */
-	struct FCameraData
-	{
-		FString CameraName;
-		double FocalLength;
-		double PrincipalPointX;
-		double PrincipalPointY;
-		FIntPoint SensorSize;
-		FTransform Transform;
-	};
-
-	/**
-	 * Array of cameras inside the camera rig
-	 */
-	TArray<FCameraData> Cameras;
-};
-
-
-/**
  * Class that provides access to the camera rig YAML file string literals
  */
 class FYamlFileStructure
 {
-	// TODO: To YAML dir
 public:
 	/**
 	 * Component names
