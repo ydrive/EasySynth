@@ -17,7 +17,9 @@ struct FCameraRigData
 	struct FCameraData
 	{
 		FString CameraName;
-		float FocalLength;
+		double FocalLength;
+		double PrincipalPointX;
+		double PrincipalPointY;
 		int SensorWidth;
 		int SensorHeight;
 		FTransform Transform;

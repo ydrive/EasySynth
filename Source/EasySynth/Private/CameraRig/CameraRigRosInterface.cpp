@@ -6,6 +6,7 @@
 #include "DesktopPlatformModule.h"
 #include "Misc/FileHelper.h"
 #include "IDesktopPlatform.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
@@ -147,6 +148,8 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 			return FReply::Handled();
 		}
 		CameraData.FocalLength = (*CameraMatrix)[0]->AsNumber();
+		CameraData.PrincipalPointX = (*CameraMatrix)[2]->AsNumber();
+		CameraData.PrincipalPointY = (*CameraMatrix)[5]->AsNumber();
 
 		// Get rotation
 		const FString RotationField = "rotation";
@@ -245,6 +248,10 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 		CameraComponent->RegisterComponent();
 
 		CameraComponent->SetRelativeTransform(Camera.Transform);
+
+		// Calculate field of view in degrees
+		const double FOV = 2 * UKismetMathLibrary::DegAtan2(Camera.SensorWidth, Camera.FocalLength * 2.0f);
+		CameraComponent->SetFieldOfView(FOV);
 
 		// Make camera components smaller so that the rig is easier to visualize
 		CameraComponent->SetRelativeScale3D(FVector(0.4f, 0.4f, 0.4f));
