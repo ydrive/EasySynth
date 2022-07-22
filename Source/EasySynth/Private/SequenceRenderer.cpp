@@ -284,11 +284,13 @@ void USequenceRenderer::FindNextCamera()
 	{
 		// Remember the transform of the first camera
 		OriginalCameraTransform = RigCameras[0]->GetRelativeTransform();
+		OriginalCameraFOV = RigCameras[0]->FieldOfView;
 	}
 	else
 	{
 		// Transfer the transform of the current camera to the first one that is used for rendering
 		RigCameras[0]->SetRelativeTransform(RigCameras[CurrentRigCameraId]->GetRelativeTransform());
+		RigCameras[0]->SetFieldOfView(RigCameras[CurrentRigCameraId]->FieldOfView);
 	}
 
 	// Export camera poses if requested
@@ -480,6 +482,7 @@ void USequenceRenderer::BroadcastRenderingFinished(const bool bSuccess)
 	{
 		// Restore the transform of the original camera
 		RigCameras[0]->SetRelativeTransform(OriginalCameraTransform);
+		RigCameras[0]->SetFieldOfView(OriginalCameraFOV);
 	}
 
 	RigCameras.Empty();

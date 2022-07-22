@@ -186,6 +186,9 @@ private:
 	/** Keeps the original camera transform so it can be restored at the end */
 	FTransform OriginalCameraTransform;
 
+	/** Keeps the original camera field of view so it can be restored at the end */
+	double OriginalCameraFOV;
+
 	/** Keeps the currently selected rig camera */
 	int CurrentRigCameraId;
 
