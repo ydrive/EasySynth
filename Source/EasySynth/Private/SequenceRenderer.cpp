@@ -412,7 +412,6 @@ bool USequenceRenderer::PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipel
 		return false;
 	}
 	// Update the image output directory
-	// TODO: Real camera names
 	OutputSetting->OutputDirectory.Path =
 		FPathUtils::RigCameraDir(RenderingDirectory, RigCameras[CurrentRigCameraId]) / CurrentTarget->Name();
 	OutputSetting->OutputResolution = OutputResolution;
