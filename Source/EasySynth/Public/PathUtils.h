@@ -135,6 +135,12 @@ public:
 		return RigCameraDir(Directory, CameraComponent) / CameraPosesFileName;
 	}
 
+	/** Full path to the camera rig poses output file */
+	static FString CameraRigPosesFilePath(const FString& Directory)
+	{
+		return Directory / CameraPosesFileName;
+	}
+
 	/** Clean name of the rendering output directory */
 	static const FString RenderingOutputDirName;
 

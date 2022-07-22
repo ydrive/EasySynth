@@ -35,14 +35,23 @@ bool FCameraPoseExporter::ExportCameraPoses(
 	OutputResolution = OutputImageResolution;
 
 	// Extract the camera pose transforms
-	if (!ExtractCameraTransforms())
+	const bool bAccumulateCameraOffset = (CameraComponent != nullptr);
+	if (!ExtractCameraTransforms(bAccumulateCameraOffset))
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Camera pose extraction failed"), *FString(__FUNCTION__))
 		return false;
 	}
 
 	// Store to file
-	const FString SaveFilePath = FPathUtils::CameraPosesFilePath(OutputDir, CameraComponent);
+	FString SaveFilePath;
+	if (CameraComponent == nullptr)
+	{
+		SaveFilePath = FPathUtils::CameraRigPosesFilePath(OutputDir);
+	}
+	else
+	{
+		SaveFilePath = FPathUtils::CameraPosesFilePath(OutputDir, CameraComponent);
+	}
 	if (!SavePosesToCSV(SaveFilePath))
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed while saving camera poses to the file"), *FString(__FUNCTION__))
@@ -52,7 +61,7 @@ bool FCameraPoseExporter::ExportCameraPoses(
 	return true;
 }
 
-bool FCameraPoseExporter::ExtractCameraTransforms()
+bool FCameraPoseExporter::ExtractCameraTransforms(const bool bAccumulateCameraOffset)
 {
 	// Get level sequence fps
 	const FFrameRate DisplayRate = SequencerWrapper.GetMovieScene()->GetDisplayRate();
@@ -138,9 +147,12 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
                 return false;
             }
 
-			for (FTransform& Transform : TempTransforms)
+			if (bAccumulateCameraOffset)
 			{
-				Transform.Accumulate(Camera->GetRelativeTransform());
+				for (FTransform& Transform : TempTransforms)
+				{
+					Transform.Accumulate(Camera->GetRelativeTransform());
+				}
 			}
 
 		    CameraTransforms.Append(TempTransforms);

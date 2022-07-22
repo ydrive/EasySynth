@@ -216,6 +216,20 @@ bool USequenceRenderer::RenderSequence(
 		return false;
 	}
 
+	// Export camera rig poses if requested
+	if (RendererTargetOptions.ExportCameraPoses())
+	{
+		FCameraPoseExporter CameraPoseExporter;
+		UCameraComponent* NoSpecificCamera = nullptr;
+		if (!CameraPoseExporter.ExportCameraPoses(
+			RenderingSequence, OutputResolution, RenderingDirectory, NoSpecificCamera))
+		{
+			ErrorMessage = "Could not export camera rig poses";
+			UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+			return false;
+		}
+	}
+
 	// Export semantic class information if semantic rendering is selected
 	if (RendererTargetOptions.TargetSelected(FRendererTargetOptions::TargetType::SEMANTIC_IMAGE))
 	{
@@ -280,7 +294,6 @@ void USequenceRenderer::FindNextCamera()
 	// Export camera poses if requested
 	if (RendererTargetOptions.ExportCameraPoses())
 	{
-		// TODO: Export rig-only poses
 		FCameraPoseExporter CameraPoseExporter;
 		if (!CameraPoseExporter.ExportCameraPoses(
 			RenderingSequence, OutputResolution, RenderingDirectory, RigCameras[CurrentRigCameraId]))

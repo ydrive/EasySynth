@@ -17,7 +17,10 @@ class ULevelSequence;
 class FCameraPoseExporter
 {
 public:
-	/** Export camera poses from the sequence to a file */
+	/**
+	 * Export camera poses from the sequence to a file,
+	 * to export rig poses, pass nullptr for the CameraComponent
+	 */
 	bool ExportCameraPoses(
 		ULevelSequence* LevelSequence,
 		const FIntPoint OutputImageResolution,
@@ -26,7 +29,7 @@ public:
 
 private:
 	/** Extract camera transforms using the sequencer wrapper */
-	bool ExtractCameraTransforms();
+	bool ExtractCameraTransforms(const bool bAccumulateCameraOffset);
 
 	/** Saves the extracted camera poses to a file */
 	bool SavePosesToCSV(const FString& FilePath);
