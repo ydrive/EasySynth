@@ -156,12 +156,6 @@ bool FCameraPoseExporter::ExtractCameraTransforms(const bool bAccumulateCameraOf
 			}
 
 		    CameraTransforms.Append(TempTransforms);
-
-			// Record the camera focal length using the unit of output image pixels
-			// These units are chosen to enable the easiest work with generated output images
-			const float FoVDegrees = Camera->FieldOfView;
-			const float FocalLengthPixels = OutputResolution.X / 2 / UKismetMathLibrary::DegTan(FoVDegrees / 2.0f);
-			PixelFocalLengths.Add(FVector2D(FocalLengthPixels, FocalLengthPixels));
         }
 	}
 
@@ -172,21 +166,18 @@ bool FCameraPoseExporter::SavePosesToCSV(const FString& FilePath)
 {
 	// Create the file content
 	TArray<FString> Lines;
-	Lines.Add("id,tx,ty,tz,qw,qx,qy,qz,fx,fy,cx,cy");
+	Lines.Add("id,tx,ty,tz,qw,qx,qy,qz");
 
     for (int i = 0; i < CameraTransforms.Num(); i++)
 	{
 		TArray<double> Location;
 		TArray<double> Rotation;
 		FCoordinateSystemConverter::UEToExternal(CameraTransforms[i], Location, Rotation);
-		const FVector2D& FocalLength = PixelFocalLengths[i];
 
-		Lines.Add(FString::Printf(TEXT("%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d"),
+		Lines.Add(FString::Printf(TEXT("%d,%f,%f,%f,%f,%f,%f,%f"),
 			i,
 			Location[0], Location[1], Location[2],
-			Rotation[0], Rotation[1], Rotation[2], Rotation[3],
-			FocalLength.X, FocalLength.Y,
-			OutputResolution.X / 2, OutputResolution.Y / 2));
+			Rotation[0], Rotation[1], Rotation[2], Rotation[3]));
 	}
 
 	// Save the file

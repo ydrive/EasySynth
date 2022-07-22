@@ -162,10 +162,6 @@ Output is the `CameraPoses.csv` file, in which the first line contains column na
 | 6      | float | qx   | Rotation quaternion X      |
 | 7      | float | qy   | Rotation quaternion Y      |
 | 8      | float | qz   | Rotation quaternion Z      |
-| 9      | float | fx   | Focal length X in pixels   |
-| 10     | float | fy   | Focal length Y - same as X |
-| 11     | int   | cx   | Halved image width         |
-| 12     | int   | cy   | Halved image height        |
 
 The coordinate system for saving camera positions and rotation quaternions is a right-handed coordinate system. When looking through a camera with zero rotation in the target coordinate system:
 - X axis points to the right
@@ -225,14 +221,22 @@ Following is a ROS JSON file example for a rig with two parallel cameras facing 
     "c0": {
       "intrinsics": [2828.283203, 0.0, 960.000000, 0.0, 2828.283203, 540.000000, 0.0, 0.0, 1.0],
       "coord_sys": "RDF",
-      "rotation": [[1.000000, -0.000000, 0.000000], [0.000000, -1.000000, -0.000000], [0.000000, 0.000000, -1.000000]],
+      "rotation": [
+         [1.000000, -0.000000, 0.000000],
+         [0.000000, -1.000000, -0.000000],
+         [0.000000, 0.000000, -1.000000]
+      ],
       "translation": [-0.300000, -0.000000, 0.000000],
       "sensor_size": [1920.000000, 1080.000000]
     },
     "c1": {
       "intrinsics": [2828.283203, 0.0, 960.000000, 0.0, 2828.283203, 540.000000, 0.0, 0.0, 1.0],
       "coord_sys": "RDF",
-      "rotation": [[1.000000, -0.000000, 0.000000], [0.000000, -1.000000, -0.000000], [0.000000, 0.000000, -1.000000]],
+      "rotation": [
+         [1.000000, -0.000000, 0.000000],
+         [0.000000, -1.000000, -0.000000],
+         [0.000000, 0.000000, -1.000000]
+      ],
       "translation": [0.300000, -0.000000, 0.000000],
       "sensor_size": [1920.000000, 1080.000000]
     }
