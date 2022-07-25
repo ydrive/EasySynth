@@ -87,6 +87,8 @@ Next, you should assign semantic classes to all of the level actors. To do this:
 
 To toggle between original and semantic color, use the `Pick a mesh texture style` button. Make sure that you never save your project while the semantic view mode is selected.
 
+A CSV file including semantic class names and colors will be exported together with rendered semantic images. This file can be used for later reference or can be imported into another EasySynth project.
+
 ### Sequence rendering
 
 Image rendering relies on a user-defined `Level Sequence`, which represents a movie cut scene inside Unreal Engine. You only need the LevelSequence asset for rendering. Skip anything that has to do with the LevelSequenceActor. Here are some materials on how to get started:
