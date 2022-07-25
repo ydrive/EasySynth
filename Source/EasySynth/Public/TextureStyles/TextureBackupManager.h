@@ -64,36 +64,36 @@ class UTextureBackupManager : public UObject
 public:
 	UTextureBackupManager() {};
 
-    /**
+	/**
 	 * Function that serves double purpose of backing up the original actor material
 	 * and swapping the displayed material
 	*/
-    void AddAndPaint(
-        AActor* Actor,
-        const bool bDoAdd,
-        const bool bDoPaint,
-        UMaterialInstanceConstant* Material = nullptr);
+	void AddAndPaint(
+		AActor* Actor,
+		const bool bDoAdd,
+		const bool bDoPaint,
+		UMaterialInstanceConstant* Material = nullptr);
 
-    /** Checks whether the actor exists inside any of the caches */
-    bool ContainsActor(AActor* Actor);
+	/** Checks whether the actor exists inside any of the caches */
+	bool ContainsActor(AActor* Actor);
 
-    /** Removes the actor from its cache if it exists */
-    void RemoveActor(AActor* Actor);
+	/** Removes the actor from its cache if it exists */
+	void RemoveActor(AActor* Actor);
 
 private:
-    /** Sub-method of the AddAndPaint that handles landscape actors */
-    void AddLandscapeActor(
-        ALandscapeProxy* LandscapeProxy,
-        const bool bDoAdd,
-        const bool bDoPaint,
-        UMaterialInstanceConstant* Material);
+	/** Sub-method of the AddAndPaint that handles landscape actors */
+	void AddLandscapeActor(
+		ALandscapeProxy* LandscapeProxy,
+		const bool bDoAdd,
+		const bool bDoPaint,
+		UMaterialInstanceConstant* Material);
 
-    /** Sub-method of the AddAndPaint that handles default static mesh actors */
-    void AddDefaultActor(
-        AActor* Actor,
-        const bool bDoAdd,
-        const bool bDoPaint,
-        UMaterialInstanceConstant* Material);
+	/** Sub-method of the AddAndPaint that handles default static mesh actors */
+	void AddDefaultActor(
+		AActor* Actor,
+		const bool bDoAdd,
+		const bool bDoPaint,
+		UMaterialInstanceConstant* Material);
 
 	/**
 	 * Storage of the original actor materials while semantics are displayed
@@ -104,7 +104,7 @@ private:
 	UPROPERTY()
 	TMap<AActor*, FOriginalActorDescriptor> OriginalActorDescriptors;
 
-    /** Storage of the original landscape materials while semantics are displayed */
+	/** Storage of the original landscape materials while semantics are displayed */
 	UPROPERTY()
 	TMap<ALandscapeProxy*, UMaterialInstanceConstant*> LandscapeActorDescriptors;
 };

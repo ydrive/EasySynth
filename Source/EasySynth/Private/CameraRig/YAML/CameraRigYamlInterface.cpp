@@ -17,7 +17,7 @@
 
 FReply FCameraRigYamlInterface::OnImportCameraRigClicked()
 {
-    UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
+	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
 
 	// Get desktop platform
 	void* ParentWindowPtr = FSlateApplication::Get().GetActiveTopLevelWindow()->GetNativeWindow()->GetOSWindowHandle();
@@ -106,7 +106,7 @@ FReply FCameraRigYamlInterface::OnImportCameraRigClicked()
 		CameraComponent->SetRelativeScale3D(FVector(0.4f, 0.4f, 0.4f));
 	}
 
-    return FReply::Handled();
+	return FReply::Handled();
 }
 
 bool FCameraRigYamlInterface::ExportCameraRig(const FString& OutputDir, TArray<UCameraComponent*> RigCameras)
@@ -131,7 +131,7 @@ bool FCameraRigYamlInterface::ExportCameraRig(const FString& OutputDir, TArray<U
 		EFileWrite::FILEWRITE_None))
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed while saving the file %s"), *FString(__FUNCTION__), *SaveFilePath)
-        return false;
+		return false;
 	}
 
 	return true;
@@ -146,7 +146,7 @@ void FCameraRigYamlInterface::AddCamera(const int CameraId, UCameraComponent* Ca
 	CameraMatrixValues.Add(1.0201599731445312e+03);
 	CameraMatrixValues.Add(0.);
 	CameraMatrixValues.Add(768.);
-    CameraMatrixValues.Add(6.4039001464843750e+02);
+	CameraMatrixValues.Add(6.4039001464843750e+02);
 	CameraMatrixValues.Add(0.);
 	CameraMatrixValues.Add(0.);
 	CameraMatrixValues.Add(1);

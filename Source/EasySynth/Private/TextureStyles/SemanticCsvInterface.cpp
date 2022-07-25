@@ -12,7 +12,7 @@
 
 FReply FSemanticCsvInterface::OnImportSemanticClassesClicked(UTextureStyleManager* TextureStyleManager)
 {
-    UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
+	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
 
 	// Get desktop platform
 	void* ParentWindowPtr = FSlateApplication::Get().GetActiveTopLevelWindow()->GetNativeWindow()->GetOSWindowHandle();
@@ -84,7 +84,7 @@ FReply FSemanticCsvInterface::OnImportSemanticClassesClicked(UTextureStyleManage
 			bSaveTextureMappingAsset);
 	}
 
-    return FReply::Handled();
+	return FReply::Handled();
 }
 
 bool FSemanticCsvInterface::ExportSemanticClasses(const FString& OutputDir, UTextureMappingAsset* TextureMappingAsset)
@@ -107,7 +107,7 @@ bool FSemanticCsvInterface::ExportSemanticClasses(const FString& OutputDir, UTex
 		EFileWrite::FILEWRITE_None))
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed while saving the file %s"), *FString(__FUNCTION__), *SaveFilePath)
-        return false;
+		return false;
 	}
 
 	return true;

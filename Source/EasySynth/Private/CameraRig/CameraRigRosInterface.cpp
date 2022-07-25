@@ -19,7 +19,7 @@
 
 FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 {
-    UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
+	UE_LOG(LogEasySynth, Log, TEXT("%s"), *FString(__FUNCTION__))
 
 	// Get desktop platform
 	void* ParentWindowPtr = FSlateApplication::Get().GetActiveTopLevelWindow()->GetNativeWindow()->GetOSWindowHandle();
@@ -265,7 +265,7 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 		CameraComponent->SetRelativeScale3D(FVector(0.4f, 0.4f, 0.4f));
 	}
 
-    return FReply::Handled();
+	return FReply::Handled();
 }
 
 bool FCameraRigRosInterface::ExportCameraRig(
@@ -296,7 +296,7 @@ bool FCameraRigRosInterface::ExportCameraRig(
 		EFileWrite::FILEWRITE_None))
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed while saving the file %s"), *FString(__FUNCTION__), *SaveFilePath)
-        return false;
+		return false;
 	}
 
 	return true;

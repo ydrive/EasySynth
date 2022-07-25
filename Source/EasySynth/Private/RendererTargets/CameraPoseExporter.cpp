@@ -123,31 +123,31 @@ bool FCameraPoseExporter::ExtractCameraTransforms(const bool bAccumulateCameraOf
 		FFrameNumber StartTickNumber = CutSection->GetTrueRange().GetLowerBoundValue();
 		// Exclusive upper bound of the movie scene ticks that belong to this cut section
 		FFrameNumber EndTickNumber = CutSection->GetTrueRange().GetUpperBoundValue();
-        for (FFrameNumber TickNumber = StartTickNumber; TickNumber < EndTickNumber; TickNumber += TicksPerFrame)
-        {
+		for (FFrameNumber TickNumber = StartTickNumber; TickNumber < EndTickNumber; TickNumber += TicksPerFrame)
+		{
 			// Reinitialize the interrogator for each frame
-            Interrogator.Reset();
-            TGuardValue<UE::MovieScene::FEntityManager*> DebugVizGuard(
-                UE::MovieScene::GEntityManagerForDebuggingVisualizers, &Interrogator.GetLinker()->EntityManager);
-		    Interrogator.ImportTrack(CameraTransformTrack, UE::MovieScene::FInterrogationChannel::Default());
+			Interrogator.Reset();
+			TGuardValue<UE::MovieScene::FEntityManager*> DebugVizGuard(
+				UE::MovieScene::GEntityManagerForDebuggingVisualizers, &Interrogator.GetLinker()->EntityManager);
+			Interrogator.ImportTrack(CameraTransformTrack, UE::MovieScene::FInterrogationChannel::Default());
 
-            // Add frame interrogation
-            if (Interrogator.AddInterrogation(TickNumber) == INDEX_NONE)
-            {
-                UE_LOG(LogEasySynth, Error, TEXT("%s: Adding interrogation failed"), *FString(__FUNCTION__))
-                return false;
-            }
-		    Interrogator.Update();
+			// Add frame interrogation
+			if (Interrogator.AddInterrogation(TickNumber) == INDEX_NONE)
+			{
+				UE_LOG(LogEasySynth, Error, TEXT("%s: Adding interrogation failed"), *FString(__FUNCTION__))
+				return false;
+			}
+			Interrogator.Update();
 
 			// Get the camera pose transform for the frame
 			// Engine crashes in case multiple interrogations are added at once
-            TArray<FTransform> TempTransforms;
-            Interrogator.QueryWorldSpaceTransforms(UE::MovieScene::FInterrogationChannel::Default(), TempTransforms);
-            if (TempTransforms.Num() == 0)
-            {
-                UE_LOG(LogEasySynth, Error, TEXT("%s: No camera transforms found"), *FString(__FUNCTION__))
-                return false;
-            }
+			TArray<FTransform> TempTransforms;
+			Interrogator.QueryWorldSpaceTransforms(UE::MovieScene::FInterrogationChannel::Default(), TempTransforms);
+			if (TempTransforms.Num() == 0)
+			{
+				UE_LOG(LogEasySynth, Error, TEXT("%s: No camera transforms found"), *FString(__FUNCTION__))
+				return false;
+			}
 
 			for (FTransform& Transform : TempTransforms)
 			{
@@ -160,8 +160,8 @@ bool FCameraPoseExporter::ExtractCameraTransforms(const bool bAccumulateCameraOf
 				Timestamps.Add(AccumulatedFrameTime);
 			}
 
-		    CameraTransforms.Append(TempTransforms);
-        }
+			CameraTransforms.Append(TempTransforms);
+		}
 	}
 
 	return true;
@@ -173,7 +173,7 @@ bool FCameraPoseExporter::SavePosesToCSV(const FString& FilePath)
 	TArray<FString> Lines;
 	Lines.Add("id,tx,ty,tz,qw,qx,qy,qz,t");
 
-    for (int i = 0; i < CameraTransforms.Num(); i++)
+	for (int i = 0; i < CameraTransforms.Num(); i++)
 	{
 		TArray<double> Location;
 		TArray<double> Rotation;
@@ -195,7 +195,7 @@ bool FCameraPoseExporter::SavePosesToCSV(const FString& FilePath)
 		EFileWrite::FILEWRITE_None))
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed while saving the file %s"), *FString(__FUNCTION__), *FilePath)
-        return false;
+		return false;
 	}
 
 	return true;

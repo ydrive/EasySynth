@@ -12,7 +12,7 @@
 
 FSemanticClassesWidgetManager::FSemanticClassesWidgetManager() :
 	NewClassName(FText::GetEmpty()),
-    NewClassColor(FColor::White)
+	NewClassColor(FColor::White)
 {}
 
 FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()

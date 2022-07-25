@@ -71,7 +71,7 @@ bool FSequencerWrapper::OpenSequence(ULevelSequence* LevelSequence)
 
 TArray<UMovieSceneCameraCutSection*>& FSequencerWrapper::GetMovieSceneCutSections()
 {
-	MovieSceneCutSections.Empty(); 
+	MovieSceneCutSections.Empty();
 
 	// Get all sections of the camera track
 	TArray<UMovieSceneSection*> MovieSceneSections = CameraCutTrack->GetAllSections();

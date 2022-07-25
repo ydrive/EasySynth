@@ -9,7 +9,7 @@ void UTextureBackupManager::AddAndPaint(
 	AActor* Actor,
 	const bool bDoAdd,
 	const bool bDoPaint,
-    UMaterialInstanceConstant* Material)
+	UMaterialInstanceConstant* Material)
 {
 	ALandscapeProxy* LandscapeProxy = Cast<ALandscapeProxy>(Actor);
 	if (LandscapeProxy != nullptr)
@@ -48,7 +48,7 @@ void UTextureBackupManager::AddLandscapeActor(
 	ALandscapeProxy* LandscapeProxy,
 	const bool bDoAdd,
 	const bool bDoPaint,
-    UMaterialInstanceConstant* Material)
+	UMaterialInstanceConstant* Material)
 {
 	const bool bDoRestore = (Material == nullptr);
 
@@ -107,7 +107,7 @@ void UTextureBackupManager::AddDefaultActor(
 	AActor* Actor,
 	const bool bDoAdd,
 	const bool bDoPaint,
-    UMaterialInstanceConstant* Material)
+	UMaterialInstanceConstant* Material)
 {
 	const bool bDoRestore = (Material == nullptr);
 
@@ -117,7 +117,7 @@ void UTextureBackupManager::AddDefaultActor(
 	}
 	else if (!OriginalActorDescriptors.Contains(Actor))
 	{
-		UE_LOG(LogEasySynth, Warning, TEXT("%s: Actor expected but not found in OriginalActorDescriptors"), 
+		UE_LOG(LogEasySynth, Warning, TEXT("%s: Actor expected but not found in OriginalActorDescriptors"),
 			*FString(__FUNCTION__))
 		return;
 	}
@@ -150,7 +150,7 @@ void UTextureBackupManager::AddDefaultActor(
 		}
 		else if (!OriginalActorDescriptors[Actor].Contains(PrimitiveComponent))
 		{
-			UE_LOG(LogEasySynth, Warning, TEXT("%s: PrimitiveComponent expected but not found in OriginalActorDescriptors"), 
+			UE_LOG(LogEasySynth, Warning, TEXT("%s: PrimitiveComponent expected but not found in OriginalActorDescriptors"),
 				*FString(__FUNCTION__))
 			return;
 		}
