@@ -45,12 +45,20 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 		return FReply::Handled();
 	}
 
+	// Helper method for displaying error messages
+	auto DisplayError = [](const FText& Message) {
+		const FText MessageBoxTitle = LOCTEXT("InvalidJsonMessageBoxTitle", "Failed to load camera rig");
+		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *Message.ToString())
+		FMessageDialog::Open(EAppMsgType::Ok, Message, &MessageBoxTitle);
+	};
+
+
 	// Read the selected file
 	FString FileContent;
 	if (!FFileHelper::LoadFileToString(FileContent, *OutFilenames[0]))
 	{
-		// ...
-		UE_LOG(LogEasySynth, Error, TEXT("%s: 1"), *FString(__FUNCTION__))
+		const FText ErrorMessage = LOCTEXT("CannotReadFileError", "Failed to open ROS JSON file");
+		DisplayError(ErrorMessage);
 		return FReply::Handled();
 	}
 
@@ -59,8 +67,8 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(FileContent);
 	if (!FJsonSerializer::Deserialize(Reader, JsonObject) || !JsonObject.IsValid())
 	{
-		// ...
-		UE_LOG(LogEasySynth, Error, TEXT("%s: 2"), *FString(__FUNCTION__))
+		const FText ErrorMessage = LOCTEXT("CannotParseFileError", "Failed to parse ROS JSON file");
+		DisplayError(ErrorMessage);
 		return FReply::Handled();
 	}
 
@@ -69,8 +77,8 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 	const TSharedPtr<FJsonObject>* CamerasJsonObject;
 	if (!JsonObject->TryGetObjectField(CamerasField, CamerasJsonObject))
 	{
-		// ...
-		UE_LOG(LogEasySynth, Error, TEXT("%s: 3"), *FString(__FUNCTION__))
+		const FText ErrorMessage = LOCTEXT("CannotFindCamerasError", "Could not find \"cameras\" section");
+		DisplayError(ErrorMessage);
 		return FReply::Handled();
 	}
 
@@ -88,8 +96,8 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 		const TSharedPtr<FJsonObject>* CameraJsonObject;
 		if (!(*CamerasJsonObject)->TryGetObjectField(CameraName, CameraJsonObject))
 		{
-			// ...
-			UE_LOG(LogEasySynth, Error, TEXT("%s: 4"), *FString(__FUNCTION__))
+			const FText ErrorMessage = LOCTEXT("CannotLoadArrayError", "Could not parse cameras array");
+			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
 
@@ -98,14 +106,14 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 		const TArray<TSharedPtr<FJsonValue>>* SensorSize;
 		if (!(*CameraJsonObject)->TryGetArrayField(SensorSizeField, SensorSize))
 		{
-			// ...
-			UE_LOG(LogEasySynth, Error, TEXT("%s: 5"), *FString(__FUNCTION__))
+			const FText ErrorMessage = LOCTEXT("CannotFindSensorError", "Could not find sensor size info");
+			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
 		if (SensorSize->Num() != 2)
 		{
-			// ...
-			UE_LOG(LogEasySynth, Error, TEXT("%s: 5-"), *FString(__FUNCTION__))
+			const FText ErrorMessage = LOCTEXT("InvalidSensorError", "Expected 2 values for the sensor size");
+			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
 		CameraData.SensorSize.X = (*SensorSize)[0]->AsNumber();
@@ -122,14 +130,14 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 		FString CoordinateSystem;
 		if (!(*CameraJsonObject)->TryGetStringField(CoordinateSystemField, CoordinateSystem))
 		{
-			// ...
-			UE_LOG(LogEasySynth, Error, TEXT("%s: 6"), *FString(__FUNCTION__))
+			const FText ErrorMessage = LOCTEXT("CannotFindCoordError", "Could not find coordinate system info");
+			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
 		if (CoordinateSystem != "RDF")
 		{
-			// ...
-			UE_LOG(LogEasySynth, Error, TEXT("%s: Expected RDF coordinate system, got %s"), *FString(__FUNCTION__), *CoordinateSystem)
+			const FText ErrorMessage = LOCTEXT("InvalidCoordError", "Expected RDF as the coordinate system");
+			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
 
@@ -138,14 +146,14 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 		const TArray<TSharedPtr<FJsonValue>>* CameraMatrix;
 		if (!(*CameraJsonObject)->TryGetArrayField(CameraMatrixField, CameraMatrix))
 		{
-			// ...
-			UE_LOG(LogEasySynth, Error, TEXT("%s: 6"), *FString(__FUNCTION__))
+			const FText ErrorMessage = LOCTEXT("CannotFindCoordError", "Could not find camera intrinsics info");
+			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
 		if (CameraMatrix->Num() != 9)
 		{
-			// ...
-			UE_LOG(LogEasySynth, Error, TEXT("%s: 6-"), *FString(__FUNCTION__))
+			const FText ErrorMessage = LOCTEXT("InvalidSensorError", "Expected 9 values for camera intrinsics");
+			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
 		CameraData.FocalLength = (*CameraMatrix)[0]->AsNumber();
@@ -157,14 +165,14 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 		const TArray<TSharedPtr<FJsonValue>>* Rotation;
 		if (!(*CameraJsonObject)->TryGetArrayField(RotationField, Rotation))
 		{
-			// ...
-			UE_LOG(LogEasySynth, Error, TEXT("%s: 7"), *FString(__FUNCTION__))
+			const FText ErrorMessage = LOCTEXT("CannotFindRotationError", "Could not find camera rotation info");
+			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
 		if (Rotation->Num() != 3)
 		{
-			// ...
-			UE_LOG(LogEasySynth, Error, TEXT("%s: 7-"), *FString(__FUNCTION__))
+			const FText ErrorMessage = LOCTEXT("InvalidSensorError", "Expected 3 sub-arrays for camera rotation");
+			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
 		const TArray<TSharedPtr<FJsonValue>> Rotation1 = (*Rotation)[0]->AsArray();
@@ -187,14 +195,14 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 		const TArray<TSharedPtr<FJsonValue>>* Translation;
 		if (!(*CameraJsonObject)->TryGetArrayField(TranslationField, Translation))
 		{
-			// ...
-			UE_LOG(LogEasySynth, Error, TEXT("%s: 8"), *FString(__FUNCTION__))
+			const FText ErrorMessage = LOCTEXT("CannotFindTranslationError", "Could not find camera translation info");
+			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
 		if (Translation->Num() != 3)
 		{
-			// ...
-			UE_LOG(LogEasySynth, Error, TEXT("%s: 8-"), *FString(__FUNCTION__))
+			const FText ErrorMessage = LOCTEXT("InvalidSensorError", "Expected 3 values for camera translation");
+			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
 		TArray<double> ExternalTranslation;
@@ -240,8 +248,7 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 		UCineCameraComponent * CameraComponent = NewObject<UCineCameraComponent>(
 			CameraRigActor,
 			UCineCameraComponent::StaticClass(),
-			*Camera.CameraName
-			);
+			*Camera.CameraName);
 		CameraComponent->AttachToComponent(
 			RootComponent,
 			FAttachmentTransformRules::KeepWorldTransform);
