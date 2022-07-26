@@ -74,10 +74,10 @@ class FCameraRigRosInterface
 public:
 	FCameraRigRosInterface() {}
 
-	/** Handles importing camera ring from a ROS JSON file */
+	/** Imports camera rig from a ROS JSON file */
 	FReply OnImportCameraRigClicked();
 
-	/** Handles exporting camera rig into a ROS JSON file */
+	/** Exports camera rig into a ROS JSON file */
 	bool ExportCameraRig(
 		const FString& OutputDir,
 		TArray<UCameraComponent*> RigCameras,
