@@ -4,7 +4,65 @@
 
 #include "CoreMinimal.h"
 
+#include "CameraRigRosInterface.generated.h"
+
 class UCameraComponent;
+
+
+/**
+ * Structure representing the exact structure of single camera object inside of camera rig JSON file.
+ * Member names are lover case, as they need to exactly match the JSON file content.
+ */
+USTRUCT()
+struct FRosJsonCamera
+{
+	GENERATED_USTRUCT_BODY()
+
+	FRosJsonCamera()
+	{
+		intrinsics.Init(0, 9);
+		rotation.Init(0, 4);
+		translation.Init(0, 3);
+		sensor_size.Init(0, 2);
+	}
+
+	/** Array representing camera intrinsics matrix, with the length of 9 */
+	UPROPERTY()
+	TArray<double> intrinsics;
+
+	/** String representing active coordinate system, RDF is required */
+	UPROPERTY()
+	FString coord_sys = "RDF";
+
+	/** Array representing camera rotation quaternion, with the length of 4 */
+	UPROPERTY()
+	TArray<double> rotation;
+
+	/** Array representing camera translation vector, with the length of 3 */
+	UPROPERTY()
+	TArray<double> translation;
+
+	/** Array containing two numbers representing image width and height */
+	UPROPERTY()
+	TArray<double> sensor_size;
+};
+
+
+/**
+ * Structure representing the exact structure of camera rig JSON files.
+ * Member names are lover case, as they need to exactly match the JSON file content.
+ */
+USTRUCT()
+struct FRosJsonContent
+{
+	GENERATED_USTRUCT_BODY()
+
+	/**
+	 * Map representing set of cameras inside a rig
+	 */
+	UPROPERTY()
+	TMap<FString, FRosJsonCamera> cameras;
+};
 
 
 /**
@@ -31,6 +89,5 @@ private:
 		const int CameraId,
 		UCameraComponent* Camera,
 		const FIntPoint& SensorSize,
-		const bool bAddComma,
-		TArray<FString>& OutLines);
+		FRosJsonContent& RosJsonContent);
 };

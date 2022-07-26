@@ -4,9 +4,10 @@
 
 #include "CineCameraComponent.h"
 #include "DesktopPlatformModule.h"
-#include "Misc/FileHelper.h"
 #include "IDesktopPlatform.h"
+#include "JsonObjectConverter.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Misc/FileHelper.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
@@ -62,22 +63,11 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 		return FReply::Handled();
 	}
 
-	// Parse the file contents
-	TSharedPtr<FJsonObject> JsonObject;
-	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(FileContent);
-	if (!FJsonSerializer::Deserialize(Reader, JsonObject) || !JsonObject.IsValid())
+	// Parse JSON content into equivalent structure
+	FRosJsonContent RosJsonContent;
+	if (!FJsonObjectConverter::JsonObjectStringToUStruct(FileContent, &RosJsonContent, 0, 0))
 	{
-		const FText ErrorMessage = LOCTEXT("CannotParseFileError", "Failed to parse ROS JSON file");
-		DisplayError(ErrorMessage);
-		return FReply::Handled();
-	}
-
-	// Get the cameras object
-	const FString CamerasField = "cameras";
-	const TSharedPtr<FJsonObject>* CamerasJsonObject;
-	if (!JsonObject->TryGetObjectField(CamerasField, CamerasJsonObject))
-	{
-		const FText ErrorMessage = LOCTEXT("CannotFindCamerasError", "Could not find \"cameras\" section");
+		const FText ErrorMessage = LOCTEXT("FileContentError", "Invalid ROS JSON file content");
 		DisplayError(ErrorMessage);
 		return FReply::Handled();
 	}
@@ -85,39 +75,23 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 	// Aggregated camera rig data
 	FCameraRigData CameraRigData;
 
-	// Iterate through the array of objects and parse each camera
-	TArray<FString> CameraNames;
-	(*CamerasJsonObject)->Values.GetKeys(CameraNames);
-	for (const FString& CameraName : CameraNames)
+	for (auto& Element : RosJsonContent.cameras)
 	{
+		const FString& CameraName = Element.Key;
+		const FRosJsonCamera& RosJsonCamera = Element.Value;
+
 		FCameraRigData::FCameraData CameraData;
 		CameraData.CameraName = CameraName;
 
-		const TSharedPtr<FJsonObject>* CameraJsonObject;
-		if (!(*CamerasJsonObject)->TryGetObjectField(CameraName, CameraJsonObject))
-		{
-			const FText ErrorMessage = LOCTEXT("CannotLoadArrayError", "Could not parse cameras array");
-			DisplayError(ErrorMessage);
-			return FReply::Handled();
-		}
-
-		// Get sensor size
-		const FString SensorSizeField = "sensor_size";
-		const TArray<TSharedPtr<FJsonValue>>* SensorSize;
-		if (!(*CameraJsonObject)->TryGetArrayField(SensorSizeField, SensorSize))
-		{
-			const FText ErrorMessage = LOCTEXT("CannotFindSensorError", "Could not find sensor size info");
-			DisplayError(ErrorMessage);
-			return FReply::Handled();
-		}
-		if (SensorSize->Num() != 2)
+		// Get the sensor size
+		if (RosJsonCamera.sensor_size.Num() != 2)
 		{
 			const FText ErrorMessage = LOCTEXT("InvalidSensorError", "Expected 2 values for the sensor size");
 			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
-		CameraData.SensorSize.X = (*SensorSize)[0]->AsNumber();
-		CameraData.SensorSize.Y = (*SensorSize)[1]->AsNumber();
+		CameraData.SensorSize.X = RosJsonCamera.sensor_size[0];
+		CameraData.SensorSize.Y = RosJsonCamera.sensor_size[1];
 
 		// Ignore the "camera" if its sensor size is 0
 		if (CameraData.SensorSize.X * CameraData.SensorSize.Y == 0)
@@ -126,15 +100,7 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 		}
 
 		// Get the coordinate system
-		const FString CoordinateSystemField = "coord_sys";
-		FString CoordinateSystem;
-		if (!(*CameraJsonObject)->TryGetStringField(CoordinateSystemField, CoordinateSystem))
-		{
-			const FText ErrorMessage = LOCTEXT("CannotFindCoordError", "Could not find coordinate system info");
-			DisplayError(ErrorMessage);
-			return FReply::Handled();
-		}
-		if (CoordinateSystem != "RDF")
+		if (RosJsonCamera.coord_sys != "RDF")
 		{
 			const FText ErrorMessage = LOCTEXT("InvalidCoordError", "Expected RDF as the coordinate system");
 			DisplayError(ErrorMessage);
@@ -142,79 +108,37 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 		}
 
 		// Get focal length
-		const FString CameraMatrixField = "intrinsics";
-		const TArray<TSharedPtr<FJsonValue>>* CameraMatrix;
-		if (!(*CameraJsonObject)->TryGetArrayField(CameraMatrixField, CameraMatrix))
-		{
-			const FText ErrorMessage = LOCTEXT("CannotFindCoordError", "Could not find camera intrinsics info");
-			DisplayError(ErrorMessage);
-			return FReply::Handled();
-		}
-		if (CameraMatrix->Num() != 9)
+		if (RosJsonCamera.intrinsics.Num() != 9)
 		{
 			const FText ErrorMessage = LOCTEXT("InvalidSensorError", "Expected 9 values for camera intrinsics");
 			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
-		CameraData.FocalLength = (*CameraMatrix)[0]->AsNumber();
-		CameraData.PrincipalPointX = (*CameraMatrix)[2]->AsNumber();
-		CameraData.PrincipalPointY = (*CameraMatrix)[5]->AsNumber();
+		CameraData.FocalLength = RosJsonCamera.intrinsics[0];
+		CameraData.PrincipalPointX = RosJsonCamera.intrinsics[2];
+		CameraData.PrincipalPointY = RosJsonCamera.intrinsics[5];
 
 		// Get rotation
-		const FString RotationField = "rotation";
-		const TArray<TSharedPtr<FJsonValue>>* Rotation;
-		if (!(*CameraJsonObject)->TryGetArrayField(RotationField, Rotation))
+		if (RosJsonCamera.rotation.Num() != 4)
 		{
-			const FText ErrorMessage = LOCTEXT("CannotFindRotationError", "Could not find camera rotation info");
+			const FText ErrorMessage = LOCTEXT("InvalidSensorError", "Expected 4 values for camera rotation");
 			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
-		if (Rotation->Num() != 3)
-		{
-			const FText ErrorMessage = LOCTEXT("InvalidSensorError", "Expected 3 sub-arrays for camera rotation");
-			DisplayError(ErrorMessage);
-			return FReply::Handled();
-		}
-		const TArray<TSharedPtr<FJsonValue>> Rotation1 = (*Rotation)[0]->AsArray();
-		const TArray<TSharedPtr<FJsonValue>> Rotation2 = (*Rotation)[1]->AsArray();
-		const TArray<TSharedPtr<FJsonValue>> Rotation3 = (*Rotation)[2]->AsArray();
-		FMatrix RotationMatrix = FMatrix(
-			FVector(Rotation1[0]->AsNumber(), Rotation1[1]->AsNumber(), Rotation1[2]->AsNumber()),
-			FVector(Rotation2[0]->AsNumber(), Rotation2[1]->AsNumber(), Rotation2[2]->AsNumber()),
-			FVector(Rotation3[0]->AsNumber(), Rotation3[1]->AsNumber(), Rotation3[2]->AsNumber()),
-			FVector(0.0, 0.0, 0.0));
-		FQuat ExternalQuat = FQuat(RotationMatrix);
-		TArray<double> ExternalRotation;
-		ExternalRotation.Add(ExternalQuat.X);
-		ExternalRotation.Add(ExternalQuat.Y);
-		ExternalRotation.Add(ExternalQuat.Z);
-		ExternalRotation.Add(ExternalQuat.W);
 
 		// Get translation
-		const FString TranslationField = "translation";
-		const TArray<TSharedPtr<FJsonValue>>* Translation;
-		if (!(*CameraJsonObject)->TryGetArrayField(TranslationField, Translation))
-		{
-			const FText ErrorMessage = LOCTEXT("CannotFindTranslationError", "Could not find camera translation info");
-			DisplayError(ErrorMessage);
-			return FReply::Handled();
-		}
-		if (Translation->Num() != 3)
+		if (RosJsonCamera.translation.Num() != 3)
 		{
 			const FText ErrorMessage = LOCTEXT("InvalidSensorError", "Expected 3 values for camera translation");
 			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
-		TArray<double> ExternalTranslation;
-		ExternalTranslation.Add((*Translation)[0]->AsNumber());
-		ExternalTranslation.Add((*Translation)[1]->AsNumber());
-		ExternalTranslation.Add((*Translation)[2]->AsNumber());
 
 		// Apply needed transformations to the loaded translation and location
 		const bool bDoInverse = false;
 		CameraData.Transform = FCoordinateSystemConverter::ExternalToUE(
-			ExternalTranslation,
-			ExternalRotation,
+			RosJsonCamera.translation,
+			RosJsonCamera.rotation,
 			bDoInverse);
 
 		CameraRigData.Cameras.Add(CameraData);
@@ -273,23 +197,21 @@ bool FCameraRigRosInterface::ExportCameraRig(
 	TArray<UCameraComponent*> RigCameras,
 	const FIntPoint& SensorSize)
 {
-	TArray<FString> Lines;
-	Lines.Add("{");
-	Lines.Add("  \"cameras\": {");
+	FRosJsonContent RosJsonContent;
 
 	for (int i = 0; i < RigCameras.Num(); i++)
 	{
 		// Add each camera
-		AddCamera(i, RigCameras[i], SensorSize, i != RigCameras.Num() - 1, Lines);
+		AddCamera(i, RigCameras[i], SensorSize, RosJsonContent);
 	}
 
-	Lines.Add("  }");
-	Lines.Add("}");
+	FString JsonString;
+	FJsonObjectConverter::UStructToJsonObjectString(RosJsonContent, JsonString);
 
 	// Save the file
 	const FString SaveFilePath = FPathUtils::CameraRigFilePath(OutputDir);
-	if (!FFileHelper::SaveStringArrayToFile(
-		Lines,
+	if (!FFileHelper::SaveStringToFile(
+		JsonString,
 		*SaveFilePath,
 		FFileHelper::EEncodingOptions::AutoDetect,
 		&IFileManager::Get(),
@@ -306,19 +228,18 @@ void FCameraRigRosInterface::AddCamera(
 	const int CameraId,
 	UCameraComponent* Camera,
 	const FIntPoint& SensorSize,
-	const bool bAddComma,
-	TArray<FString>& OutLines)
+	FRosJsonContent& RosJsonContent)
 {
-	OutLines.Add(FString::Printf(TEXT("    \"%s\": {"), *FPathUtils::GetCameraName(Camera)));
+	FRosJsonCamera RosJsonCamera;
 
 	// Add intrinsics
 	const double FocalLength = SensorSize.X / UKismetMathLibrary::DegTan(Camera->FieldOfView / 2.0f) / 2.0f;
 	const double PrincipalPointX = SensorSize.X / 2.0f;
 	const double PrincipalPointY = SensorSize.Y / 2.0f;
-	OutLines.Add(FString::Printf(TEXT("      \"intrinsics\": [%f, 0.0, %f, 0.0, %f, %f, 0.0, 0.0, 1.0],"), FocalLength, PrincipalPointX, FocalLength, PrincipalPointY));
-
-	// Add coordinate system
-	OutLines.Add("      \"coord_sys\": \"RDF\",");
+	RosJsonCamera.intrinsics[0] = FocalLength;
+	RosJsonCamera.intrinsics[2] = PrincipalPointX;
+	RosJsonCamera.intrinsics[4] = FocalLength;
+	RosJsonCamera.intrinsics[5] = PrincipalPointY;
 
 	// Covert between coordinate systems
 	FTransform Transform = Camera->GetRelativeTransform();
@@ -328,31 +249,15 @@ void FCameraRigRosInterface::AddCamera(
 	TArray<double> Translation;
 	TArray<double> Quaternion;
 	const bool bDoInverse = false;
-	FCoordinateSystemConverter::UEToExternal(Transform, Translation, Quaternion, bDoInverse);
-
-	// Add rotation
-	FTransform RotationTransform;
-	RotationTransform.SetRotation(FQuat(Quaternion[0], Quaternion[1], Quaternion[2], Quaternion[3]));
-	const FMatrix Mat = RotationTransform.ToMatrixNoScale();
-	OutLines.Add(FString::Printf(TEXT("      \"rotation\": [[%f, %f, %f], [%f, %f, %f], [%f, %f, %f]],"),
-		Mat.M[0][0], Mat.M[0][1], Mat.M[0][2],
-		Mat.M[1][0], Mat.M[1][1], Mat.M[1][2],
-		Mat.M[2][0], Mat.M[2][1], Mat.M[2][2]));
-
-	// Add translation
-	OutLines.Add(FString::Printf(TEXT("      \"translation\": [%f, %f, %f],"), Translation[0], Translation[1], Translation[2]));
+	RosJsonCamera.translation.Empty();
+	RosJsonCamera.rotation.Empty();
+	FCoordinateSystemConverter::UEToExternal(Transform, RosJsonCamera.translation, RosJsonCamera.rotation, bDoInverse);
 
 	// Add sensor size
-	OutLines.Add(FString::Printf(TEXT("      \"sensor_size\": [%f, %f]"), (float)SensorSize.X, (float)SensorSize.Y));
+	RosJsonCamera.sensor_size[0] = SensorSize.X;
+	RosJsonCamera.sensor_size[1] = SensorSize.Y;
 
-	if (bAddComma)
-	{
-		OutLines.Add("    },");
-	}
-	else
-	{
-		OutLines.Add("    }");
-	}
+	RosJsonContent.cameras.Add(FPathUtils::GetCameraName(Camera), RosJsonCamera);
 }
 
 #undef LOCTEXT_NAMESPACE
