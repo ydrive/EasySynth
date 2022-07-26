@@ -236,10 +236,14 @@ void FCameraRigRosInterface::AddCamera(
 	const double FocalLength = SensorSize.X / UKismetMathLibrary::DegTan(Camera->FieldOfView / 2.0f) / 2.0f;
 	const double PrincipalPointX = SensorSize.X / 2.0f;
 	const double PrincipalPointY = SensorSize.Y / 2.0f;
+	RosJsonCamera.intrinsics.Init(0, 9);
 	RosJsonCamera.intrinsics[0] = FocalLength;
 	RosJsonCamera.intrinsics[2] = PrincipalPointX;
 	RosJsonCamera.intrinsics[4] = FocalLength;
 	RosJsonCamera.intrinsics[5] = PrincipalPointY;
+
+	// Set coordinate system
+	RosJsonCamera.coord_sys = "RDF";
 
 	// Covert between coordinate systems
 	FTransform Transform = Camera->GetRelativeTransform();
@@ -249,13 +253,11 @@ void FCameraRigRosInterface::AddCamera(
 	TArray<double> Translation;
 	TArray<double> Quaternion;
 	const bool bDoInverse = false;
-	RosJsonCamera.translation.Empty();
-	RosJsonCamera.rotation.Empty();
 	FCoordinateSystemConverter::UEToExternal(Transform, RosJsonCamera.translation, RosJsonCamera.rotation, bDoInverse);
 
 	// Add sensor size
-	RosJsonCamera.sensor_size[0] = SensorSize.X;
-	RosJsonCamera.sensor_size[1] = SensorSize.Y;
+	RosJsonCamera.sensor_size.Add(SensorSize.X);
+	RosJsonCamera.sensor_size.Add(SensorSize.Y);
 
 	RosJsonContent.cameras.Add(FPathUtils::GetCameraName(Camera), RosJsonCamera);
 }

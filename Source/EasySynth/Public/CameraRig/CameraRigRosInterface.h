@@ -18,21 +18,13 @@ struct FRosJsonCamera
 {
 	GENERATED_USTRUCT_BODY()
 
-	FRosJsonCamera()
-	{
-		intrinsics.Init(0, 9);
-		rotation.Init(0, 4);
-		translation.Init(0, 3);
-		sensor_size.Init(0, 2);
-	}
-
 	/** Array representing camera intrinsics matrix, with the length of 9 */
 	UPROPERTY()
 	TArray<double> intrinsics;
 
 	/** String representing active coordinate system, RDF is required */
 	UPROPERTY()
-	FString coord_sys = "RDF";
+	FString coord_sys = "";
 
 	/** Array representing camera rotation quaternion, with the length of 4 */
 	UPROPERTY()
