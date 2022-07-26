@@ -122,7 +122,7 @@ Start the rendering by clicking the `Render Images` button.
 
 <b>IMPORTANT:</b> If you need anti-aliasing applied on output images, set `Anti-Aliasing Method` in project settings to `FXAA`. Other options will have no effect and output images will have jagged edges.
 
-<img src="ReadmeContent/AntiAliasingSetting.png" alt="Anti-aliasing setting" style="margin:10px"/>
+<img src="ReadmeContent/AntiAliasingSetting.png" alt="Anti-aliasing setting" width="250" style="margin:10px"/>
 
 <b>IMPORTANT:</b> Do not close a window that opens during rendering. Closing the window will result in the successful rendering being falsely reported, as it is not possible to know if the window has been closed from the plugin side.
 
