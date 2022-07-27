@@ -214,42 +214,36 @@ for i, pose in poses_df.iterrows():
 
 Camera rig JSON files contain spacial data that uses the same coordinate system described in the `Camera pose output` section. It contains 5 fields for each rig camera:
 
-- `intrinsics` - Camera matrix
+- `intrinsics` - Camera intrinsics matrix
 - `coord_sys` - Type of the coordinate system, `RDF` is required
-- `rotation` - Rotation matrix relative to the rig origin
+- `rotation` - Rotation quaternion relative to the rig origin
 - `translation` - Translation vector relative to the rig origin
 - `sensor_size` - Sensor width and height in pixels, used to calculate camera FOV
 
-Following is a ROS JSON file example for a rig with two parallel cameras facing forward. The difference can be found in the sign of the translation vector X-axis.
+Following is a ROS JSON file example for a rig with two parallel cameras with the FOV of 90 degrees, facing forward. The difference can be found in the sign of the translation vector X-axis.
 
 ``` JSON
 {
-  "cameras": {
-    "c0": {
-      "intrinsics": [2828.283203, 0.0, 960.000000, 0.0, 2828.283203, 540.000000, 0.0, 0.0, 1.0],
-      "coord_sys": "RDF",
-      "rotation": [
-         [1.000000, -0.000000, 0.000000],
-         [0.000000, -1.000000, -0.000000],
-         [0.000000, 0.000000, -1.000000]
-      ],
-      "translation": [-0.300000, -0.000000, 0.000000],
-      "sensor_size": [1920.000000, 1080.000000]
-    },
-    "c1": {
-      "intrinsics": [2828.283203, 0.0, 960.000000, 0.0, 2828.283203, 540.000000, 0.0, 0.0, 1.0],
-      "coord_sys": "RDF",
-      "rotation": [
-         [1.000000, -0.000000, 0.000000],
-         [0.000000, -1.000000, -0.000000],
-         [0.000000, 0.000000, -1.000000]
-      ],
-      "translation": [0.300000, -0.000000, 0.000000],
-      "sensor_size": [1920.000000, 1080.000000]
-    }
-  }
+	"cameras":
+	{
+		"c0":
+		{
+			"intrinsics": [ 960, 0, 960, 0, 960, 540, 0, 0, 0 ],
+			"coord_sys": "RDF",
+			"rotation": [ 1, 0, 0, 0 ],
+			"translation": [ -0.3, 0, 0 ],
+			"sensor_size": [ 1920, 1080 ]
+		},
+		"c1":
+		{
+			"intrinsics": [ 960, 0, 960, 0, 960, 540, 0, 0, 0 ],
+			"coord_sys": "RDF",
+			"rotation": [ 1, 0, 0, 0 ],
+			"translation": [ 0.3, 0, 0 ],
+			"sensor_size": [ 1920, 1080 ]
+		}
+	}
 }
-
 ```
 
 ### Optical flow images
