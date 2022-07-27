@@ -280,6 +280,7 @@ optical_flow_image = cv2.cvtColor(optical_flow_image, cv2.COLOR_BGR2HSV)
 angle, magnitude = optical_flow_image[:, :, 0], optical_flow_image[:, :, 1]
 
 # Convert the shift from polar to cartesian coordinates (magnitude, angle => x, y)
+# Multiply the result by -1 since we need the position of an output pixel on the previous image
 x_flow, y_flow = cv2.polarToCart(magnitude, angle, angleInDegrees=True)
 x_flow = np.round(-w * x_flow).astype(np.int32)
 y_flow = np.round(-h * y_flow).astype(np.int32)
