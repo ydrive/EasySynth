@@ -100,9 +100,9 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 		}
 
 		// Get the coordinate system
-		if (RosJsonCamera.coord_sys != "RDF")
+		if (RosJsonCamera.coord_sys != "FLU")
 		{
-			const FText ErrorMessage = LOCTEXT("InvalidCoordError", "Expected RDF as the coordinate system");
+			const FText ErrorMessage = LOCTEXT("InvalidCoordError", "Expected FLU as the coordinate system");
 			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
@@ -243,7 +243,7 @@ void FCameraRigRosInterface::AddCamera(
 	RosJsonCamera.intrinsics[5] = PrincipalPointY;
 
 	// Set coordinate system
-	RosJsonCamera.coord_sys = "RDF";
+	RosJsonCamera.coord_sys = "FLU";
 
 	// Covert between coordinate systems
 	FTransform Transform = Camera->GetRelativeTransform();

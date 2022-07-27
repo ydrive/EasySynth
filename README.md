@@ -170,14 +170,9 @@ Output is the `CameraPoses.csv` file, in which the first line contains column na
 | 8      | float | qz   | Rotation quaternion Z      |
 | 9      | float | t    | Timestamp in seconds       |
 
-The coordinate system for saving camera positions and rotation quaternions is a right-handed coordinate system. When looking through a camera with zero rotation in the target coordinate system:
-- X axis points to the right
-- Y axis points down
-- Z axis points straight away from the camera
+The coordinate system for saving camera positions and rotation quaternions is a right-handed Z-up coordinate system. Note that this differs from Unreal Engine, which internally uses the left-handed Z-up coordinate system.
 
 <img src="ReadmeContent/OutputCoordinateSystem.png" alt="Output coordinate system" width="250" style="margin:10px"/>
-
-Note that this differs from Unreal Engine, which internally uses the left-handed Z-up coordinate system.
 
 Following is an example Python code for accessing camera poses:
 ``` Python
@@ -185,7 +180,7 @@ import numpy as np
 import pandas as pd
 from scipy.spatial.transform import Rotation as R
 
-poses_df = pd.read_csv('<rendering_output_path>/CameraPoses.csv')
+poses_df = pd.read_csv('<rendering_output_path>/<camera_name>/CameraPoses.csv')
 
 for i, pose in poses_df.iterrows():
 
@@ -212,15 +207,21 @@ for i, pose in poses_df.iterrows():
 
 ### Camera rig ROS JSON file
 
-Camera rig JSON files contain spacial data that uses the same coordinate system described in the `Camera pose output` section. It contains 5 fields for each rig camera:
+Camera rig JSON files contain spatial data that includes 5 fields for each rig camera:
 
 - `intrinsics` - Camera intrinsics matrix
-- `coord_sys` - Type of the coordinate system, `RDF` is required
+- `coord_sys` - Type of the coordinate system, `FLU` is required
 - `rotation` - Rotation quaternion relative to the rig origin
 - `translation` - Translation vector relative to the rig origin
 - `sensor_size` - Sensor width and height in pixels, used to calculate camera FOV
 
-Following is a ROS JSON file example for a rig with two parallel cameras with the FOV of 90 degrees, facing forward. The difference can be found in the sign of the translation vector X-axis.
+FLU stands for the coordinate system in which:
+
+- X-axis points forward (along the camera view direction)
+- Y-axis points left
+- Z-axis points up
+
+Following is a ROS JSON file example for a rig with two parallel cameras with the FOV of 90 degrees, facing forward. The difference can be found in the sign of the translation vector Y-axis.
 
 ``` JSON
 {
@@ -229,17 +230,17 @@ Following is a ROS JSON file example for a rig with two parallel cameras with th
 		"c0":
 		{
 			"intrinsics": [ 960, 0, 960, 0, 960, 540, 0, 0, 0 ],
-			"coord_sys": "RDF",
+			"coord_sys": "FLU",
 			"rotation": [ 1, 0, 0, 0 ],
-			"translation": [ -0.3, 0, 0 ],
+			"translation": [ 0, -0.3, 0 ],
 			"sensor_size": [ 1920, 1080 ]
 		},
 		"c1":
 		{
 			"intrinsics": [ 960, 0, 960, 0, 960, 540, 0, 0, 0 ],
-			"coord_sys": "RDF",
+			"coord_sys": "FLU",
 			"rotation": [ 1, 0, 0, 0 ],
-			"translation": [ 0.3, 0, 0 ],
+			"translation": [ 0, 0.3, 0 ],
 			"sensor_size": [ 1920, 1080 ]
 		}
 	}
@@ -250,9 +251,9 @@ Following is a ROS JSON file example for a rig with two parallel cameras with th
 
 Optical flow images contain color-coded optical flow vectors for each pixel. An optical flow vector describes how the content of a pixel has moved between frames. Specifically, the vector spans from coordinates where the pixel content was in the previous frame to where the content is in the current frame. The coordinate system the vectors are represented in is the image pixel coordinates, with the image scaled to a 1.0 x 1.0 square.
 
-Optical flow vectors are color-coded by picking a color from the HSV color wheel with the color angle matching the vector angle and the color saturation matching the vector intensity. If the scene in your sequence moves slowly, these vectors can be very short, and the colors can be hard to see when previewed. If this is the case, use the `optical flow scale` parameter to proportionally increase the images saturation.
+Optical flow vectors are color-coded by picking a color from the HSV color wheel with the color angle matching the vector angle and the color saturation matching the vector intensity. If the scene in your sequence moves slowly, these vectors can be very short, and the colors can be hard to see when previewed. If this is the case, use the `optical flow scale` parameter to proportionally increase the image saturation.
 
-The following images represent optical flows when moving forward and backward respectively. Notice that all of the colors are opposite, as in the first case pixels are moving away from the image center, while in the second case pixels are moving toward the image center. In both examples the fastest moving pixels are the ones on the image edges.
+The following images represent optical flows when moving forward and backward respectively. Notice that all of the colors are opposite, as in the first case pixels are moving away from the image center, while in the second case pixels are moving toward the image center. In both examples, the fastest moving pixels are the ones on the image edges.
 
 <img src="ReadmeContent/OpticalFlowForward.jpeg" alt="Optical flow forward" width="250" style="margin:10px"/>
 <img src="ReadmeContent/OpticalFlowBackward.jpeg" alt="Optical flow backward" width="250" style="margin:10px"/>
