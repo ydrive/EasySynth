@@ -12,7 +12,6 @@
 #include "Serialization/JsonSerializer.h"
 
 #include "CameraRig/CameraRigData.h"
-#include "CoordinateSystemConverter.h"
 #include "EasySynth.h"
 
 
@@ -100,9 +99,9 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 		}
 
 		// Get the coordinate system
-		if (RosJsonCamera.coord_sys != "FLU")
+		if (RosJsonCamera.coord_sys != "FRU")
 		{
-			const FText ErrorMessage = LOCTEXT("InvalidCoordError", "Expected FLU as the coordinate system");
+			const FText ErrorMessage = LOCTEXT("InvalidCoordError", "Expected FRU coordinate system used by Unreal");
 			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
@@ -125,6 +124,11 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
+		CameraData.Transform.SetRotation(FQuat(
+			RosJsonCamera.rotation[0],
+			RosJsonCamera.rotation[1],
+			RosJsonCamera.rotation[2],
+			RosJsonCamera.rotation[3]));
 
 		// Get translation
 		if (RosJsonCamera.translation.Num() != 3)
@@ -133,13 +137,10 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 			DisplayError(ErrorMessage);
 			return FReply::Handled();
 		}
-
-		// Apply needed transformations to the loaded translation and location
-		const bool bDoInverse = false;
-		CameraData.Transform = FCoordinateSystemConverter::ExternalToUE(
-			RosJsonCamera.translation,
-			RosJsonCamera.rotation,
-			bDoInverse);
+		CameraData.Transform.SetTranslation(FVector(
+			RosJsonCamera.translation[0],
+			RosJsonCamera.translation[1],
+			RosJsonCamera.translation[2]));
 
 		CameraRigData.Cameras.Add(CameraData);
 	}
@@ -243,17 +244,26 @@ void FCameraRigRosInterface::AddCamera(
 	RosJsonCamera.intrinsics[5] = PrincipalPointY;
 
 	// Set coordinate system
-	RosJsonCamera.coord_sys = "FLU";
+	RosJsonCamera.coord_sys = "FRU";
 
-	// Covert between coordinate systems
+	// Prepare transform
 	FTransform Transform = Camera->GetRelativeTransform();
 	// Remove the scaling that makes no impact on camera functionality,
 	// but my be used to scale the camera placeholder mesh as user desires
 	Transform.SetScale3D(FVector(1.0f, 1.0f, 1.0f));
-	TArray<double> Translation;
-	TArray<double> Quaternion;
-	const bool bDoInverse = false;
-	FCoordinateSystemConverter::UEToExternal(Transform, RosJsonCamera.translation, RosJsonCamera.rotation, bDoInverse);
+
+	// Add translation
+	const FVector Translation = Transform.GetTranslation();
+	RosJsonCamera.translation.Add(Translation.X);
+	RosJsonCamera.translation.Add(Translation.Y);
+	RosJsonCamera.translation.Add(Translation.Z);
+
+	// Add rotation
+	const FQuat Rotation = Transform.GetRotation();
+	RosJsonCamera.rotation.Add(Rotation.X);
+	RosJsonCamera.rotation.Add(Rotation.Y);
+	RosJsonCamera.rotation.Add(Rotation.Z);
+	RosJsonCamera.rotation.Add(Rotation.W);
 
 	// Add sensor size
 	RosJsonCamera.sensor_size.Add(SensorSize.X);

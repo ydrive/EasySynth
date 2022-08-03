@@ -6,7 +6,6 @@
 #include "Misc/StringBuilder.h"
 
 #include "CameraRig/YAML/YamlFileStructure.h"
-#include "CoordinateSystemConverter.h"
 
 
 bool FCameraRigYamlParser::Parse(const FString& InputString, FCameraRigData& OutCameraRigData)
@@ -179,9 +178,9 @@ bool FCameraRigYamlParser::ParseCamera(
 		return false;
 	}
 
-	// Apply needed transformations to the loaded translation and location
-	const bool bDoInverse = true;
-	OutCameraData.Transform = FCoordinateSystemConverter::ExternalToUE(TVec, QVec, bDoInverse);
+	// Store translation and rotation data
+	OutCameraData.Transform.SetTranslation(FVector(TVec[0], TVec[1], TVec[2]));
+	OutCameraData.Transform.SetRotation(FQuat(QVec[0], QVec[1], QVec[2], QVec[3]));
 
 	return true;
 }

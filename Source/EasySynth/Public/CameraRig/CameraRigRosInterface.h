@@ -22,7 +22,7 @@ struct FRosJsonCamera
 	UPROPERTY()
 	TArray<double> intrinsics;
 
-	/** String representing active coordinate system, FLU is required */
+	/** String representing active coordinate system, FRU is required */
 	UPROPERTY()
 	FString coord_sys = "";
 

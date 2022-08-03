@@ -161,18 +161,16 @@ Output is the `CameraPoses.csv` file, in which the first line contains column na
 | Column | Type  | Name | Description                |
 | ------ | ----- | ---- | -------------------------- |
 | 1      | int   | id   | 0-indexed frame id         |
-| 2      | float | tx   | X position in meters       |
-| 3      | float | ty   | Y position in meters       |
-| 4      | float | tz   | Z position in meters       |
-| 5      | float | qw   | Rotation quaternion W      |
-| 6      | float | qx   | Rotation quaternion X      |
-| 7      | float | qy   | Rotation quaternion Y      |
-| 8      | float | qz   | Rotation quaternion Z      |
+| 2      | float | tx   | X position in centimeters  |
+| 3      | float | ty   | Y position in centimeters  |
+| 4      | float | tz   | Z position in centimeters  |
+| 5      | float | qx   | Rotation quaternion X      |
+| 6      | float | qy   | Rotation quaternion Y      |
+| 7      | float | qz   | Rotation quaternion Z      |
+| 8      | float | qw   | Rotation quaternion W      |
 | 9      | float | t    | Timestamp in seconds       |
 
-The coordinate system for saving camera positions and rotation quaternions is a right-handed Z-up coordinate system. Note that this differs from Unreal Engine, which internally uses the left-handed Z-up coordinate system.
-
-<img src="ReadmeContent/OutputCoordinateSystem.png" alt="Output coordinate system" width="250" style="margin:10px"/>
+The coordinate system for saving camera positions and rotation quaternions is the same one used by Unreal Engine, a left-handed Z-up coordinate system. This system is pretty much only used by UE and will most likely require a conversion for your later use. Still, it seems to be the cleanest option, as exported values will match the numbers displayed inside the engine.
 
 Following is an example Python code for accessing camera poses:
 ``` Python
@@ -210,15 +208,15 @@ for i, pose in poses_df.iterrows():
 Camera rig JSON files contain spatial data that includes 5 fields for each rig camera:
 
 - `intrinsics` - Camera intrinsics matrix
-- `coord_sys` - Type of the coordinate system, `FLU` is required
+- `coord_sys` - Type of the coordinate system, Unreal `FRU` system is required
 - `rotation` - Rotation quaternion relative to the rig origin
 - `translation` - Translation vector relative to the rig origin
 - `sensor_size` - Sensor width and height in pixels, used to calculate camera FOV
 
-FLU stands for the coordinate system in which:
+FRU stands for the coordinate system in which:
 
 - X-axis points forward (along the camera view direction)
-- Y-axis points left
+- Y-axis points right
 - Z-axis points up
 
 Following is a ROS JSON file example for a rig with two parallel cameras with the FOV of 90 degrees, facing forward. The difference can be found in the sign of the translation vector Y-axis.
@@ -230,17 +228,17 @@ Following is a ROS JSON file example for a rig with two parallel cameras with th
 		"c0":
 		{
 			"intrinsics": [ 960, 0, 960, 0, 960, 540, 0, 0, 0 ],
-			"coord_sys": "FLU",
-			"rotation": [ 1, 0, 0, 0 ],
-			"translation": [ 0, -0.3, 0 ],
+			"coord_sys": "FRU",
+			"rotation": [ 0, 0, 0, 1 ],
+			"translation": [ 0, -30, 0 ],
 			"sensor_size": [ 1920, 1080 ]
 		},
 		"c1":
 		{
 			"intrinsics": [ 960, 0, 960, 0, 960, 540, 0, 0, 0 ],
-			"coord_sys": "FLU",
-			"rotation": [ 1, 0, 0, 0 ],
-			"translation": [ 0, 0.3, 0 ],
+			"coord_sys": "FRU",
+			"rotation": [ 0, 0, 0, 1 ],
+			"translation": [ 0, 30, 0 ],
 			"sensor_size": [ 1920, 1080 ]
 		}
 	}

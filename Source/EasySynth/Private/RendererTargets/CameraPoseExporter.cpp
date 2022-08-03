@@ -16,8 +16,6 @@
 #include "Subsystems/AssetEditorSubsystem.h"
 #include "Tracks/MovieScene3DTransformTrack.h"
 
-#include "CoordinateSystemConverter.h"
-
 
 bool FCameraPoseExporter::ExportCameraPoses(
 	ULevelSequence* LevelSequence,
@@ -171,18 +169,20 @@ bool FCameraPoseExporter::SavePosesToCSV(const FString& FilePath)
 {
 	// Create the file content
 	TArray<FString> Lines;
-	Lines.Add("id,tx,ty,tz,qw,qx,qy,qz,t");
+	Lines.Add("id,tx,ty,tz,qx,qy,qz,qw,t");
 
 	for (int i = 0; i < CameraTransforms.Num(); i++)
 	{
-		TArray<double> Location;
-		TArray<double> Rotation;
-		FCoordinateSystemConverter::UEToExternal(CameraTransforms[i], Location, Rotation);
+		// Remove the scaling that makes no impact on camera functionality,
+		// but my be used to scale the camera placeholder mesh as user desires
+		CameraTransforms[i].SetScale3D(FVector(1.0f, 1.0f, 1.0f));
+		const FVector Translation = CameraTransforms[i].GetTranslation();
+		const FQuat Rotation = CameraTransforms[i].GetRotation();
 
 		Lines.Add(FString::Printf(TEXT("%d,%f,%f,%f,%f,%f,%f,%f,%f"),
 			i,
-			Location[0], Location[1], Location[2],
-			Rotation[0], Rotation[1], Rotation[2], Rotation[3],
+			Translation.X, Translation.Y, Translation.Z,
+			Rotation.X, Rotation.Y, Rotation.Z, Rotation.W,
 			Timestamps[i]));
 	}
 
