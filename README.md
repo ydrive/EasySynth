@@ -212,11 +212,7 @@ Camera rig JSON files contain spatial data that includes 4 fields for each rig c
 - `translation` - Translation vector relative to the rig origin
 - `sensor_size` - Sensor width and height in pixels, used to calculate camera FOV
 
-The used coordinate system axis orientations are:
-
-- X-axis points forward (along the camera view direction)
-- Y-axis points right
-- Z-axis points up
+Rotation and translation values follow the UE coordinate system convention and are relative to the rig origin.
 
 Following is a ROS JSON file example for a rig with two parallel cameras with the FOV of 90 degrees, facing forward. The difference can be found in the sign of the translation vector Y-axis.
 
