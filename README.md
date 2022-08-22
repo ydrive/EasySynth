@@ -205,15 +205,14 @@ for i, pose in poses_df.iterrows():
 
 ### Camera rig ROS JSON file
 
-Camera rig JSON files contain spatial data that includes 5 fields for each rig camera:
+Camera rig JSON files contain spatial data that includes 4 fields for each rig camera:
 
 - `intrinsics` - Camera intrinsics matrix
-- `coord_sys` - Type of the coordinate system, Unreal `FRU` system is required
 - `rotation` - Rotation quaternion relative to the rig origin
 - `translation` - Translation vector relative to the rig origin
 - `sensor_size` - Sensor width and height in pixels, used to calculate camera FOV
 
-FRU stands for the coordinate system in which:
+The used coordinate system axis orientations are:
 
 - X-axis points forward (along the camera view direction)
 - Y-axis points right
@@ -228,7 +227,6 @@ Following is a ROS JSON file example for a rig with two parallel cameras with th
 		"c0":
 		{
 			"intrinsics": [ 960, 0, 960, 0, 960, 540, 0, 0, 0 ],
-			"coord_sys": "FRU",
 			"rotation": [ 0, 0, 0, 1 ],
 			"translation": [ 0, -30, 0 ],
 			"sensor_size": [ 1920, 1080 ]
@@ -236,7 +234,6 @@ Following is a ROS JSON file example for a rig with two parallel cameras with th
 		"c1":
 		{
 			"intrinsics": [ 960, 0, 960, 0, 960, 540, 0, 0, 0 ],
-			"coord_sys": "FRU",
 			"rotation": [ 0, 0, 0, 1 ],
 			"translation": [ 0, 30, 0 ],
 			"sensor_size": [ 1920, 1080 ]

@@ -98,14 +98,6 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 			continue;
 		}
 
-		// Get the coordinate system
-		if (RosJsonCamera.coord_sys != "FRU")
-		{
-			const FText ErrorMessage = LOCTEXT("InvalidCoordError", "Expected FRU coordinate system used by Unreal");
-			DisplayError(ErrorMessage);
-			return FReply::Handled();
-		}
-
 		// Get focal length
 		if (RosJsonCamera.intrinsics.Num() != 9)
 		{
@@ -242,9 +234,6 @@ void FCameraRigRosInterface::AddCamera(
 	RosJsonCamera.intrinsics[2] = PrincipalPointX;
 	RosJsonCamera.intrinsics[4] = FocalLength;
 	RosJsonCamera.intrinsics[5] = PrincipalPointY;
-
-	// Set coordinate system
-	RosJsonCamera.coord_sys = "FRU";
 
 	// Prepare transform
 	FTransform Transform = Camera->GetRelativeTransform();

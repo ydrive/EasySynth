@@ -22,10 +22,6 @@ struct FRosJsonCamera
 	UPROPERTY()
 	TArray<double> intrinsics;
 
-	/** String representing active coordinate system, FRU is required */
-	UPROPERTY()
-	FString coord_sys = "";
-
 	/** Array representing camera rotation quaternion, with the length of 4 */
 	UPROPERTY()
 	TArray<double> rotation;
