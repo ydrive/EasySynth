@@ -9,7 +9,6 @@
 
 #include "CameraRig/YAML/YamlFileStructure.h"
 #include "CameraRig/YAML/CameraRigYamlParser.h"
-#include "CoordinateSystemConverter.h"
 #include "EasySynth.h"
 
 
@@ -157,18 +156,27 @@ void FCameraRigYamlInterface::AddCamera(const int CameraId, UCameraComponent* Ca
 	DistortionCoeffValues.Init(0, 14);
 	AddMatrix(FYamlFileStructure::DistortionCoeffName(CameraId), 14, 1, DistortionCoeffValues, OutLines);
 
-	// Covert between coordinate systems
+	// Prepare transformation
 	FTransform Transform = Camera->GetRelativeTransform();
 	// Remove the scaling that makes no impact on camera functionality,
 	// but my be used to scale the camera placeholder mesh as user desires
 	Transform.SetScale3D(FVector(1.0f, 1.0f, 1.0f));
-	TArray<double> TVecValues;
-	TArray<double> QVecValues;
-	const bool bDoInverse = true;
-	FCoordinateSystemConverter::UEToExternal(Transform, TVecValues, QVecValues, bDoInverse);
 
-	// Add t_vec and q_vec sections
+	// Add q_vec sections
+	const FVector Translation = Transform.GetTranslation();
+	TArray<double> TVecValues;
+	TVecValues.Add(Translation.X);
+	TVecValues.Add(Translation.Y);
+	TVecValues.Add(Translation.Z);
 	AddMatrix(FYamlFileStructure::TVecName(CameraId), 3, 1, TVecValues, OutLines);
+
+	// Add t_vec
+	const FQuat Rotation = Transform.GetRotation();
+	TArray<double> QVecValues;
+	QVecValues.Add(Rotation.X);
+	QVecValues.Add(Rotation.Y);
+	QVecValues.Add(Rotation.Z);
+	QVecValues.Add(Rotation.W);
 	AddMatrix(FYamlFileStructure::QVecName(CameraId), 4, 1, QVecValues, OutLines);
 }
 
