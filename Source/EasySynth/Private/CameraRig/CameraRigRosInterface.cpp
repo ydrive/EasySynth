@@ -234,6 +234,7 @@ void FCameraRigRosInterface::AddCamera(
 	RosJsonCamera.intrinsics[2] = PrincipalPointX;
 	RosJsonCamera.intrinsics[4] = FocalLength;
 	RosJsonCamera.intrinsics[5] = PrincipalPointY;
+	RosJsonCamera.intrinsics[8] = 1.0f;
 
 	// Prepare transform
 	FTransform Transform = Camera->GetRelativeTransform();
