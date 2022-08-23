@@ -170,7 +170,7 @@ Output is the `CameraPoses.csv` file, in which the first line contains column na
 | 8      | float | qw   | Rotation quaternion W      |
 | 9      | float | t    | Timestamp in seconds       |
 
-The coordinate system for saving camera positions and rotation quaternions is the same one used by Unreal Engine, a left-handed Z-up coordinate system. This system is pretty much only used by UE and will most likely require a conversion for your later use. Still, it seems to be the cleanest option, as exported values will match the numbers displayed inside the engine.
+The coordinate system for saving camera positions and rotation quaternions is the same one used by Unreal Engine, a ***left-handed*** Z-up coordinate system. Coordinates will ***likely require conversion*** to more common reference frames for typical computer vision applications. For more information, we recommend [this Reddit post](https://www.reddit.com/r/gamedev/comments/7qh3sa/a_coordinate_system_chart_of_different_engines/). Still, it seems to be the cleanest option, as exported values will match the numbers displayed inside the engine.
 
 Following is an example Python code for accessing camera poses:
 ``` Python
