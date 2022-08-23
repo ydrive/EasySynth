@@ -16,16 +16,16 @@ struct FSemanticClass
 	GENERATED_USTRUCT_BODY()
 
 	/** The semantic class name */
-	UPROPERTY(EditAnywhere, Category = "Semantic Class Propterties")
+	UPROPERTY(EditAnywhere, Category = "Semantic Class Properties")
 	FString Name;
 
 	/** The semantic class color */
-	UPROPERTY(EditAnywhere, Category = "Semantic Class Propterties")
+	UPROPERTY(EditAnywhere, Category = "Semantic Class Properties")
 	FColor Color;
 
 	/** Reference to the plain color material instance */
 	UPROPERTY(EditAnywhere, Category = "Semantic Class Material")
-	UMaterialInstanceDynamic* PlainColorMaterialInstance;
+	UMaterialInstanceConstant* PlainColorMaterialInstance;
 };
 
 

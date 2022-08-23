@@ -1,6 +1,6 @@
 # EasySynth
 
-EasySynth is an Unreal Engine plugin for easy creation of image datasets from a moving camera, requiring no C++ or Blueprint knowledge. It leverages native Unreal Engine components to create compelling machine learning datasets, without relying on 3rd party tools.
+EasySynth is an Unreal Engine plugin for easy creation of image datasets from a moving camera or a multi-camera rig, requiring no C++ or Blueprint knowledge. It leverages native Unreal Engine components to create compelling machine learning datasets, without relying on 3rd party tools.
 
 The plugin works by automatically starting the rendering of a user-defined level sequence, with different camera post-process settings. The outputs are camera poses, including position, rotation, and calibration parameters, together with the following image types:
 
@@ -82,9 +82,12 @@ This editor allows you to:
 
 Next, you should assign semantic classes to all of the level actors. To do this:
 - Select one or more actors of the same class in the editor window or by using the World Outliner
+- Supported mesh types are static mesh, skeletal mesh and landscapes
 - Assign them a class by clicking on the `Pick a semantic class` button and picking the class
 
 To toggle between original and semantic color, use the `Pick a mesh texture style` button. Make sure that you never save your project while the semantic view mode is selected.
+
+A CSV file including semantic class names and colors will be exported together with rendered semantic images. This file can be used for later reference or can be imported into another EasySynth project.
 
 ### Sequence rendering
 
@@ -92,25 +95,42 @@ Image rendering relies on a user-defined `Level Sequence`, which represents a mo
 - https://docs.unrealengine.com/4.27/en-US/AnimatingObjects/Sequencer/Overview/
 - https://youtu.be/-NmHXAFX-3M
 
+The following tutorial is a good starting point for working with skeletal meshes inside the sequencer:
+- https://youtu.be/Xbts4YbhwbE
+
 Setting up rendering options inside the EasySynth widget:
 
 ![Plugin widget](/ReadmeContent/Widget.png)
 
+- <em>Optionally</em> import semantic classes from a CSV file (or create them manually)
+- <em>Optionally</em> import camera rig from a ROS format JSON file (or create it manually)
 - Pick the created level sequence
 - Choose the desired rendering targets using checkboxes
 - Choose the output image format for each target
   - jpeg - 8-bit image output intended for visual inspection due to lossy jpeg compression,
-  - png - 8-bit image output with lossless png compression, but with zero alpha, making the images appear transparent when previewed
+  - png - 8-bit image output with lossless png compression
   - exr - 16-bit image output with lossless exr compression, to open them with OpenCV in Python use `cv2.imread(img_path, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)`
 - Choose the output images width and height
-  - Choosing a different aspect ratio than the selected camera actor aspect ratio can result in an unexpected field of view in the output images
+  - The aspect ratio of the camera will be updated according to the chosen output size
 - Choose the depth infinity threshold for depth rendering
 - Choose the appropriate scaling coefficient for increasing optical flow image color saturation
 - Choose the output directory
 
 Start the rendering by clicking the `Render Images` button.
 
+<b>IMPORTANT:</b> Take recorder, unfortunately, cannot be used to record sequences, as we could not find a way to integrate sequences it produces with our plugin. If you have an idea how this can be done feel free to leave your suggestions in the issues.
+
+<b>IMPORTANT:</b> If you need anti-aliasing applied on output images, set `Anti-Aliasing Method` in project settings to `FXAA`. Other options will have no effect and output images will have jagged edges.
+
+<img src="ReadmeContent/AntiAliasingSetting.png" alt="Anti-aliasing setting" width="250" style="margin:10px"/>
+
 <b>IMPORTANT:</b> Do not close a window that opens during rendering. Closing the window will result in the successful rendering being falsely reported, as it is not possible to know if the window has been closed from the plugin side.
+
+### Multi-camera rigs
+
+EasySynth seamlessly supports rendering using rigs that contain multiple cameras. To create a rig, add an empty actor to the level, and then add any number of individual camera components to the actor, position them as desired relative to the actor position. Then, add the actor to the level sequence and assign it to the camera cut track. When you start rendering, outputs from all of the rig cameras will be created in succession.
+
+Camera rig information can be imported and exported using ROS format JSON files with a specific structure. Clicking on the button `Import camera rig ROS JSON file` and choosing a valid file will create an actor that represents the described rig inside the level. The camera rig file is also exported during rendering to the selected output directory. Its structure will be described below.
 
 ### Workflow tips
 
@@ -119,9 +139,18 @@ Start the rendering by clicking the `Render Images` button.
 - If you want images to be spaced out more inside the level sequence (instead of being very close in order to provide a smooth video), you can set the custom level sequence FPS to a small value (1 FPS or lower) inside the Sequencer editor.
 - To avoid adding keyframes manually, select the <img src="ReadmeContent/KeyButton.png" alt="Color image" width="20"/> button inside the sequence editor toolbar. After you create the first keyframe, this will automatically add one at the current time for any moved asset.
 - To avoid potential artifacts, make sure the camera trajectory line is always smooth and does not contain "edged" turns - except when that is done intentionally.
+- To avoid slow camera acceleration at the sequence start, create an additional keyframe for the camera actor `Location` before the 0th frame in the timeline and place the actor a little bit behind its place at the beginning of the sequence. These negative time frames will not be rendered, but the camera actor will have initial speed in the first rendered frame instead of starting from a standstill.
 - Although changing the `CameraComponenet` offset/translation in relation to the `CameraActor` is possible, the exported camera poses will be `CameraActor` poses. If the relative translation is not zero, exported poses will not match locations where the actual image is taken from and you will have to compensate for that manually.
 
 ## Outputs' structure details
+
+### Depth images
+
+Depth image pixel values represent the proportional distance between the camera plane and scene objects.
+
+- A camera plane is a plane that contains the camera position and is normal to the camera direction vector.
+- Depth is equal to the length of a normal from a scene object on the camera plane. This means we use linear depth, in contrast to the radial depth which would imply that the depth is equal to the distance between the object and the camera position.
+- Depth values are scaled between 0 and the specified `Depth range` value.
 
 ### Camera pose output
 
@@ -132,26 +161,18 @@ Output is the `CameraPoses.csv` file, in which the first line contains column na
 | Column | Type  | Name | Description                |
 | ------ | ----- | ---- | -------------------------- |
 | 1      | int   | id   | 0-indexed frame id         |
-| 2      | float | tx   | X position in meters       |
-| 3      | float | ty   | Y position in meters       |
-| 4      | float | tz   | Z position in meters       |
-| 5      | float | qw   | Rotation quaternion W      |
-| 6      | float | qx   | Rotation quaternion X      |
-| 7      | float | qy   | Rotation quaternion Y      |
-| 8      | float | qz   | Rotation quaternion Z      |
-| 9      | float | fx   | Focal length X in pixels   |
-| 10     | float | fy   | Focal length Y - same as X |
-| 11     | int   | cx   | Halved image width         |
-| 12     | int   | cy   | Halved image height        |
+| 2      | float | tx   | X position in centimeters  |
+| 3      | float | ty   | Y position in centimeters  |
+| 4      | float | tz   | Z position in centimeters  |
+| 5      | float | qx   | Rotation quaternion X      |
+| 6      | float | qy   | Rotation quaternion Y      |
+| 7      | float | qz   | Rotation quaternion Z      |
+| 8      | float | qw   | Rotation quaternion W      |
+| 9      | float | t    | Timestamp in seconds       |
 
-The coordinate system for saving camera positions and rotation quaternions is a right-handed coordinate system. When looking through a camera with zero rotation in the target coordinate system:
-- X axis points to the right
-- Y axis points down
-- Z axis points straight away from the camera
+> The coordinate system for saving camera positions and rotation quaternions is the same one used by Unreal Engine, a ***left-handed*** Z-up coordinate system.
 
-<img src="ReadmeContent/OutputCoordinateSystem.png" alt="Output coordinate system" width="250" style="margin:10px"/>
-
-Note that this differs from Unreal Engine, which internally uses the left-handed Z-up coordinate system.
+Coordinates will ***likely require conversion*** to more common reference frames for typical computer vision applications. For more information, we recommend [this Reddit post](https://www.reddit.com/r/gamedev/comments/7qh3sa/a_coordinate_system_chart_of_different_engines/). Still, it seems to be the cleanest option, as exported values will match the numbers displayed inside the engine.
 
 Following is an example Python code for accessing camera poses:
 ``` Python
@@ -159,7 +180,7 @@ import numpy as np
 import pandas as pd
 from scipy.spatial.transform import Rotation as R
 
-poses_df = pd.read_csv('<rendering_output_path>/CameraPoses.csv')
+poses_df = pd.read_csv('<rendering_output_path>/<camera_name>/CameraPoses.csv')
 
 for i, pose in poses_df.iterrows():
 
@@ -184,13 +205,50 @@ for i, pose in poses_df.iterrows():
     view_mat = np.linalg.inv(mat4)
 ```
 
+### Camera rig ROS JSON file
+
+Camera rig JSON files contain spatial data that includes 4 fields for each rig camera:
+
+- `intrinsics` - Camera intrinsics matrix
+- `rotation` - Rotation quaternion relative to the rig origin
+- `translation` - Translation vector relative to the rig origin
+- `sensor_size` - Sensor width and height in pixels, used to calculate camera FOV
+
+Rotation and translation values follow the UE coordinate system convention and are relative to the rig origin.
+
+Camera sensor sizes and aspect ratios will not be updated at this point, but they will be calculated according to the requested output image size when the rendering starts.
+
+Following is a ROS JSON file example for a rig with two parallel cameras with the FOV of 90 degrees, facing forward. The difference can be found in the sign of the translation vector Y-axis.
+
+``` JSON
+{
+	"cameras":
+	{
+		"c0":
+		{
+			"intrinsics": [ 960, 0, 960, 0, 960, 540, 0, 0, 0 ],
+			"rotation": [ 0, 0, 0, 1 ],
+			"translation": [ 0, -30, 0 ],
+			"sensor_size": [ 1920, 1080 ]
+		},
+		"c1":
+		{
+			"intrinsics": [ 960, 0, 960, 0, 960, 540, 0, 0, 0 ],
+			"rotation": [ 0, 0, 0, 1 ],
+			"translation": [ 0, 30, 0 ],
+			"sensor_size": [ 1920, 1080 ]
+		}
+	}
+}
+```
+
 ### Optical flow images
 
 Optical flow images contain color-coded optical flow vectors for each pixel. An optical flow vector describes how the content of a pixel has moved between frames. Specifically, the vector spans from coordinates where the pixel content was in the previous frame to where the content is in the current frame. The coordinate system the vectors are represented in is the image pixel coordinates, with the image scaled to a 1.0 x 1.0 square.
 
-Optical flow vectors are color-coded by picking a color from the HSV color wheel with the color angle matching the vector angle and the color saturation matching the vector intensity. If the scene in your sequence moves slowly, these vectors can be very short, and the colors can be hard to see when previewed. If this is the case, use the `optical flow scale` parameter to proportionally increase the images saturation.
+Optical flow vectors are color-coded by picking a color from the HSV color wheel with the color angle matching the vector angle and the color saturation matching the vector intensity. If the scene in your sequence moves slowly, these vectors can be very short, and the colors can be hard to see when previewed. If this is the case, use the `optical flow scale` parameter to proportionally increase the image saturation.
 
-The following images represent optical flows when moving forward and backward respectively. Notice that all of the colors are opposite, as in the first case pixels are moving away from the image center, while in the second case pixels are moving toward the image center. In both examples the fastest moving pixels are the ones on the image edges.
+The following images represent optical flows when moving forward and backward respectively. Notice that all of the colors are opposite, as in the first case pixels are moving away from the image center, while in the second case pixels are moving toward the image center. In both examples, the fastest moving pixels are the ones on the image edges.
 
 <img src="ReadmeContent/OpticalFlowForward.jpeg" alt="Optical flow forward" width="250" style="margin:10px"/>
 <img src="ReadmeContent/OpticalFlowBackward.jpeg" alt="Optical flow backward" width="250" style="margin:10px"/>
@@ -218,6 +276,7 @@ optical_flow_image = cv2.cvtColor(optical_flow_image, cv2.COLOR_BGR2HSV)
 angle, magnitude = optical_flow_image[:, :, 0], optical_flow_image[:, :, 1]
 
 # Convert the shift from polar to cartesian coordinates (magnitude, angle => x, y)
+# Multiply the result by -1 since we need the position of an output pixel on the previous image
 x_flow, y_flow = cv2.polarToCart(magnitude, angle, angleInDegrees=True)
 x_flow = np.round(-w * x_flow).astype(np.int32)
 y_flow = np.round(-h * y_flow).astype(np.int32)

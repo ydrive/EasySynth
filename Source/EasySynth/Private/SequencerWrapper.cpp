@@ -30,26 +30,7 @@ bool FSequencerWrapper::OpenSequence(ULevelSequence* LevelSequence)
 		return false;
 	}
 
-	// Get all sections of the camera track
-	TArray<UMovieSceneSection*> MovieSceneSections = CameraCutTrack->GetAllSections();
-	if (MovieSceneSections.Num() == 0)
-	{
-		UE_LOG(LogEasySynth, Warning, TEXT("%s: No sections inside the camera cut track"), *FString(__FUNCTION__))
-		return false;
-	}
-
-	// Convert camera track sections to cut sections
-	for (UMovieSceneSection* MovieSceneSection : MovieSceneSections)
-	{
-		auto CutSection = Cast<UMovieSceneCameraCutSection>(MovieSceneSection);
-		if (CutSection == nullptr)
-		{
-			UE_LOG(LogEasySynth, Error, TEXT("%s: Could not convert MovieSceneSection into a CutSection"),
-				*FString(__FUNCTION__));
-			return false;
-		}
-		MovieSceneCutSections.Add(CutSection);
-	}
+	GetMovieSceneCutSections();
 
 	// Open sequencer editor for the level sequence asset
 	TArray<UObject*> Assets;
@@ -90,10 +71,28 @@ bool FSequencerWrapper::OpenSequence(ULevelSequence* LevelSequence)
 
 TArray<UMovieSceneCameraCutSection*>& FSequencerWrapper::GetMovieSceneCutSections()
 {
-	check(MovieSceneCutSections.Num() > 0)
-	for (auto CutSection : MovieSceneCutSections)
+	MovieSceneCutSections.Empty();
+
+	// Get all sections of the camera track
+	TArray<UMovieSceneSection*> MovieSceneSections = CameraCutTrack->GetAllSections();
+	if (MovieSceneSections.Num() == 0)
 	{
-		check(CutSection)
+		UE_LOG(LogEasySynth, Warning, TEXT("%s: No sections inside the camera cut track"), *FString(__FUNCTION__))
+		return MovieSceneCutSections;
 	}
+
+	// Convert camera track sections to cut sections
+	for (UMovieSceneSection* MovieSceneSection : MovieSceneSections)
+	{
+		auto CutSection = Cast<UMovieSceneCameraCutSection>(MovieSceneSection);
+		if (CutSection == nullptr)
+		{
+			UE_LOG(LogEasySynth, Error, TEXT("%s: Could not convert MovieSceneSection into a CutSection"),
+				*FString(__FUNCTION__));
+			return MovieSceneCutSections;
+		}
+		MovieSceneCutSections.Add(CutSection);
+	}
+
 	return MovieSceneCutSections;
 }

@@ -6,6 +6,7 @@
 
 #include "SequencerWrapper.h"
 
+class UCameraComponent;
 class ULevelSequence;
 
 
@@ -16,18 +17,22 @@ class ULevelSequence;
 class FCameraPoseExporter
 {
 public:
-	/** Export camera poses from the sequence to a file */
+	/**
+	 * Export camera poses from the sequence to a file,
+	 * to export rig poses, pass nullptr for the CameraComponent
+	 */
 	bool ExportCameraPoses(
 		ULevelSequence* LevelSequence,
 		const FIntPoint OutputImageResolution,
-		const FString& OutputDir);
+		const FString& OutputDir,
+		UCameraComponent* CameraComponent);
 
 private:
 	/** Extract camera transforms using the sequencer wrapper */
-	bool ExtractCameraTransforms();
+	bool ExtractCameraTransforms(const bool bAccumulateCameraOffset);
 
-	/** Saves the estracted camera poses to a file */
-	bool SavePosesToCSV(const FString& OutputDir);
+	/** Saves the extracted camera poses to a file */
+	bool SavePosesToCSV(const FString& FilePath);
 
 	/** Sequencer wrapper needed to acces the level sequence properties */
 	FSequencerWrapper SequencerWrapper;
@@ -38,6 +43,6 @@ private:
 	/** Extracted camera pose transforms */
 	TArray<FTransform> CameraTransforms;
 
-	/** Camera focal lengths for each image, expressed in pixel units */
-	TArray<FVector2D> PixelFocalLengths;
+	/** Frame timestamps */
+	TArray<double> Timestamps;
 };

@@ -2,6 +2,7 @@
 
 #include "SequenceRenderer.h"
 
+#include "CineCameraComponent.h"
 #include "MoviePipelineImageSequenceOutput.h"
 #include "MoviePipelineOutputSetting.h"
 #include "MoviePipelineQueueSubsystem.h"
@@ -11,6 +12,7 @@
 #include "PathUtils.h"
 #include "RendererTargets/CameraPoseExporter.h"
 #include "RendererTargets/RendererTarget.h"
+#include "TextureStyles/SemanticCsvInterface.h"
 
 
 const float FRendererTargetOptions::DefaultDepthRangeMetersValue = 100.0f;
@@ -135,31 +137,132 @@ bool USequenceRenderer::RenderSequence(
 	}
 
 	// Store parameters
+	RendererTargetOptions = RenderingTargets;
 	OutputResolution = OutputImageResolution;
 	RenderingDirectory = OutputDirectory;
 
-	// Export camera poses if requested
-	if (RenderingTargets.ExportCameraPoses())
+	// Find the sequencer source actor
+	FSequencerWrapper SequencerWrapper;
+	if (!SequencerWrapper.OpenSequence(LevelSequence))
+	{
+		ErrorMessage = "Sequencer wrapper opening failed";
+		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		return false;
+	}
+
+	// Assume the same source actor is used for all camera cuts
+	UMovieSceneCameraCutSection* CutSection = SequencerWrapper.GetMovieSceneCutSections()[0];
+
+	// Get the sequence source actor
+	TArrayView<TWeakObjectPtr<>> SourceObjects = SequencerWrapper.GetSequencer()->FindBoundObjects(
+		CutSection->GetCameraBindingID().GetGuid(),
+		SequencerWrapper.GetSequencer()->GetFocusedTemplateID());
+	if (SourceObjects.Num() == 0)
+	{
+		ErrorMessage = "No sources assigned to the sequencer";
+		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		return false;
+	}
+
+	// Assume the same source actor is used throughout the camera cut
+	CameraRigActor = Cast<AActor>(SourceObjects[0].Get());
+	if (CameraRigActor == nullptr)
+	{
+		ErrorMessage = "Expected an actor as a sequence source";
+		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		return false;
+	}
+
+	// Prepare rig cameras information
+	RigCameras.Empty();
+	CurrentRigCameraId = -1;
+
+	// Find all camera components inside the source actor
+	TArray<UActorComponent*> ActorComponents;
+	const bool bIncludeFromChildActors = true;
+	CameraRigActor->GetComponents(UCameraComponent::StaticClass(), ActorComponents, bIncludeFromChildActors);
+
+	// If no mesh components are found, ignore the actor
+	if (ActorComponents.Num() == 0)
+	{
+		ErrorMessage = "No cameras found inside the actor";
+		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		return false;
+	}
+
+	// Store pointers to all cameras inside the rig for later selection of the active camera
+	for (UActorComponent* ActorComponent : ActorComponents)
+	{
+		UCameraComponent* CameraComponent = Cast<UCameraComponent>(ActorComponent);
+		if (CameraComponent == nullptr)
+		{
+			ErrorMessage = "Got null camera component";
+			UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+			return false;
+		}
+
+		// Set required camera aspect ratio
+		const float AspectRatio = 1.0f * OutputResolution.X / OutputResolution.Y;
+		UCineCameraComponent* CineCameraComponent = Cast<UCineCameraComponent>(CameraComponent);
+		if (CineCameraComponent != nullptr)
+		{
+			// Additional steps needed for cine cameras
+			// Freeze the sensor width and adjust its height
+			auto& Filmback = CineCameraComponent->Filmback;
+			Filmback.SensorHeight = Filmback.SensorWidth / AspectRatio;
+			Filmback.SensorAspectRatio = Filmback.SensorWidth / Filmback.SensorHeight;
+		}
+		CameraComponent->SetAspectRatio(AspectRatio);
+		CameraComponent->SetConstraintAspectRatio(true);
+
+		RigCameras.Add(CameraComponent);
+	}
+
+	// Make sure the camera rig array is sorted by the camera id
+	RigCameras.Sort([](UCameraComponent& A, UCameraComponent& B) {
+		return A.GetReadableName().Compare(B.GetReadableName()) < 0;
+	});
+
+	// Export camera rig information
+	FCameraRigRosInterface CameraRigRosInterface;
+	if (!CameraRigRosInterface.ExportCameraRig(RenderingDirectory, RigCameras, OutputResolution))
+	{
+		ErrorMessage = "Could not save the camera rig ROS JSON file";
+		UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+		return false;
+	}
+
+	// Export camera rig poses if requested
+	if (RendererTargetOptions.ExportCameraPoses())
 	{
 		FCameraPoseExporter CameraPoseExporter;
-		if (!CameraPoseExporter.ExportCameraPoses(RenderingSequence, OutputResolution, RenderingDirectory))
+		UCameraComponent* NoSpecificCamera = nullptr;
+		if (!CameraPoseExporter.ExportCameraPoses(
+			RenderingSequence, OutputResolution, RenderingDirectory, NoSpecificCamera))
 		{
-			ErrorMessage = "Could not export camera poses";
-			UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+			ErrorMessage = "Could not export camera rig poses";
+			UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 			return false;
 		}
 	}
 
-	// Prepare the targets queue
-	RenderingTargets.GetSelectedTargets(TextureStyleManager, TargetsQueue);
+	// Export semantic class information if semantic rendering is selected
+	if (RendererTargetOptions.TargetSelected(FRendererTargetOptions::TargetType::SEMANTIC_IMAGE))
+	{
+		if (!TextureStyleManager->ExportSemanticClasses(RenderingDirectory))
+		{
+			ErrorMessage = "Could not save the semantic class CSV file";
+			UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
+			return false;
+		}
+	}
+
 	OriginalTextureStyle = TextureStyleManager->SelectedTextureStyle();
-	CurrentTarget = nullptr;
 
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering..."), *FString(__FUNCTION__))
 	bCurrentlyRendering = true;
 
-	// Find the next target and start rendering
-	FindNextTarget();
+	FindNextCamera();
 
 	return true;
 }
@@ -183,12 +286,57 @@ void USequenceRenderer::OnExecutorFinished(UMoviePipelineExecutorBase* InPipelin
 	FindNextTarget();
 }
 
+void USequenceRenderer::FindNextCamera()
+{
+	CurrentRigCameraId++;
+
+	// Check if the end is reached
+	if (CurrentRigCameraId == RigCameras.Num())
+	{
+		return BroadcastRenderingFinished(true);
+	}
+
+	if (CurrentRigCameraId == 0)
+	{
+		// Remember the transform of the first camera
+		OriginalCameraTransform = RigCameras[0]->GetRelativeTransform();
+		OriginalCameraFOV = RigCameras[0]->FieldOfView;
+	}
+	else
+	{
+		// Transfer the transform of the current camera to the first one that is used for rendering
+		RigCameras[0]->SetRelativeTransform(RigCameras[CurrentRigCameraId]->GetRelativeTransform());
+		RigCameras[0]->SetFieldOfView(RigCameras[CurrentRigCameraId]->FieldOfView);
+	}
+
+	// Export camera poses if requested
+	if (RendererTargetOptions.ExportCameraPoses())
+	{
+		FCameraPoseExporter CameraPoseExporter;
+		if (!CameraPoseExporter.ExportCameraPoses(
+			RenderingSequence, OutputResolution, RenderingDirectory, RigCameras[CurrentRigCameraId]))
+		{
+			ErrorMessage = "Could not export camera poses";
+			return BroadcastRenderingFinished(false);
+		}
+	}
+
+	// Prepare the targets queue
+	RendererTargetOptions.GetSelectedTargets(TextureStyleManager, TargetsQueue);
+	CurrentTarget = nullptr;
+
+	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering camera %d/%d"), *FString(__FUNCTION__), CurrentRigCameraId + 1, RigCameras.Num())
+
+	// Find the next target and start rendering
+	FindNextTarget();
+}
+
 void USequenceRenderer::FindNextTarget()
 {
 	// Check if the end is reached
 	if (TargetsQueue.IsEmpty())
 	{
-		return BroadcastRenderingFinished(true);
+		return FindNextCamera();
 	}
 
 	// Select the next requested target
@@ -295,7 +443,8 @@ bool USequenceRenderer::PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipel
 		return false;
 	}
 	// Update the image output directory
-	OutputSetting->OutputDirectory.Path = FPaths::Combine(RenderingDirectory, CurrentTarget->Name());
+	OutputSetting->OutputDirectory.Path =
+		FPathUtils::RigCameraDir(RenderingDirectory, RigCameras[CurrentRigCameraId]) / CurrentTarget->Name();
 	OutputSetting->OutputResolution = OutputResolution;
 
 	// Get the queue of sequences to be renderer
@@ -344,6 +493,16 @@ void USequenceRenderer::BroadcastRenderingFinished(const bool bSuccess)
 	{
 		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 	}
+
+	if (RigCameras.Num() > 0)
+	{
+		// Restore the transform of the original camera
+		RigCameras[0]->SetRelativeTransform(OriginalCameraTransform);
+		RigCameras[0]->SetFieldOfView(OriginalCameraFOV);
+	}
+
+	RigCameras.Empty();
+	TargetsQueue.Empty();
 
 	// Revert world state to the original one
 	TextureStyleManager->CheckoutTextureStyle(OriginalTextureStyle);

@@ -8,6 +8,7 @@
 #include "Widgets/Input/SDirectoryPicker.h"
 #include "Widgets/Input/SSpinBox.h"
 #include "Widgets/Layout/SScrollBox.h"
+#include "Widgets/Layout/SSeparator.h"
 #include "Widgets/Text/STextBlock.h"
 
 #include "Widgets/WidgetStateAsset.h"
@@ -62,7 +63,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 	// Bind events now that the editor has finished starting up
 	TextureStyleManager->BindEvents();
 
-	// Load saved optsion states now, also to make sure editor is ready
+	// Load saved option states now, also to make sure editor is ready
 	LoadWidgetOptionStates();
 
 	// Update combo box semantic class names
@@ -117,6 +118,36 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 		.ContentPadding(2)
 		[
 			SNew(SScrollBox)
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(SButton)
+				.OnClicked_Raw(
+					&SemanticCsvInterface,
+					&FSemanticCsvInterface::OnImportSemanticClassesClicked,
+					TextureStyleManager)
+				.Content()
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("ImportSemanticClassesButtonText", "Import semantic classes CSV file"))
+				]
+			]
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(SButton)
+				.OnClicked_Raw(&CameraRigRosInterface, &FCameraRigRosInterface::OnImportCameraRigClicked)
+				.Content()
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("ImportCameraRigButtonText", "Import camera rig ROS JSON file"))
+				]
+			]
+			+SScrollBox::Slot()
+			.Padding(0, 2, 0, 2)
+			[
+				SNew(SSeparator)
+			]
 			+SScrollBox::Slot()
 			.Padding(2)
 			[
@@ -181,7 +212,7 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			.Padding(2)
 			[
 				SNew(STextBlock)
-				.Text(LOCTEXT("ChoseTargesSectionTitle", "Chose targets to be rendered"))
+				.Text(LOCTEXT("ChoseTargetsSectionTitle", "Chose targets to be rendered"))
 			]
 			+SScrollBox::Slot()
 			.Padding(2)
@@ -434,7 +465,7 @@ FReply FWidgetManager::OnRenderImagesClicked()
 		const FText MessageBoxTitle = LOCTEXT("StartRenderingErrorMessageBoxTitle", "Could not start rendering");
 		FMessageDialog::Open(
 			EAppMsgType::Ok,
-			FText::FromString(*SequenceRenderer->GetErrorMessage()),
+			FText::FromString(SequenceRenderer->GetErrorMessage()),
 			&MessageBoxTitle);
 	}
 
@@ -481,7 +512,7 @@ void FWidgetManager::OnRenderingFinished(bool bSuccess)
 		const FText MessageBoxTitle = LOCTEXT("RenderingErrorMessageBoxTitle", "Rendering failed");
 		FMessageDialog::Open(
 			EAppMsgType::Ok,
-			FText::FromString(*SequenceRenderer->GetErrorMessage()),
+			FText::FromString(SequenceRenderer->GetErrorMessage()),
 			&MessageBoxTitle);
 	}
 }
@@ -498,7 +529,7 @@ void FWidgetManager::LoadWidgetOptionStates()
 		UE_LOG(LogEasySynth, Log, TEXT("%s: Texture mapping asset not found, creating a new one"),
 			*FString(__FUNCTION__));
 
-		// Register the plugin directroy with the editor
+		// Register the plugin directory with the editor
 		FAssetRegistryModule& AssetRegistryModule =
 			FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 		AssetRegistryModule.Get().AddPath(FPathUtils::ProjectPluginContentDir());

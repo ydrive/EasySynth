@@ -35,14 +35,16 @@ public class EasySynth : ModuleRules
 			new string[]
 			{
 				// Default modules
-				"Projects",
-				"InputCore",
-				"UnrealEd",
-				"ToolMenus",
+				"CinematicCamera",
 				"CoreUObject",
 				"Engine",
+				"InputCore",
+				"Landscape",
+				"Projects",
 				"Slate",
 				"SlateCore",
+				"ToolMenus",
+				"UnrealEd",
 				// Editor bindings
 				"EditorScriptingUtilities",
 				"UnrealEd",
@@ -57,11 +59,14 @@ public class EasySynth : ModuleRules
 				"Sequencer",
 				// Editor tab functionality
 				"AppFramework",
+				"DesktopPlatform",
 				"DesktopWidgets",
 				"MainFrame",
 				"PropertyEditor",
 				// Image formats
 				"UEOpenExrRTTI",
+				// JSON parsing
+				"Json", "JsonUtilities",
 				// ... add private dependencies that you statically link with here ...
 			}
 			);

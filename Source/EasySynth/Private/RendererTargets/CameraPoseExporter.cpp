@@ -20,7 +20,8 @@
 bool FCameraPoseExporter::ExportCameraPoses(
 	ULevelSequence* LevelSequence,
 	const FIntPoint OutputImageResolution,
-	const FString& OutputDir)
+	const FString& OutputDir,
+	UCameraComponent* CameraComponent)
 {
 	// Open the received level sequence inside the sequencer wrapper
 	if (!SequencerWrapper.OpenSequence(LevelSequence))
@@ -32,14 +33,24 @@ bool FCameraPoseExporter::ExportCameraPoses(
 	OutputResolution = OutputImageResolution;
 
 	// Extract the camera pose transforms
-	if (!ExtractCameraTransforms())
+	const bool bAccumulateCameraOffset = (CameraComponent != nullptr);
+	if (!ExtractCameraTransforms(bAccumulateCameraOffset))
 	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Camera pose extaction failed"), *FString(__FUNCTION__))
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Camera pose extraction failed"), *FString(__FUNCTION__))
 		return false;
 	}
 
 	// Store to file
-	if (!SavePosesToCSV(OutputDir))
+	FString SaveFilePath;
+	if (CameraComponent == nullptr)
+	{
+		SaveFilePath = FPathUtils::CameraRigPosesFilePath(OutputDir);
+	}
+	else
+	{
+		SaveFilePath = FPathUtils::CameraPosesFilePath(OutputDir, CameraComponent);
+	}
+	if (!SavePosesToCSV(SaveFilePath))
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed while saving camera poses to the file"), *FString(__FUNCTION__))
 		return false;
@@ -48,14 +59,16 @@ bool FCameraPoseExporter::ExportCameraPoses(
 	return true;
 }
 
-bool FCameraPoseExporter::ExtractCameraTransforms()
+bool FCameraPoseExporter::ExtractCameraTransforms(const bool bAccumulateCameraOffset)
 {
 	// Get level sequence fps
 	const FFrameRate DisplayRate = SequencerWrapper.GetMovieScene()->GetDisplayRate();
+	const double FrameTime = 1.0f / DisplayRate.AsDecimal();
+	double AccumulatedFrameTime = 0.0f;
 
 	// Get level sequence ticks per second
 	// Engine likes to update much more often than the video frame rate,
-	// so this is needed to calculate engine ticks that corespond to frames
+	// so this is needed to calculate engine ticks that correspond to frames
 	const FFrameRate TickResolutions = SequencerWrapper.GetMovieScene()->GetTickResolution();
 
 	// Calculate ticks per frame
@@ -65,10 +78,7 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
 	TArray<UMovieSceneCameraCutSection*>& CutSections = SequencerWrapper.GetMovieSceneCutSections();
 	for (auto CutSection : CutSections)
 	{
-		// Get the current cut section camera binding id
-		const FMovieSceneObjectBindingID& CameraBindingID = CutSection->GetCameraBindingID();
-
-		// Get the camera componenet
+		// Get the camera component
 		UCameraComponent* Camera = CutSection->GetFirstCamera(
 			*SequencerWrapper.GetSequencer(),
 			SequencerWrapper.GetSequencer()->GetFocusedTemplateID());
@@ -78,7 +88,10 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
 			return false;
 		}
 
-		// Find the track inside the level sequence that coresponds to the
+		// Get the current cut section camera binding id
+		const FMovieSceneObjectBindingID& CameraBindingID = CutSection->GetCameraBindingID();
+
+		// Find the track inside the level sequence that corresponds to the
 		// pose transformation of the camera
 		UMovieScene3DTransformTrack* CameraTransformTrack = nullptr;
 		for (const FMovieSceneBinding& Binding : SequencerWrapper.GetMovieScene()->GetBindings())
@@ -108,84 +121,81 @@ bool FCameraPoseExporter::ExtractCameraTransforms()
 		FFrameNumber StartTickNumber = CutSection->GetTrueRange().GetLowerBoundValue();
 		// Exclusive upper bound of the movie scene ticks that belong to this cut section
 		FFrameNumber EndTickNumber = CutSection->GetTrueRange().GetUpperBoundValue();
-        for (FFrameNumber TickNumber = StartTickNumber; TickNumber < EndTickNumber; TickNumber += TicksPerFrame)
-        {
+		for (FFrameNumber TickNumber = StartTickNumber; TickNumber < EndTickNumber; TickNumber += TicksPerFrame)
+		{
 			// Reinitialize the interrogator for each frame
-            Interrogator.Reset();
-            TGuardValue<UE::MovieScene::FEntityManager*> DebugVizGuard(
-                UE::MovieScene::GEntityManagerForDebuggingVisualizers, &Interrogator.GetLinker()->EntityManager);
-		    Interrogator.ImportTrack(CameraTransformTrack, UE::MovieScene::FInterrogationChannel::Default());
+			Interrogator.Reset();
+			TGuardValue<UE::MovieScene::FEntityManager*> DebugVizGuard(
+				UE::MovieScene::GEntityManagerForDebuggingVisualizers, &Interrogator.GetLinker()->EntityManager);
+			Interrogator.ImportTrack(CameraTransformTrack, UE::MovieScene::FInterrogationChannel::Default());
 
-            // Add frame interrogation
-            if (Interrogator.AddInterrogation(TickNumber) == INDEX_NONE)
-            {
-                UE_LOG(LogEasySynth, Error, TEXT("%s: Adding interrogation failed"), *FString(__FUNCTION__))
-                return false;
-            }
-		    Interrogator.Update();
+			// Add frame interrogation
+			if (Interrogator.AddInterrogation(TickNumber) == INDEX_NONE)
+			{
+				UE_LOG(LogEasySynth, Error, TEXT("%s: Adding interrogation failed"), *FString(__FUNCTION__))
+				return false;
+			}
+			Interrogator.Update();
 
 			// Get the camera pose transform for the frame
 			// Engine crashes in case multiple interrogations are added at once
-            TArray<FTransform> TempTransforms;
-            Interrogator.QueryWorldSpaceTransforms(UE::MovieScene::FInterrogationChannel::Default(), TempTransforms);
-            if (TempTransforms.Num() == 0)
-            {
-                UE_LOG(LogEasySynth, Error, TEXT("%s: No camera transforms found"), *FString(__FUNCTION__))
-                return false;
-            }
+			TArray<FTransform> TempTransforms;
+			Interrogator.QueryWorldSpaceTransforms(UE::MovieScene::FInterrogationChannel::Default(), TempTransforms);
+			if (TempTransforms.Num() == 0)
+			{
+				UE_LOG(LogEasySynth, Error, TEXT("%s: No camera transforms found"), *FString(__FUNCTION__))
+				return false;
+			}
 
-		    CameraTransforms.Append(TempTransforms);
+			for (FTransform& Transform : TempTransforms)
+			{
+				if (bAccumulateCameraOffset)
+				{
+					Transform.Accumulate(Camera->GetRelativeTransform());
+				}
 
-			// Record the camera focal length using the unit of output image pixels
-			// These units are chosen to enable the easiest work with generated output images
-			const float FoVDegrees = Camera->FieldOfView;
-			const float FocalLengthPixels = OutputResolution.X / 2 / UKismetMathLibrary::DegTan(FoVDegrees / 2.0f);
-			PixelFocalLengths.Add(FVector2D(FocalLengthPixels, FocalLengthPixels));
-        }
+				AccumulatedFrameTime += FrameTime;
+				Timestamps.Add(AccumulatedFrameTime);
+			}
+
+			CameraTransforms.Append(TempTransforms);
+		}
 	}
 
 	return true;
 }
 
-bool FCameraPoseExporter::SavePosesToCSV(const FString& OutputDir)
+bool FCameraPoseExporter::SavePosesToCSV(const FString& FilePath)
 {
 	// Create the file content
 	TArray<FString> Lines;
-	Lines.Add("id,tx,ty,tz,qw,qx,qy,qz,fx,fy,cx,cy");
+	Lines.Add("id,tx,ty,tz,qx,qy,qz,qw,t");
 
-    for (int i = 0; i < CameraTransforms.Num(); i++)
+	for (int i = 0; i < CameraTransforms.Num(); i++)
 	{
-        const FTransform& Transform = CameraTransforms[i];
-		// Get location in the UE coordinate system and convert from centimeters to meters
-		const FVector& Location = Transform.GetLocation() * 1.0e-2f;
-		// Get rotation quaternion in the UE coordinate system
-		const FQuat& Rotation = Transform.GetRotation();
-		const FVector2D& FocalLength = PixelFocalLengths[i];
-		// Print the camera pose line and convert the pose and the rotation to a different coordinate system
-		// When looking through a camera with zero rotation in the target coordinate system:
-		// - X axis points to the right
-		// - Y axis points down
-		// - Z axis points straight away from the camera
-		// Rotations follow right-handed rule with respect to the defined axes
-		Lines.Add(FString::Printf(TEXT("%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%d"),
+		// Remove the scaling that makes no impact on camera functionality,
+		// but my be used to scale the camera placeholder mesh as user desires
+		CameraTransforms[i].SetScale3D(FVector(1.0f, 1.0f, 1.0f));
+		const FVector Translation = CameraTransforms[i].GetTranslation();
+		const FQuat Rotation = CameraTransforms[i].GetRotation();
+
+		Lines.Add(FString::Printf(TEXT("%d,%f,%f,%f,%f,%f,%f,%f,%f"),
 			i,
-			Location.Y, -Location.Z, Location.X,
-			Rotation.W, -Rotation.Y, Rotation.Z, -Rotation.X,
-			FocalLength.X, FocalLength.Y,
-			OutputResolution.X / 2, OutputResolution.Y / 2));
+			Translation.X, Translation.Y, Translation.Z,
+			Rotation.X, Rotation.Y, Rotation.Z, Rotation.W,
+			Timestamps[i]));
 	}
 
 	// Save the file
-	const FString SaveFilePath = FPathUtils::CameraPosesFilePath(OutputDir);
 	if (!FFileHelper::SaveStringArrayToFile(
 		Lines,
-		*SaveFilePath,
+		*FilePath,
 		FFileHelper::EEncodingOptions::AutoDetect,
 		&IFileManager::Get(),
 		EFileWrite::FILEWRITE_None))
 	{
-		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed while saving the file %s"), *FString(__FUNCTION__), *SaveFilePath)
-        return false;
+		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed while saving the file %s"), *FString(__FUNCTION__), *FilePath)
+		return false;
 	}
 
 	return true;

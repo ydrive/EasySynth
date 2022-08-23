@@ -12,7 +12,7 @@
 
 FSemanticClassesWidgetManager::FSemanticClassesWidgetManager() :
 	NewClassName(FText::GetEmpty()),
-    NewClassColor(FColor::White)
+	NewClassColor(FColor::White)
 {}
 
 FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
@@ -20,7 +20,7 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 	if (!FModuleManager::Get().IsModuleLoaded("MainFrame"))
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed to load the main frame module"), *FString(__FUNCTION__))
-		return FReply::Unhandled();
+		return FReply::Handled();
 	}
 	IMainFrameModule& MainFrame = FModuleManager::LoadModuleChecked<IMainFrameModule>("MainFrame");
 
@@ -97,7 +97,7 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 	if (!ParentWindow.IsValid())
 	{
 		UE_LOG(LogEasySynth, Error, TEXT("%s: Failed to get the parent window"), *FString(__FUNCTION__))
-		return FReply::Unhandled();
+		return FReply::Handled();
 	}
 	FSlateApplication::Get().AddModalWindow(Window, ParentWindow, false);
 
@@ -121,11 +121,11 @@ FReply FSemanticClassesWidgetManager::OnUpdateClassColorClicked(
 	const FPointerEvent& MouseEvent,
 	const FString ClassName)
 {
-	CurrenltyEditedClass = ClassName;
+	CurrentlyEditedClass = ClassName;
 
 	if (MouseEvent.GetEffectingButton() != EKeys::LeftMouseButton)
 	{
-		return FReply::Unhandled();
+		return FReply::Handled();
 	}
 
 	FColorPickerArgs PickerArgs;
@@ -155,9 +155,9 @@ void FSemanticClassesWidgetManager::OnUpdateClassColorCommited(const FLinearColo
 	FColor NewColor = NewLinearColor.ToFColor(bSRGB);
 	NewColor.A = 255;
 
-	TextureStyleManager->UpdateClassColor(CurrenltyEditedClass, NewColor);
+	TextureStyleManager->UpdateClassColor(CurrentlyEditedClass, NewColor);
 
-	CurrenltyEditedClass = "";
+	CurrentlyEditedClass = "";
 }
 
 FReply FSemanticClassesWidgetManager::OnDeleteClassClicked(const FString ClassName)
@@ -176,7 +176,7 @@ FReply FSemanticClassesWidgetManager::OnNewClassColorClicked(
 {
 	if (MouseEvent.GetEffectingButton() != EKeys::LeftMouseButton)
 	{
-		return FReply::Unhandled();
+		return FReply::Handled();
 	}
 
 	FColorPickerArgs PickerArgs;
