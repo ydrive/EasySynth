@@ -214,7 +214,7 @@ Camera rig JSON files contain spatial data that includes 4 fields for each rig c
 
 Rotation and translation values follow the UE coordinate system convention and are relative to the rig origin.
 
-Camera sensor sizes and aspect ratios will not be updated at this point, but they will be calculated according to the requested output image size when rendering starts.
+Camera sensor sizes and aspect ratios will not be updated at this point, but they will be calculated according to the requested output image size when the rendering starts.
 
 Following is a ROS JSON file example for a rig with two parallel cameras with the FOV of 90 degrees, facing forward. The difference can be found in the sign of the translation vector Y-axis.
 
