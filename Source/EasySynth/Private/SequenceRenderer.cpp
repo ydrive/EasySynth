@@ -207,9 +207,9 @@ bool USequenceRenderer::RenderSequence(
 		if (CineCameraComponent != nullptr)
 		{
 			// Additional steps needed for cine cameras
-			// Freeze the sensor height and adjust its width
+			// Freeze the sensor width and adjust its height
 			auto& Filmback = CineCameraComponent->Filmback;
-			Filmback.SensorWidth = Filmback.SensorHeight * AspectRatio;
+			Filmback.SensorHeight = Filmback.SensorWidth / AspectRatio;
 			Filmback.SensorAspectRatio = Filmback.SensorWidth / Filmback.SensorHeight;
 		}
 		CameraComponent->SetAspectRatio(AspectRatio);
