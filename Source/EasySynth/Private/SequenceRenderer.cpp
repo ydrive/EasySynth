@@ -2,6 +2,7 @@
 
 #include "SequenceRenderer.h"
 
+#include "CineCameraComponent.h"
 #include "MoviePipelineImageSequenceOutput.h"
 #include "MoviePipelineOutputSetting.h"
 #include "MoviePipelineQueueSubsystem.h"
@@ -199,6 +200,21 @@ bool USequenceRenderer::RenderSequence(
 			UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
 			return false;
 		}
+
+		// Set required camera aspect ratio
+		const float AspectRatio = 1.0f * OutputResolution.X / OutputResolution.Y;
+		UCineCameraComponent* CineCameraComponent = Cast<UCineCameraComponent>(CameraComponent);
+		if (CineCameraComponent != nullptr)
+		{
+			// Additional steps needed for cine cameras
+			// Freeze the sensor height and adjust its width
+			auto& Filmback = CineCameraComponent->Filmback;
+			Filmback.SensorWidth = Filmback.SensorHeight * AspectRatio;
+			Filmback.SensorAspectRatio = Filmback.SensorWidth / Filmback.SensorHeight;
+		}
+		CameraComponent->SetAspectRatio(AspectRatio);
+		CameraComponent->SetConstraintAspectRatio(true);
+
 		RigCameras.Add(CameraComponent);
 	}
 
@@ -209,7 +225,7 @@ bool USequenceRenderer::RenderSequence(
 
 	// Export camera rig information
 	FCameraRigRosInterface CameraRigRosInterface;
-	if (!CameraRigRosInterface.ExportCameraRig(RenderingDirectory, RigCameras, OutputImageResolution))
+	if (!CameraRigRosInterface.ExportCameraRig(RenderingDirectory, RigCameras, OutputResolution))
 	{
 		ErrorMessage = "Could not save the camera rig ROS JSON file";
 		UE_LOG(LogEasySynth, Error, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)

@@ -111,7 +111,7 @@ Setting up rendering options inside the EasySynth widget:
   - png - 8-bit image output with lossless png compression
   - exr - 16-bit image output with lossless exr compression, to open them with OpenCV in Python use `cv2.imread(img_path, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)`
 - Choose the output images width and height
-  - Choosing a different aspect ratio than the selected camera actor aspect ratio can result in an unexpected field of view in the output images
+  - The aspect ratio of the camera will be updated according to the chosen output size
 - Choose the depth infinity threshold for depth rendering
 - Choose the appropriate scaling coefficient for increasing optical flow image color saturation
 - Choose the output directory
@@ -213,6 +213,8 @@ Camera rig JSON files contain spatial data that includes 4 fields for each rig c
 - `sensor_size` - Sensor width and height in pixels, used to calculate camera FOV
 
 Rotation and translation values follow the UE coordinate system convention and are relative to the rig origin.
+
+Camera sensor sizes and aspect ratios will not be updated at this point, but they will be calculated according to the requested output image size when rendering starts.
 
 Following is a ROS JSON file example for a rig with two parallel cameras with the FOV of 90 degrees, facing forward. The difference can be found in the sign of the translation vector Y-axis.
 
