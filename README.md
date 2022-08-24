@@ -15,7 +15,7 @@ The plugin works by automatically starting the rendering of a user-defined level
 
 ## Installation
 
-The current main branch of this repo is compatible with Unreal Engine 4.27. For source code or binary builds, targeting older engine versions, please consult previous releases.
+The current main branch of this repo is compatible with Unreal Engine 5. For source code or binary builds, targeting older engine versions, please consult previous releases.
 
 Major releases also include example projects amongst the release assets.
 
@@ -100,7 +100,7 @@ The following tutorial is a good starting point for working with skeletal meshes
 
 Setting up rendering options inside the EasySynth widget:
 
-![Plugin widget](/ReadmeContent/Widget.png)
+![Plugin widget](ReadmeContent/Widget.png)
 
 - <em>Optionally</em> import semantic classes from a CSV file (or create them manually)
 - <em>Optionally</em> import camera rig from a ROS format JSON file (or create it manually)
