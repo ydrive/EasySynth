@@ -1,8 +1,8 @@
-// Copyright (c) 2022 YDrive Inc. All rights reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "EXROutput/MoviePipelineEXROutputLocal.h"
 
-#include "HAL/PlatformFilemanager.h"
+#include "HAL/PlatformFileManager.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
 #include "Async/Async.h"
@@ -20,7 +20,7 @@
 #include "MoviePipelineUtils.h"
 
 THIRD_PARTY_INCLUDES_START
-#include "OpenEXR/include/ImfChannelList.h"
+#include "OpenEXR/ImfChannelList.h"
 THIRD_PARTY_INCLUDES_END
 
 #if WITH_UNREALEXR
@@ -60,7 +60,7 @@ public:
 	// returns 0.
 	//---------------------------------------------------------
 
-	virtual Imf::Int64 tellp()
+	uint64_t tellp() override
 	{
 		return Pos;
 	}
@@ -71,7 +71,7 @@ public:
 	// After calling seekp(i), tellp() returns i.
 	//-------------------------------------------
 
-	virtual void seekp(Imf::Int64 pos)
+	void seekp(uint64_t pos) override
 	{
 		Pos = pos;
 	}
@@ -123,13 +123,17 @@ bool FEXRImageWriteTaskLocal::WriteToDisk()
 				FileCompression = Imf::Compression::ZIP_COMPRESSION; break;
 			case EEXRCompressionFormatLocal::PIZ:
 				FileCompression = Imf::Compression::PIZ_COMPRESSION; break;
-			default:
+			case EEXRCompressionFormatLocal::DWAA:
+				FileCompression = Imf::Compression::DWAA_COMPRESSION; break;
+			case EEXRCompressionFormatLocal::DWAB:
+				FileCompression = Imf::Compression::DWAB_COMPRESSION; break;
+			default: 
 				checkNoEntry();
 		}
-
+		
 		// Data Window specifies how much data is in the actual file, ie: 1920x1080
 		IMATH_NAMESPACE::Box2i DataWindow = IMATH_NAMESPACE::Box2i(IMATH_NAMESPACE::V2i(0,0), IMATH_NAMESPACE::V2i(Width - 1, Height - 1));
-
+		
 		float BorderRatio = FMath::Clamp((OverscanPercentage / (1.0f + OverscanPercentage)) / 2.0f, 0.0f, 0.5f);
 		int32 OverscanBorderWidth = FMath::RoundToInt(Width * BorderRatio);
 		int32 OverscanBorderHeight = FMath::RoundToInt(Height * BorderRatio);
@@ -138,18 +142,25 @@ bool FEXRImageWriteTaskLocal::WriteToDisk()
 		IMATH_NAMESPACE::V2i TopLeft = IMATH_NAMESPACE::V2i(OverscanBorderWidth, OverscanBorderHeight);
 		IMATH_NAMESPACE::V2i BottomRight = IMATH_NAMESPACE::V2i(Width - OverscanBorderWidth - 1, Height - OverscanBorderHeight - 1);
 
-		// Display Window specifies the total 'visible' area of the output file.
+		// Display Window specifies the total 'visible' area of the output file. 
 		// The Display Window always starts at 0,0, but Data Window can go negative to
 		// support having pixels out of bounds (such as camera overscan).
 		IMATH_NAMESPACE::Box2i DisplayWindow = IMATH_NAMESPACE::Box2i(TopLeft, BottomRight);
-
+		
 		Imf::Header Header(DisplayWindow, DataWindow, 1, Imath::V2f(0, 0), 1, Imf::LineOrder::INCREASING_Y, FileCompression);
+		
+		// If using lossy compression, specify the compression level in the header per exr spec.
+		if (FileCompression == Imf::Compression::DWAA_COMPRESSION ||
+			FileCompression == Imf::Compression::DWAB_COMPRESSION)
+		{
+			FileMetadata.Add("dwaCompressionLevel", CompressionLevel);
+		}
 
 		// Insert our key-value pair metadata (if any, can be an arbitrary set of key/value pairs)
 		AddFileMetadata(Header);
 
-		FExrMemStreamOutLocal OutputFile;
-
+		FExrMemStreamOutLocal OutputFile; 
+		
 		{
 			// The FrameBuffer stores all the channels of the resulting image.
 			Imf::FrameBuffer FrameBuffer;
@@ -203,13 +214,13 @@ bool FEXRImageWriteTaskLocal::WriteToDisk()
 				default:
 					checkNoEntry();
 				}
-
+				
 				// Reserve enough space in the output file for the whole layer so we don't keep reallocating.
 				OutputFile.Data.Reserve(BytesWritten);
 			}
 
 			// This scope ensures that IMF::Outputfile creates a complete file by closing the file when it goes out of scope.
-			// To complete the file, EXR seeks back into the file and writes the scanline offsets when the file is closed,
+			// To complete the file, EXR seeks back into the file and writes the scanline offsets when the file is closed, 
 			// which moves the tellp location. So file length is stored in advance for later use. The output file needs to be
 			// created after the header information is filled.
 			Imf::OutputFile ImfFile(OutputFile, Header, FPlatformMisc::NumberOfCoresIncludingHyperthreads());
@@ -227,12 +238,12 @@ bool FEXRImageWriteTaskLocal::WriteToDisk()
 			}
 #endif
 		}
-
+		
 		// Now that the scope has closed for the Imf::OutputFile, now we can write the data to disk.
 		if (bSuccess)
 		{
 			bSuccess = FFileHelper::SaveArrayToFile(OutputFile.Data, *Filename);
-		}
+		} 
 	}
 
 	if (!bSuccess)
@@ -256,6 +267,7 @@ static FString GetChannelName(const FString& InLayerName, const int32 InChannelI
 	switch (InFormat)
 	{
 		case ERGBFormat::RGBA:
+		case ERGBFormat::RGBAF:
 		{
 			ChannelNames = RGBAChannelNames;
 		}
@@ -266,6 +278,7 @@ static FString GetChannelName(const FString& InLayerName, const int32 InChannelI
 		}
 		break;
 		case ERGBFormat::Gray:
+		case ERGBFormat::GrayF:
 		{
 			check(InChannelIndex < UE_ARRAY_COUNT(GrayChannelNames));
 			ChannelNames = GrayChannelNames;
@@ -324,7 +337,7 @@ int64 FEXRImageWriteTaskLocal::CompressRaw(Imf::Header& InHeader, Imf::FrameBuff
 				ComponentWidth * NumChannels,				// xStride
 				Width * ComponentWidth * NumChannels));		// yStride
 	}
-
+	
 	return int64(Width) * int64(Height) * NumChannels * int64(OutputFormat == 2 ? 4 : 2);
 }
 
@@ -361,12 +374,7 @@ void FEXRImageWriteTaskLocal::AddFileMetadata(Imf::Header& InHeader)
 	IOpenExrRTTIModule* OpenExrModule = FModuleManager::LoadModulePtr<IOpenExrRTTIModule>(RTTIExtensionModuleName);
 	if (OpenExrModule)
 	{
-		TMap<FString, FStringFormatArg> NewMap;
-		for (const TPair<FString, FString>& Metadata : FileMetadata)
-		{
-			NewMap.Add(Metadata.Key, Metadata.Value);
-		}
-		OpenExrModule->AddFileMetadata(NewMap, InHeader);
+		OpenExrModule->AddFileMetadata(FileMetadata, InHeader);
 	}
 }
 
@@ -421,7 +429,7 @@ void UMoviePipelineImageSequenceOutput_EXRLocal::OnReceiveImageDataImpl(FMoviePi
 
 			UE::MoviePipeline::ValidateOutputFormatString(FileNameFormatString, bIncludeRenderPass, bTestFrameNumber);
 
-			// Create specific data that needs to override
+			// Create specific data that needs to override 
 			TMap<FString, FString> FormatOverrides;
 			FormatOverrides.Add(TEXT("render_pass"), TEXT("")); // Render Passes are included inside the exr file by named layers.
 			FormatOverrides.Add(TEXT("ext"), Extension);
@@ -463,7 +471,18 @@ void UMoviePipelineImageSequenceOutput_EXRLocal::OnReceiveImageDataImpl(FMoviePi
 		TUniquePtr<FEXRImageWriteTaskLocal> MultiLayerImageTask = MakeUnique<FEXRImageWriteTaskLocal>();
 		MultiLayerImageTask->Filename = FinalFilePath;
 		MultiLayerImageTask->Compression = Compression;
-		MultiLayerImageTask->FileMetadata = FinalFormatArgs.FileMetadata; // This is already merged by ResolveFilenameFormatArgs with the FrameOutputState.
+		// MultiLayerImageTask->CompressionLevel is intentionally skipped because it doesn't seem to make any practical difference
+		// so we don't expose it to the user because that will just cause confusion where the setting doesn't seem to do anything.
+
+		// FinalFormatArgs.FileMetadata has been merged by ResolveFilenameFormatArgs with the FrameOutputState,
+		// but we need to convert from FString, FString (needed for BP/Python purposes) to a FStringFormatArg as
+		// we need to preserve numeric metadata types later in the image writing process (for compression level)
+		TMap<FString, FStringFormatArg> NewFileMetdataMap;
+		for (const TPair<FString, FString>& Metadata : FinalFormatArgs.FileMetadata)
+		{
+			NewFileMetdataMap.Add(Metadata.Key, Metadata.Value);
+		}
+		MultiLayerImageTask->FileMetadata = NewFileMetdataMap;
 
 		int32 LayerIndex = 0;
 		bool bRequiresTransparentOutput = false;
