@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-#include "RendererTargets/RendererTarget.h"
+#include "RendererTargets/RendererTargetSet.h"
 
 class UTextureStyleManager;
 
@@ -13,15 +13,26 @@ class UTextureStyleManager;
  * Class responsible for updating the world properties before
  * the semantic image target rendering and restoring them after the rendering
 */
-class FSemanticImageTarget : public FRendererTarget
+class FSemanticTargetSet : public FRendererTargetSet
 {
 public:
-	explicit FSemanticImageTarget(UTextureStyleManager* TextureStyleManager, const EImageFormat ImageFormat) :
-		FRendererTarget(TextureStyleManager, ImageFormat)
+	explicit FSemanticTargetSet(UTextureStyleManager* TextureStyleManager, const EImageFormat ImageFormat) :
+		FRendererTargetSet(TextureStyleManager, ImageFormat)
 	{}
 
+	/** Returns a name of the target set*/
+	virtual FString Name() const
+	{
+		return TEXT("SemanticTargetSet");
+	}
+
 	/** Returns the name of the target */
-	virtual FString Name() const { return TEXT("SemanticImage"); }
+	virtual TArray<FString> TargetNames() const
+	{
+		TArray<FString> TargetNames;
+		TargetNames.Add(TEXT("SemanticImage"));
+		return TargetNames;
+	}
 
 	/** Prepares the sequence for rendering the target */
 	bool PrepareSequence(ULevelSequence* LevelSequence) override;

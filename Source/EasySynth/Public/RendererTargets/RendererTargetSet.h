@@ -18,16 +18,19 @@ class UTextureStyleManager;
  * world properties before a specific target rendering and
  * restoring them after the rendering
 */
-class FRendererTarget
+class FRendererTargetSet
 {
 public:
-	explicit FRendererTarget(UTextureStyleManager* TextureStyleManager, const EImageFormat ImageFormat) :
+	explicit FRendererTargetSet(UTextureStyleManager* TextureStyleManager, const EImageFormat ImageFormat) :
 		ImageFormat(ImageFormat),
 		TextureStyleManager(TextureStyleManager)
 	{}
 
-	/** Returns a name of a specific target */
+	/** Returns a name of the target set*/
 	virtual FString Name() const = 0;
+
+	/** Returns a name of targets in the set */
+	virtual TArray<FString> TargetNames() const = 0;
 
 	/** Prepares the sequence for rendering a specific target */
 	virtual bool PrepareSequence(ULevelSequence* LevelSequence) = 0;
@@ -45,11 +48,19 @@ protected:
 	/** Removes renderer target specific post-process materials */
 	bool ClearCameraPostProcess(ULevelSequence* LevelSequence);
 
-	/** Returns the path to the specific target post process material */
-	inline UMaterial* LoadPostProcessMaterial() const
+	/** Returns paths to post process materials for each target */
+	inline TArray<UMaterial*> LoadPostProcessMaterials() const
 	{
-		return DuplicateObject<UMaterial>(
-			LoadObject<UMaterial>(nullptr, *FPathUtils::PostProcessMaterialPath(Name())), nullptr);
+		TArray<UMaterial*> Materials;
+		for (int i = 0; i < TargetNames().Num(); i++)
+		{
+			Materials.Add(
+				DuplicateObject<UMaterial>(
+					LoadObject<UMaterial>(
+						nullptr,
+						*FPathUtils::PostProcessMaterialPath(TargetNames()[i])),
+					nullptr));
+		}
 	}
 
 	/** Handle for managing texture style in the level */

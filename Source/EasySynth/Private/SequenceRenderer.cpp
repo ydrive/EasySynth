@@ -7,11 +7,15 @@
 #include "MoviePipelineOutputSetting.h"
 #include "MoviePipelineQueueSubsystem.h"
 #include "MovieRenderPipelineSettings.h"
+#include "MoviePipelineDeferredPasses.h"
+#include "MoviePipelineAntiAliasingSetting.h"
 
 #include "EXROutput/MoviePipelineEXROutputLocal.h"
 #include "PathUtils.h"
 #include "RendererTargets/CameraPoseExporter.h"
-#include "RendererTargets/RendererTarget.h"
+#include "RendererTargets/RendererTargetSet.h"
+#include "RendererTargets/NonSemanticTargetSet.h"
+#include "RendererTargets/SemanticTargetSet.h"
 #include "TextureStyles/SemanticCsvInterface.h"
 
 
@@ -23,8 +27,8 @@ FRendererTargetOptions::FRendererTargetOptions() :
 	DepthRangeMetersValue(DefaultDepthRangeMetersValue),
 	OpticalFlowScaleValue(DefaultOpticalFlowScaleValue)
 {
-	SelectedTargets.Init(false, TargetType::COUNT);
-	OutputFormats.Init(EImageFormat::JPEG, TargetType::COUNT);
+	SelectedTargets.Init(false, TargetType::TARGET_COUNT);
+	OutputFormats.Init(EImageFormat::JPEG, TargetType::TARGET_COUNT);
 }
 
 bool FRendererTargetOptions::AnyOptionSelected() const
@@ -39,46 +43,28 @@ bool FRendererTargetOptions::AnyOptionSelected() const
 	return false;
 }
 
-void FRendererTargetOptions::GetSelectedTargets(
+void FRendererTargetOptions::GetTargetSets(
 	UTextureStyleManager* TextureStyleManager,
-	TQueue<TSharedPtr<FRendererTarget>>& OutTargetsQueue) const
+	TQueue<TSharedPtr<FRendererTargetSet>>& OutTargetsQueue) const
 {
 	OutTargetsQueue.Empty();
-	for (int i = 0; i < TargetType::COUNT; i++)
-	{
-		if (SelectedTargets[i])
-		{
-			TSharedPtr<FRendererTarget> Target = RendererTarget(i, TextureStyleManager);
-			if (Target != nullptr)
-			{
-				OutTargetsQueue.Enqueue(Target);
-			}
-			else
-			{
-				UE_LOG(LogEasySynth, Error, TEXT("%s: Target selection mapped to null renderer target"),
-					*FString(__FUNCTION__))
-				OutTargetsQueue.Empty();
-				return;
-			}
-		}
-	}
-}
 
-TSharedPtr<FRendererTarget> FRendererTargetOptions::RendererTarget(
-	const int TargetType,
-	UTextureStyleManager* TextureStyleManager) const
-{
-	const EImageFormat OutputFormat = OutputFormats[TargetType];
-	switch (TargetType)
+	OutTargetsQueue.Enqueue(
+		MakeShared<FNonSemanticTargetSet>(
+			TextureStyleManager,
+			OutputFormats[TargetType::COLOR_IMAGE],
+			DepthRangeMetersValue,
+			OpticalFlowScaleValue,
+			SelectedTargets[TargetType::DEPTH_IMAGE],
+			SelectedTargets[TargetType::NORMAL_IMAGE],
+			SelectedTargets[TargetType::OPTICAL_FLOW_IMAGE]));
+
+	if (SelectedTargets[TargetType::SEMANTIC_IMAGE])
 	{
-	case COLOR_IMAGE: return MakeShared<FColorImageTarget>(TextureStyleManager, OutputFormat); break;
-	case DEPTH_IMAGE: return MakeShared<FDepthImageTarget>(
-		TextureStyleManager, OutputFormat, DepthRangeMetersValue); break;
-	case NORMAL_IMAGE: return MakeShared<FNormalImageTarget>(TextureStyleManager, OutputFormat); break;
-	case OPTICAL_FLOW_IMAGE: return MakeShared<FOpticalFlowImageTarget>(
-		TextureStyleManager, OutputFormat, OpticalFlowScaleValue); break;
-	case SEMANTIC_IMAGE: return MakeShared<FSemanticImageTarget>(TextureStyleManager, OutputFormat); break;
-	default: return nullptr;
+		OutTargetsQueue.Enqueue(
+			MakeShared<FSemanticTargetSet>(
+				TextureStyleManager,
+				OutputFormats[TargetType::SEMANTIC_IMAGE]));
 	}
 }
 
@@ -219,7 +205,8 @@ bool USequenceRenderer::RenderSequence(
 	}
 
 	// Make sure the camera rig array is sorted by the camera id
-	RigCameras.Sort([](UCameraComponent& A, UCameraComponent& B) {
+	RigCameras.Sort([](UCameraComponent& A, UCameraComponent& B)
+	{
 		return A.GetReadableName().Compare(B.GetReadableName()) < 0;
 	});
 
@@ -270,17 +257,19 @@ bool USequenceRenderer::RenderSequence(
 void USequenceRenderer::OnExecutorFinished(UMoviePipelineExecutorBase* InPipelineExecutor, bool bSuccess)
 {
 	// Revert target specific modifications to the sequence
-	if (!CurrentTarget->FinalizeSequence(RenderingSequence))
+	if (!CurrentTargetSet->FinalizeSequence(RenderingSequence))
 	{
-		ErrorMessage = FString::Printf(TEXT("Failed while finalizing the rendering of the %s target"), *CurrentTarget->Name());
+		ErrorMessage = FString::Printf(TEXT("Failed while finalizing the rendering of the %s target set"), *CurrentTargetSet->Name());
 		return BroadcastRenderingFinished(false);
 	}
 
 	if (!bSuccess)
 	{
-		ErrorMessage = FString::Printf(TEXT("Failed while rendering the %s target"), *CurrentTarget->Name());
+		ErrorMessage = FString::Printf(TEXT("Failed while rendering the %s target set"), *CurrentTargetSet->Name());
 		return BroadcastRenderingFinished(false);
 	}
+
+	UE_LOG(LogEasySynth, Log, TEXT("%s: Looking for the next camera"), *FString(__FUNCTION__))
 
 	// Successful rendering, proceed to the next target
 	FindNextTarget();
@@ -293,6 +282,7 @@ void USequenceRenderer::FindNextCamera()
 	// Check if the end is reached
 	if (CurrentRigCameraId == RigCameras.Num())
 	{
+		UE_LOG(LogEasySynth, Log, TEXT("%s: End of camera array reached"), *FString(__FUNCTION__))
 		return BroadcastRenderingFinished(true);
 	}
 
@@ -322,8 +312,8 @@ void USequenceRenderer::FindNextCamera()
 	}
 
 	// Prepare the targets queue
-	RendererTargetOptions.GetSelectedTargets(TextureStyleManager, TargetsQueue);
-	CurrentTarget = nullptr;
+	RendererTargetOptions.GetTargetSets(TextureStyleManager, TargetSetsQueue);
+	CurrentTargetSet = nullptr;
 
 	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering camera %d/%d"), *FString(__FUNCTION__), CurrentRigCameraId + 1, RigCameras.Num())
 
@@ -334,23 +324,23 @@ void USequenceRenderer::FindNextCamera()
 void USequenceRenderer::FindNextTarget()
 {
 	// Check if the end is reached
-	if (TargetsQueue.IsEmpty())
+	if (TargetSetsQueue.IsEmpty())
 	{
 		return FindNextCamera();
 	}
 
 	// Select the next requested target
-	TargetsQueue.Dequeue(CurrentTarget);
+	TargetSetsQueue.Dequeue(CurrentTargetSet);
 
 	// Setup specifics of the current rendering target
-	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering the %s target"), *FString(__FUNCTION__), *CurrentTarget->Name())
-	if (!CurrentTarget->PrepareSequence(RenderingSequence))
+	UE_LOG(LogEasySynth, Log, TEXT("%s: Rendering the %s target"), *FString(__FUNCTION__), *CurrentTargetSet->Name())
+	if (!CurrentTargetSet->PrepareSequence(RenderingSequence))
 	{
-		ErrorMessage = FString::Printf(TEXT("Failed while preparing the rendering of the %s target"), *CurrentTarget->Name());
+		ErrorMessage = FString::Printf(TEXT("Failed while preparing the rendering of the %s target"), *CurrentTargetSet->Name());
 		return BroadcastRenderingFinished(false);
 	}
 
-	// Start the rendering after a brief pause
+	// Start the rendering after a brief pause for texture changes to take effect
 	const float DelaySeconds = 2.0f;
 	const bool bLoop = false;
 	GEditor->GetEditorWorldContext().World()->GetTimerManager().SetTimer(
@@ -371,9 +361,9 @@ void USequenceRenderer::StartRendering()
 	}
 
 	// Make sure a renderer target is selected
-	if (!CurrentTarget.IsValid())
+	if (!CurrentTargetSet.IsValid())
 	{
-		ErrorMessage = "Current renderer target null when starting the recording";
+		ErrorMessage = "Current renderer target set is null when starting the recording";
 		return BroadcastRenderingFinished(false);
 	}
 
@@ -402,8 +392,7 @@ void USequenceRenderer::StartRendering()
 	}
 
 	// Run the rendering
-	UMoviePipelineExecutorBase* ActiveExecutor =
-		MoviePipelineQueueSubsystem->RenderQueueWithExecutor(ProjectSettings->DefaultLocalExecutor);
+	UMoviePipelineExecutorBase* ActiveExecutor = MoviePipelineQueueSubsystem->RenderQueueWithExecutor(ProjectSettings->DefaultLocalExecutor);
 	if (ActiveExecutor == nullptr)
 	{
 		ErrorMessage = "Could not start the rendering";
@@ -419,33 +408,83 @@ bool USequenceRenderer::PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipel
 	check(MoviePipelineQueueSubsystem)
 
 	// Update export image format
-	UMoviePipelineSetting* JpegSetting = EasySynthMoviePipelineConfig->FindOrAddSettingByClass(
+	UMoviePipelineSetting* JpgSetting = EasySynthMoviePipelineConfig->FindOrAddSettingByClass(
 		UMoviePipelineImageSequenceOutput_JPG::StaticClass(), true);
-	UMoviePipelineSetting* PngSetting = EasySynthMoviePipelineConfig->FindSettingByClass(
+	UMoviePipelineSetting* PngSetting = EasySynthMoviePipelineConfig->FindOrAddSettingByClass(
 		UMoviePipelineImageSequenceOutput_PNG::StaticClass(), true);
-	UMoviePipelineSetting* ExrSetting = EasySynthMoviePipelineConfig->FindOrAddSettingByClass(
+	UMoviePipelineSetting* ExrSettingBase = EasySynthMoviePipelineConfig->FindOrAddSettingByClass(
 		UMoviePipelineImageSequenceOutput_EXRLocal::StaticClass(), true);
-	if (JpegSetting == nullptr || PngSetting == nullptr || ExrSetting == nullptr)
+	UMoviePipelineImageSequenceOutput_EXRLocal* ExrSetting = Cast<UMoviePipelineImageSequenceOutput_EXRLocal>(ExrSettingBase);
+
+	if (PngSetting == nullptr || ExrSetting == nullptr)
 	{
 		ErrorMessage = "JPEG, PNG or EXR settings not found";
 		return false;
 	}
-	JpegSetting->SetIsEnabled(CurrentTarget->ImageFormat == EImageFormat::JPEG);
-	PngSetting->SetIsEnabled(CurrentTarget->ImageFormat == EImageFormat::PNG);
-	ExrSetting->SetIsEnabled(CurrentTarget->ImageFormat == EImageFormat::EXR);
+	
+	JpgSetting->SetIsEnabled(true);
+	PngSetting->SetIsEnabled(true);
+	ExrSetting->SetIsEnabled(true);
+	// Render each pass to a different EXR file
+	ExrSetting->bMultilayer = false;
+
+	UMoviePipelineDeferredPassBase* DeferredRenderSetting = EasySynthMoviePipelineConfig->FindSetting<UMoviePipelineDeferredPassBase>();
+
+	if (DeferredRenderSetting == nullptr)
+	{
+		ErrorMessage = "DefferedRenderSetting settings not found";
+		return false;
+	}
+
+	DeferredRenderSetting->AdditionalPostProcessMaterials.Empty();
+
+	UMoviePipelineSetting* AntiAliasingBase = EasySynthMoviePipelineConfig->FindOrAddSettingByClass(
+		UMoviePipelineAntiAliasingSetting::StaticClass(), true);
+	UMoviePipelineAntiAliasingSetting* AntiAliasing = Cast<UMoviePipelineAntiAliasingSetting>(AntiAliasingBase);
+
+	if (AntiAliasing == nullptr)
+	{
+		ErrorMessage = "AntiAliasing settings not found";
+		return false;
+	}
+
+	// Only spatial samples matter in movie rendering pipeline
+	AntiAliasing->SpatialSampleCount = 8;
+	AntiAliasing->bOverrideAntiAliasing = true;
+	AntiAliasing->AntiAliasingMethod = EAntiAliasingMethod::AAM_None;
+
+	for (int i = 0; i < CurrentTargetSet->TargetNames().Num(); i++)
+	{
+		UMaterial* PostProcessMaterial = LoadObject<UMaterial>(
+			nullptr,
+			*FPathUtils::PostProcessMaterialPath(CurrentTargetSet->TargetNames()[i]));
+
+		if (PostProcessMaterial == nullptr)
+		{
+			UE_LOG(LogEasySynth, Error, TEXT("%s: Could not load depth post process material"), *FString(__FUNCTION__))
+			return false;
+		}
+
+		FMoviePipelinePostProcessPass targetPass;
+		targetPass.bEnabled = true;
+		targetPass.Material = PostProcessMaterial;
+		DeferredRenderSetting->AdditionalPostProcessMaterials.Add(targetPass);
+		DeferredRenderSetting->bUse32BitPostProcessMaterials = false;
+		DeferredRenderSetting->bDisableMultisampleEffects = false; // true;
+	}
 
 	// Update pipeline output settings for the current target
-	UMoviePipelineOutputSetting* OutputSetting =
-		EasySynthMoviePipelineConfig->FindSetting<UMoviePipelineOutputSetting>();
+	UMoviePipelineOutputSetting* OutputSetting = EasySynthMoviePipelineConfig->FindSetting<UMoviePipelineOutputSetting>();
 	if (OutputSetting == nullptr)
 	{
 		ErrorMessage = "Could not find the output setting inside the default config";
 		return false;
 	}
+
 	// Update the image output directory
-	OutputSetting->OutputDirectory.Path =
-		FPathUtils::RigCameraDir(RenderingDirectory, RigCameras[CurrentRigCameraId]) / CurrentTarget->Name();
+	OutputSetting->OutputDirectory.Path = FPathUtils::RigCameraDir(RenderingDirectory, RigCameras[CurrentRigCameraId]);
 	OutputSetting->OutputResolution = OutputResolution;
+	OutputSetting->FileNameFormat = "{sequence_name}.{render_pass}.{frame_number}";
 
 	// Get the queue of sequences to be renderer
 	UMoviePipelineQueue* MoviePipelineQueue = MoviePipelineQueueSubsystem->GetQueue();
@@ -502,7 +541,7 @@ void USequenceRenderer::BroadcastRenderingFinished(const bool bSuccess)
 	}
 
 	RigCameras.Empty();
-	TargetsQueue.Empty();
+	TargetSetsQueue.Empty();
 
 	// Revert world state to the original one
 	TextureStyleManager->CheckoutTextureStyle(OriginalTextureStyle);

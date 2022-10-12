@@ -57,7 +57,7 @@ void UTextureBackupManager::AddLandscapeActor(
 		// Revert to original material
 		if (bDoPaint)
 		{
-			LandscapeProxy->LandscapeMaterial = Cast<UMaterialInstance>(LandscapeActorDescriptors[LandscapeProxy]);
+			LandscapeProxy->LandscapeMaterial = Cast<UMaterialInterface>(LandscapeActorDescriptors[LandscapeProxy]);
 			if (LandscapeProxy->LandscapeMaterial != nullptr)
 			{
 				FPropertyChangedEvent PropertyChangedEvent(FindFieldChecked<FProperty>(LandscapeProxy->GetClass(), FName("LandscapeMaterial")));

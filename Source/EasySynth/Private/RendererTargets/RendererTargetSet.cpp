@@ -1,6 +1,6 @@
 // Copyright (c) 2022 YDrive Inc. All rights reserved.
 
-#include "RendererTargets/RendererTarget.h"
+#include "RendererTargets/RendererTargetSet.h"
 
 #include "ILevelSequenceEditorToolkit.h"
 #include "ISequencer.h"
@@ -12,7 +12,7 @@
 #include "SequencerWrapper.h"
 
 
-TArray<UCameraComponent*> FRendererTarget::GetCameras(ULevelSequence* LevelSequence)
+TArray<UCameraComponent*> FRendererTargetSet::GetCameras(ULevelSequence* LevelSequence)
 {
 	TArray<UCameraComponent*> Cameras;
 
@@ -43,7 +43,7 @@ TArray<UCameraComponent*> FRendererTarget::GetCameras(ULevelSequence* LevelSeque
 	return Cameras;
 }
 
-bool FRendererTarget::ClearCameraPostProcess(ULevelSequence* LevelSequence)
+bool FRendererTargetSet::ClearCameraPostProcess(ULevelSequence* LevelSequence)
 {
 	// Get all camera components bound to the level sequence
 	TArray<UCameraComponent*> Cameras = GetCameras(LevelSequence);

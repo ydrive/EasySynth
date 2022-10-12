@@ -4,12 +4,7 @@
 
 #include "CoreMinimal.h"
 
-#include "RendererTargets/RendererTarget.h"
-#include "RendererTargets/ColorImageTarget.h"
-#include "RendererTargets/DepthImageTarget.h"
-#include "RendererTargets/NormalImageTarget.h"
-#include "RendererTargets/OpticalFlowImageTarget.h"
-#include "RendererTargets/SemanticImageTarget.h"
+#include "RendererTargets/RendererTargetSet.h"
 #include "TextureStyles/TextureStyleManager.h"
 
 #include "SequenceRenderer.generated.h"
@@ -27,7 +22,9 @@ class FRendererTargetOptions
 {
 public:
 	/** The enum containing all supported rendering targets */
-	enum TargetType { COLOR_IMAGE, DEPTH_IMAGE, NORMAL_IMAGE, OPTICAL_FLOW_IMAGE, SEMANTIC_IMAGE, COUNT };
+	enum TargetType { COLOR_IMAGE, DEPTH_IMAGE, NORMAL_IMAGE, OPTICAL_FLOW_IMAGE, SEMANTIC_IMAGE, TARGET_COUNT };
+
+	enum TargetSetType { NON_SEMANTIC_SET, SEMANTIC_SET, SET_COUNT };
 
 	FRendererTargetOptions();
 
@@ -65,13 +62,11 @@ public:
 	float OpticalFlowScale() const { return OpticalFlowScaleValue; }
 
 	/** Populate provided queue with selected renderer targets */
-	void GetSelectedTargets(
+	void GetTargetSets(
 		UTextureStyleManager* TextureStyleManager,
-		TQueue<TSharedPtr<FRendererTarget>>& OutTargetsQueue) const;
+		TQueue<TSharedPtr<FRendererTargetSet>>& OutTargetsQueue) const;
 
 private:
-	/** Get the renderer target object from the target type id */
-	TSharedPtr<FRendererTarget> RendererTarget(const int TargetType, UTextureStyleManager* TextureStyleManager) const;
 
 	/** Is the default color image rendering requested */
 	TArray<bool> SelectedTargets;
@@ -193,10 +188,10 @@ private:
 	int CurrentRigCameraId;
 
 	/** Queue of targets to be rendered */
-	TQueue<TSharedPtr<FRendererTarget>> TargetsQueue;
+	TQueue<TSharedPtr<FRendererTargetSet>> TargetSetsQueue;
 
 	/** Target currently being rendered */
-	TSharedPtr<FRendererTarget> CurrentTarget;
+	TSharedPtr<FRendererTargetSet> CurrentTargetSet;
 
 	/** Output image resolution */
 	FIntPoint OutputResolution;
