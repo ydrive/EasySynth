@@ -403,7 +403,7 @@ void USequenceRenderer::StartRendering()
 
 	// Run the rendering
 	UMoviePipelineExecutorBase* ActiveExecutor =
-		MoviePipelineQueueSubsystem->RenderQueueWithExecutor(ProjectSettings->DefaultLocalExecutor);
+		MoviePipelineQueueSubsystem->RenderQueueWithExecutor(ProjectSettings->DefaultLocalExecutor.ResolveClass());
 	if (ActiveExecutor == nullptr)
 	{
 		ErrorMessage = "Could not start the rendering";
