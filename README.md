@@ -19,6 +19,8 @@ The current main branch of this repo is compatible with Unreal Engine 5.0. For s
 
 Major releases also include example projects amongst the release assets.
 
+<b>IMPORTANT:</b> It seems that there is an issue with sequence rendering in UE 5.0 on Linux in that the generated images are not in the correct order. This also causes EasySynth output to be unusable. If using Linux and experiencing this issue, please use another UE version.
+
 ### Install from the marketplace
 
 This is the easiest method if using Windows and you are not interested in modifying the plugin source code.
