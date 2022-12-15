@@ -85,7 +85,7 @@ private:
 	void LoadWidgetOptionStates();
 
 	/** Save widget options states */
-	void SaveWidgetOptionStates(UWidgetStateAsset* WidgetStateAsset = nullptr);
+	void SaveWidgetOptionStates();
 
 	/** Interface that handles importing semantic classes from CSV */
 	FSemanticCsvInterface SemanticCsvInterface;
