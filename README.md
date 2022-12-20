@@ -19,6 +19,8 @@ The current main branch of this repo is compatible with Unreal Engine 5.1. For s
 
 Major releases also include example projects amongst the release assets.
 
+<b>IMPORTANT:</b> It seems that there is an issue with sequence rendering in UE 5.0 on Linux in that the generated images are not in the correct order. This also causes EasySynth output to be unusable. If using Linux and experiencing this issue, please use another UE version.
+
 ### Install from the marketplace
 
 This is the easiest method if using Windows and you are not interested in modifying the plugin source code.
@@ -91,7 +93,13 @@ A CSV file including semantic class names and colors will be exported together w
 
 ### Sequence rendering
 
-Image rendering relies on a user-defined `Level Sequence`, which represents a movie cut scene inside Unreal Engine. You only need the LevelSequence asset for rendering. Skip anything that has to do with the LevelSequenceActor. Here are some materials on how to get started:
+Image rendering relies on a user-defined `Level Sequence`, which represents a movie cut scene inside Unreal Engine. 
+
+<b>IMPORTANT:</b> Camera(s) used with the sequencer have to be manually added to the level and then linked with the sequencer. Adding a camera through the sequencer itself will cause unexpected behavior or crashes, due to issues caused by spawnable/possessable sequence actors. For more information see:
+
+https://docs.unrealengine.com/4.27/en-US/AnimatingObjects/Sequencer/Overview/SpawnablesPossessables/
+
+You only need the LevelSequence asset for rendering. Skip anything that has to do with the LevelSequenceActor. Here are some materials on how to get started:
 - https://docs.unrealengine.com/4.27/en-US/AnimatingObjects/Sequencer/Overview/
 - https://youtu.be/-NmHXAFX-3M
 
