@@ -151,7 +151,13 @@ bool USequenceRenderer::RenderSequence(
 	}
 
 	// Assume the same source actor is used for all camera cuts
-	UMovieSceneCameraCutSection* CutSection = SequencerWrapper.GetMovieSceneCutSections()[0];
+	TArray<UMovieSceneCameraCutSection*> CutSections = SequencerWrapper.GetMovieSceneCutSections();
+	if (CutSections.Num() == 0)
+	{
+		UE_LOG(LogEasySynth, Warning, TEXT("%s: No sections inside the camera cut track"), *FString(__FUNCTION__))
+		return false;
+	}
+	UMovieSceneCameraCutSection* CutSection = CutSections[0];
 
 	// Get the sequence source actor
 	TArrayView<TWeakObjectPtr<>> SourceObjects = SequencerWrapper.GetSequencer()->FindBoundObjects(
