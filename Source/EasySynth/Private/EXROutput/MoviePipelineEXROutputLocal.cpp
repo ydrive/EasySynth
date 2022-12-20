@@ -127,13 +127,13 @@ bool FEXRImageWriteTaskLocal::WriteToDisk()
 				FileCompression = Imf::Compression::DWAA_COMPRESSION; break;
 			case EEXRCompressionFormatLocal::DWAB:
 				FileCompression = Imf::Compression::DWAB_COMPRESSION; break;
-			default: 
+			default:
 				checkNoEntry();
 		}
-		
+
 		// Data Window specifies how much data is in the actual file, ie: 1920x1080
 		IMATH_NAMESPACE::Box2i DataWindow = IMATH_NAMESPACE::Box2i(IMATH_NAMESPACE::V2i(0,0), IMATH_NAMESPACE::V2i(Width - 1, Height - 1));
-		
+
 		float BorderRatio = FMath::Clamp((OverscanPercentage / (1.0f + OverscanPercentage)) / 2.0f, 0.0f, 0.5f);
 		int32 OverscanBorderWidth = FMath::RoundToInt(Width * BorderRatio);
 		int32 OverscanBorderHeight = FMath::RoundToInt(Height * BorderRatio);
@@ -142,13 +142,13 @@ bool FEXRImageWriteTaskLocal::WriteToDisk()
 		IMATH_NAMESPACE::V2i TopLeft = IMATH_NAMESPACE::V2i(OverscanBorderWidth, OverscanBorderHeight);
 		IMATH_NAMESPACE::V2i BottomRight = IMATH_NAMESPACE::V2i(Width - OverscanBorderWidth - 1, Height - OverscanBorderHeight - 1);
 
-		// Display Window specifies the total 'visible' area of the output file. 
+		// Display Window specifies the total 'visible' area of the output file.
 		// The Display Window always starts at 0,0, but Data Window can go negative to
 		// support having pixels out of bounds (such as camera overscan).
 		IMATH_NAMESPACE::Box2i DisplayWindow = IMATH_NAMESPACE::Box2i(TopLeft, BottomRight);
-		
+
 		Imf::Header Header(DisplayWindow, DataWindow, 1, Imath::V2f(0, 0), 1, Imf::LineOrder::INCREASING_Y, FileCompression);
-		
+
 		// If using lossy compression, specify the compression level in the header per exr spec.
 		if (FileCompression == Imf::Compression::DWAA_COMPRESSION ||
 			FileCompression == Imf::Compression::DWAB_COMPRESSION)
@@ -159,8 +159,8 @@ bool FEXRImageWriteTaskLocal::WriteToDisk()
 		// Insert our key-value pair metadata (if any, can be an arbitrary set of key/value pairs)
 		AddFileMetadata(Header);
 
-		FExrMemStreamOutLocal OutputFile; 
-		
+		FExrMemStreamOutLocal OutputFile;
+
 		{
 			// The FrameBuffer stores all the channels of the resulting image.
 			Imf::FrameBuffer FrameBuffer;
@@ -214,13 +214,13 @@ bool FEXRImageWriteTaskLocal::WriteToDisk()
 				default:
 					checkNoEntry();
 				}
-				
+
 				// Reserve enough space in the output file for the whole layer so we don't keep reallocating.
 				OutputFile.Data.Reserve(BytesWritten);
 			}
 
 			// This scope ensures that IMF::Outputfile creates a complete file by closing the file when it goes out of scope.
-			// To complete the file, EXR seeks back into the file and writes the scanline offsets when the file is closed, 
+			// To complete the file, EXR seeks back into the file and writes the scanline offsets when the file is closed,
 			// which moves the tellp location. So file length is stored in advance for later use. The output file needs to be
 			// created after the header information is filled.
 			Imf::OutputFile ImfFile(OutputFile, Header, FPlatformMisc::NumberOfCoresIncludingHyperthreads());
@@ -238,12 +238,12 @@ bool FEXRImageWriteTaskLocal::WriteToDisk()
 			}
 #endif
 		}
-		
+
 		// Now that the scope has closed for the Imf::OutputFile, now we can write the data to disk.
 		if (bSuccess)
 		{
 			bSuccess = FFileHelper::SaveArrayToFile(OutputFile.Data, *Filename);
-		} 
+		}
 	}
 
 	if (!bSuccess)
@@ -337,7 +337,7 @@ int64 FEXRImageWriteTaskLocal::CompressRaw(Imf::Header& InHeader, Imf::FrameBuff
 				ComponentWidth * NumChannels,				// xStride
 				Width * ComponentWidth * NumChannels));		// yStride
 	}
-	
+
 	return int64(Width) * int64(Height) * NumChannels * int64(OutputFormat == 2 ? 4 : 2);
 }
 
@@ -429,7 +429,7 @@ void UMoviePipelineImageSequenceOutput_EXRLocal::OnReceiveImageDataImpl(FMoviePi
 
 			UE::MoviePipeline::ValidateOutputFormatString(FileNameFormatString, bIncludeRenderPass, bTestFrameNumber);
 
-			// Create specific data that needs to override 
+			// Create specific data that needs to override
 			TMap<FString, FString> FormatOverrides;
 			FormatOverrides.Add(TEXT("render_pass"), TEXT("")); // Render Passes are included inside the exr file by named layers.
 			FormatOverrides.Add(TEXT("ext"), Extension);

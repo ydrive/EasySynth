@@ -47,7 +47,7 @@ public:
 
 	/** True if this task is allowed to overwrite an existing file, false otherwise. */
 	bool bOverwriteFile;
-	
+
 	/** Compression method used for the resulting EXR files. */
 	EEXRCompressionFormatLocal Compression;
 
@@ -56,7 +56,7 @@ public:
 
 	/** A function to invoke on the game thread when the task has completed */
 	TFunction<void(bool)> OnCompleted;
-	
+
 	/** Width/Height of the image data. All samples should match this. */
 	int32 Width;
 
