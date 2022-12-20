@@ -520,10 +520,46 @@ void FWidgetManager::OnRenderingFinished(bool bSuccess)
 void FWidgetManager::LoadWidgetOptionStates()
 {
 	// Try to load
-	UWidgetStateAsset* WidgetStateAsset =
-		LoadObject<UWidgetStateAsset>(nullptr, *FPathUtils::WidgetStateAssetPath());
+	UWidgetStateAsset* WidgetStateAsset = LoadObject<UWidgetStateAsset>(nullptr, *FPathUtils::WidgetStateAssetPath());
 
-	// Initialize with defaults if not found
+
+	if (WidgetStateAsset != nullptr)
+	{
+
+		// Initialize the widget members using loaded options
+		LevelSequenceAssetData = FAssetData(WidgetStateAsset->LevelSequenceAssetPath.TryLoad());
+		SequenceRendererTargets.SetExportCameraPoses(WidgetStateAsset->bCameraPosesSelected);
+		SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::COLOR_IMAGE, WidgetStateAsset->bColorImagesSelected);
+		SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::DEPTH_IMAGE, WidgetStateAsset->bDepthImagesSelected);
+		SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::NORMAL_IMAGE, WidgetStateAsset->bNormalImagesSelected);
+		SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::OPTICAL_FLOW_IMAGE, WidgetStateAsset->bOpticalFlowImagesSelected);
+		SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::SEMANTIC_IMAGE, WidgetStateAsset->bSemanticImagesSelected);
+		SequenceRendererTargets.SetOutputFormat(
+			FRendererTargetOptions::COLOR_IMAGE,
+			static_cast<EImageFormat>(WidgetStateAsset->bColorImagesOutputFormat));
+		SequenceRendererTargets.SetOutputFormat(
+			FRendererTargetOptions::DEPTH_IMAGE,
+			static_cast<EImageFormat>(WidgetStateAsset->bDepthImagesOutputFormat));
+		SequenceRendererTargets.SetOutputFormat(
+			FRendererTargetOptions::NORMAL_IMAGE,
+			static_cast<EImageFormat>(WidgetStateAsset->bNormalImagesOutputFormat));
+		SequenceRendererTargets.SetOutputFormat(
+			FRendererTargetOptions::OPTICAL_FLOW_IMAGE,
+			static_cast<EImageFormat>(WidgetStateAsset->bOpticalFlowImagesOutputFormat));
+		SequenceRendererTargets.SetOutputFormat(
+			FRendererTargetOptions::SEMANTIC_IMAGE,
+			static_cast<EImageFormat>(WidgetStateAsset->bSemanticImagesOutputFormat));
+		OutputImageResolution = WidgetStateAsset->OutputImageResolution;
+		SequenceRendererTargets.SetDepthRangeMeters(WidgetStateAsset->DepthRange);
+		SequenceRendererTargets.SetOpticalFlowScale(WidgetStateAsset->OpticalFlowScale);
+		OutputDirectory = WidgetStateAsset->OutputDirectory;
+	}
+}
+
+void FWidgetManager::SaveWidgetOptionStates()
+{
+	// Load the asset, or create new one if it does not exist
+	UWidgetStateAsset* WidgetStateAsset = LoadObject<UWidgetStateAsset>(nullptr, *FPathUtils::WidgetStateAssetPath());
 	if (WidgetStateAsset == nullptr)
 	{
 		UE_LOG(LogEasySynth, Log, TEXT("%s: Texture mapping asset not found, creating a new one"),
@@ -543,52 +579,6 @@ void FWidgetManager::LoadWidgetOptionStates()
 			*FPathUtils::WidgetStateAssetName,
 			EObjectFlags::RF_Public | EObjectFlags::RF_Standalone);
 		check(WidgetStateAsset)
-
-		// Set defaults and save
-		SaveWidgetOptionStates(WidgetStateAsset);
-	}
-
-	// Initialize the widget members using loaded options
-	LevelSequenceAssetData = FAssetData(WidgetStateAsset->LevelSequenceAssetPath.TryLoad());
-	SequenceRendererTargets.SetExportCameraPoses(WidgetStateAsset->bCameraPosesSelected);
-	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::COLOR_IMAGE, WidgetStateAsset->bColorImagesSelected);
-	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::DEPTH_IMAGE, WidgetStateAsset->bDepthImagesSelected);
-	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::NORMAL_IMAGE, WidgetStateAsset->bNormalImagesSelected);
-	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::OPTICAL_FLOW_IMAGE, WidgetStateAsset->bOpticalFlowImagesSelected);
-	SequenceRendererTargets.SetSelectedTarget(FRendererTargetOptions::SEMANTIC_IMAGE, WidgetStateAsset->bSemanticImagesSelected);
-	SequenceRendererTargets.SetOutputFormat(
-		FRendererTargetOptions::COLOR_IMAGE,
-		static_cast<EImageFormat>(WidgetStateAsset->bColorImagesOutputFormat));
-	SequenceRendererTargets.SetOutputFormat(
-		FRendererTargetOptions::DEPTH_IMAGE,
-		static_cast<EImageFormat>(WidgetStateAsset->bDepthImagesOutputFormat));
-	SequenceRendererTargets.SetOutputFormat(
-		FRendererTargetOptions::NORMAL_IMAGE,
-		static_cast<EImageFormat>(WidgetStateAsset->bNormalImagesOutputFormat));
-	SequenceRendererTargets.SetOutputFormat(
-		FRendererTargetOptions::OPTICAL_FLOW_IMAGE,
-		static_cast<EImageFormat>(WidgetStateAsset->bOpticalFlowImagesOutputFormat));
-	SequenceRendererTargets.SetOutputFormat(
-		FRendererTargetOptions::SEMANTIC_IMAGE,
-		static_cast<EImageFormat>(WidgetStateAsset->bSemanticImagesOutputFormat));
-	OutputImageResolution = WidgetStateAsset->OutputImageResolution;
-	SequenceRendererTargets.SetDepthRangeMeters(WidgetStateAsset->DepthRange);
-	SequenceRendererTargets.SetOpticalFlowScale(WidgetStateAsset->OpticalFlowScale);
-	OutputDirectory = WidgetStateAsset->OutputDirectory;
-}
-
-void FWidgetManager::SaveWidgetOptionStates(UWidgetStateAsset* WidgetStateAsset)
-{
-	// Get the asset if not provided
-	if (WidgetStateAsset == nullptr)
-	{
-		WidgetStateAsset = LoadObject<UWidgetStateAsset>(nullptr, *FPathUtils::WidgetStateAssetPath());
-		if (WidgetStateAsset == nullptr)
-		{
-			UE_LOG(LogEasySynth, Error, TEXT("%s: Widget state asset expected but not found, cannot save the widget state"),
-				*FString(__FUNCTION__));
-			return;
-		}
 	}
 
 	// Update asset values
