@@ -9,7 +9,7 @@ The plugin works by automatically starting the rendering of a user-defined level
 |Standard color images, as seen while creating the sequence in the editor|<img src="ReadmeContent/ColorImage.gif" alt="Color image" width="250" style="margin:10px"/>|
 |Depth images, representing the depth of a pixel using a grayscale value|<img src="ReadmeContent/DepthImage.gif" alt="Depth image" width="250" style="margin:10px"/>|
 |Normal images, representing pixel normals using X, Y, and Z color values|<img src="ReadmeContent/NormalImage.gif" alt="Normal image" width="250" style="margin:10px"/>|
-|Optical flow images, for more detail check out the optical flow section below|<img src="ReadmeContent/OpticalFlowImage.gif" alt="Optical flow image" width="250" style="margin:10px"/>|
+|Optical flow images, representing pixel movement between frames using X, Y, and Z color values|<img src="ReadmeContent/OpticalFlowImage.gif" alt="Optical flow image" width="250" style="margin:10px"/>|
 |Semantic images, with every object rendered using the user-defined semantic color|<img src="ReadmeContent/SemanticImage.gif" alt="Sematic image" width="250" style="margin:10px"/>|
 ||Model credits: [Art Equilibrium](https://www.cgtrader.com/3d-models/exterior/street/japanese-street-6278f45d-3e1e-48db-9ca6-cce343baa974)|
 
@@ -18,8 +18,6 @@ The plugin works by automatically starting the rendering of a user-defined level
 The current main branch of this repo is compatible with Unreal Engine 5.1. For source code or binary builds, targeting older engine versions, please consult previous releases.
 
 Major releases also include example projects amongst the release assets.
-
-<b>IMPORTANT:</b> It seems that there is an issue with sequence rendering in UE 5.0 on Linux in that the generated images are not in the correct order. This also causes EasySynth output to be unusable. If using Linux and experiencing this issue, please use another UE version.
 
 ### Install from the marketplace
 
@@ -93,7 +91,7 @@ A CSV file including semantic class names and colors will be exported together w
 
 ### Sequence rendering
 
-Image rendering relies on a user-defined `Level Sequence`, which represents a movie cut scene inside Unreal Engine. 
+Image rendering relies on a user-defined `Level Sequence`, which represents a movie cut scene inside Unreal Engine.
 
 <b>IMPORTANT:</b> Camera(s) used with the sequencer have to be manually added to the level and then linked with the sequencer. Adding a camera through the sequencer itself will cause unexpected behavior or crashes, due to issues caused by spawnable/possessable sequence actors. For more information see:
 
@@ -249,6 +247,19 @@ Following is a ROS JSON file example for a rig with two parallel cameras with th
 	}
 }
 ```
+
+### Normal images
+
+Normal images contain color-coded vector values that represent surface normals for each pixel, relative to the camera view vector.
+
+Vector axis values that range from -1.0 to 1.0, are mapped to RGB color channels using the formula `(xyz + 1.0) / 2.0`.
+
+The axis mappings are as follows:
+- R: [0 - 1] => (towards left - towards right)
+- G: [0 - 1] => (towards bottom - towards top)
+- B: [0 - 1] => (towards camera - away from camera)
+
+<b>IMPORTANT:</b> Normal vectors are not guaranteed to be normalized.
 
 ### Optical flow images
 
