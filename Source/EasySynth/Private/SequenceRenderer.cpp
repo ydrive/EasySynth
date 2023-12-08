@@ -83,8 +83,8 @@ TSharedPtr<FRendererTarget> FRendererTargetOptions::RendererTarget(
 }
 
 USequenceRenderer::USequenceRenderer() :
-	EasySynthMoviePipelineConfig(DuplicateObject<UMoviePipelineMasterConfig>(
-		LoadObject<UMoviePipelineMasterConfig>(nullptr, *FPathUtils::DefaultMoviePipelineConfigPath()), nullptr)),
+	EasySynthMoviePipelineConfig(DuplicateObject<UMoviePipelinePrimaryConfig>(
+		LoadObject<UMoviePipelinePrimaryConfig>(nullptr, *FPathUtils::DefaultMoviePipelineConfigPath()), nullptr)),
 	bCurrentlyRendering(false),
 	ErrorMessage("")
 {
