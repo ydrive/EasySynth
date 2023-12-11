@@ -16,7 +16,7 @@
 
 class ULevelSequence;
 class UMoviePipelineExecutorBase;
-class UMoviePipelineMasterConfig;
+class UMoviePipelinePrimaryConfig;
 class UMoviePipelineQueueSubsystem;
 
 
@@ -160,7 +160,7 @@ private:
 
 	/** Default movie pipeline config file provided with the plugin content */
 	UPROPERTY()
-	UMoviePipelineMasterConfig* EasySynthMoviePipelineConfig;
+	UMoviePipelinePrimaryConfig* EasySynthMoviePipelineConfig;
 
 	/** Points to the user-created level sequence */
 	UPROPERTY()

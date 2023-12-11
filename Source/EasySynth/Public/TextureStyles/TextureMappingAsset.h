@@ -20,7 +20,7 @@ struct FSemanticClass
 	FString Name;
 
 	/** The semantic class color */
-	UPROPERTY(EditAnywhere, Category = "Semantic Class Properties")
+	UPROPERTY(EditAnywhere, Category = "Semantic Class Properties", meta = (IgnoreForMemberInitializationTest))
 	FColor Color;
 
 	/** Reference to the plain color material instance */

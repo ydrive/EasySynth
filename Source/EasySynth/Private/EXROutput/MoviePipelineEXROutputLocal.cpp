@@ -14,7 +14,7 @@
 #include "ImageWriteQueue.h"
 #include "MoviePipeline.h"
 #include "MoviePipelineImageQuantization.h"
-#include "MoviePipelineMasterConfig.h"
+#include "MoviePipelinePrimaryConfig.h"
 #include "IOpenExrRTTIModule.h"
 #include "Modules/ModuleManager.h"
 #include "MoviePipelineUtils.h"
@@ -396,7 +396,7 @@ void UMoviePipelineImageSequenceOutput_EXRLocal::OnReceiveImageDataImpl(FMoviePi
 	FModuleManager::Get().LoadModule(RTTIExtensionModuleName);
 
 
-	UMoviePipelineOutputSetting* OutputSettings = GetPipeline()->GetPipelineMasterConfig()->FindSetting<UMoviePipelineOutputSetting>();
+	UMoviePipelineOutputSetting* OutputSettings = GetPipeline()->GetPipelinePrimaryConfig()->FindSetting<UMoviePipelineOutputSetting>();
 	check(OutputSettings);
 
 	// EXR only supports one resolution per file, but in certain scenarios we can get layers with different resolutions. To solve this, we're
