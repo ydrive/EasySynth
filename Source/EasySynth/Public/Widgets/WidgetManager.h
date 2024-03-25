@@ -62,6 +62,12 @@ private:
 	/** Returns the selected output format of the target */
 	FText SelectedOutputFormat(const FRendererTargetOptions::TargetType TargetType) const;
 
+	/** Callback function handling the update of the selected custom post processing material */
+	void OnCustomPPMaterialSelected(const FAssetData& AssetData);
+
+	/** Callback function providing the path the the selected custom post processing material asset */
+	FString GetCustomPPMaterialPath() const;
+
 	/** Callback function handling the update of the output directory */
 	void OnOutputDirectoryChanged(const FString& Directory) { OutputDirectory = Directory; }
 

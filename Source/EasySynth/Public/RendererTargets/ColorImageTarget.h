@@ -15,8 +15,12 @@ class UTextureStyleManager;
 class FColorImageTarget : public FRendererTarget
 {
 public:
-	explicit FColorImageTarget(UTextureStyleManager* TextureStyleManager, const EImageFormat ImageFormat) :
-		FRendererTarget(TextureStyleManager, ImageFormat)
+	explicit FColorImageTarget(
+			UTextureStyleManager* TextureStyleManager,
+			const EImageFormat ImageFormat,
+			UMaterial* CustomPPMaterial) :
+		FRendererTarget(TextureStyleManager, ImageFormat),
+		CustomPPMaterial(CustomPPMaterial)
 	{}
 
 	/** Returns the name of the target */
@@ -27,4 +31,7 @@ public:
 
 	/** Reverts changes made to the sequence by the PrepareSequence */
 	bool FinalizeSequence(ULevelSequence* LevelSequence) override;
+
+private:
+	UMaterial* CustomPPMaterial;
 };

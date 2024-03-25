@@ -298,6 +298,23 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			.Padding(2)
 			[
 				SNew(STextBlock)
+				.Text(LOCTEXT("CustomPPMaterialSectionTitle", "Optional custom PP material for color images"))
+			]
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(SObjectPropertyEntryBox)
+				.AllowedClass(UMaterial::StaticClass())
+				.ObjectPath_Raw(this, &FWidgetManager::GetCustomPPMaterialPath)
+				.OnObjectChanged_Raw(this, &FWidgetManager::OnCustomPPMaterialSelected)
+				.AllowClear(true)
+				.DisplayUseSelected(true)
+				.DisplayBrowse(true)
+			]
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(STextBlock)
 				.Text(LOCTEXT("OpticalFlowScaleText", "Optical flow scale coefficient"))
 			]
 			+SScrollBox::Slot()
@@ -443,6 +460,21 @@ FText FWidgetManager::SelectedOutputFormat(const FRendererTargetOptions::TargetT
 	}
 }
 
+void FWidgetManager::OnCustomPPMaterialSelected(const FAssetData& AssetData)
+{
+	SequenceRendererTargets.SetCustomPPMaterialAssetData(AssetData);
+}
+
+FString FWidgetManager::GetCustomPPMaterialPath() const
+{
+	const auto& CustomPPMaterialAssetData = SequenceRendererTargets.CustomPPMaterial();
+	if (CustomPPMaterialAssetData.IsValid())
+	{
+		return CustomPPMaterialAssetData.ObjectPath.ToString();
+	}
+	return "";
+}
+
 bool FWidgetManager::GetIsRenderImagesEnabled() const
 {
 	return
@@ -522,10 +554,8 @@ void FWidgetManager::LoadWidgetOptionStates()
 	// Try to load
 	UWidgetStateAsset* WidgetStateAsset = LoadObject<UWidgetStateAsset>(nullptr, *FPathUtils::WidgetStateAssetPath());
 
-
 	if (WidgetStateAsset != nullptr)
 	{
-
 		// Initialize the widget members using loaded options
 		LevelSequenceAssetData = FAssetData(WidgetStateAsset->LevelSequenceAssetPath.TryLoad());
 		SequenceRendererTargets.SetExportCameraPoses(WidgetStateAsset->bCameraPosesSelected);

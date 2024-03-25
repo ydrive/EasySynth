@@ -52,11 +52,17 @@ public:
 	/** Return should camera poses be exported */
 	bool ExportCameraPoses() const { return bExportCameraPoses; }
 
-	/** DepthRangeMetersValue getter */
+	/** DepthRangeMetersValue setter */
 	void SetDepthRangeMeters(const float DepthRangeMeters) { DepthRangeMetersValue = DepthRangeMeters; }
 
-	/** DepthRangeMetersValue setter */
+	/** DepthRangeMetersValue getter */
 	float DepthRangeMeters() const { return DepthRangeMetersValue; }
+
+	/** CustomPostProcessMaterialAssetData setter */
+	void SetCustomPPMaterialAssetData(const FAssetData& CustomPPMaterialAssetData);
+
+	/** CustomPostProcessMaterialAssetData getter */
+	const FAssetData& CustomPPMaterial() const { return CustomPostProcessMaterialAssetData; }
 
 	/** OpticalFlowScaleValue getter */
 	void SetOpticalFlowScale(const float OpticalFlowScale) { OpticalFlowScaleValue = OpticalFlowScale; }
@@ -87,6 +93,9 @@ private:
 	 * Larger values provide the longer range, but also the lower granularity
 	*/
 	float DepthRangeMetersValue;
+
+	/** Currently selected custom post process material asset data */
+	FAssetData CustomPostProcessMaterialAssetData;
 
 	/**
 	 * Multiplying coefficient for optical flow

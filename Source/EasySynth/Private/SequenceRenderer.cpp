@@ -39,6 +39,11 @@ bool FRendererTargetOptions::AnyOptionSelected() const
 	return false;
 }
 
+void FRendererTargetOptions::SetCustomPPMaterialAssetData(const FAssetData& CustomPPMaterialAssetData)
+{
+	CustomPostProcessMaterialAssetData = CustomPPMaterialAssetData;
+}
+
 void FRendererTargetOptions::GetSelectedTargets(
 	UTextureStyleManager* TextureStyleManager,
 	TQueue<TSharedPtr<FRendererTarget>>& OutTargetsQueue) const
@@ -71,7 +76,8 @@ TSharedPtr<FRendererTarget> FRendererTargetOptions::RendererTarget(
 	const EImageFormat OutputFormat = OutputFormats[TargetType];
 	switch (TargetType)
 	{
-	case COLOR_IMAGE: return MakeShared<FColorImageTarget>(TextureStyleManager, OutputFormat); break;
+	case COLOR_IMAGE: return MakeShared<FColorImageTarget>(
+		TextureStyleManager, OutputFormat, Cast<UMaterial>(CustomPostProcessMaterialAssetData.GetAsset())); break;
 	case DEPTH_IMAGE: return MakeShared<FDepthImageTarget>(
 		TextureStyleManager, OutputFormat, DepthRangeMetersValue); break;
 	case NORMAL_IMAGE: return MakeShared<FNormalImageTarget>(TextureStyleManager, OutputFormat); break;
