@@ -4,11 +4,12 @@
 
 #include "CoreMinimal.h"
 
-#include "RendererTargets/RendererTarget.h"
 #include "RendererTargets/ColorImageTarget.h"
+#include "RendererTargets/CustomPPMaterialTarget.h"
 #include "RendererTargets/DepthImageTarget.h"
 #include "RendererTargets/NormalImageTarget.h"
 #include "RendererTargets/OpticalFlowImageTarget.h"
+#include "RendererTargets/RendererTarget.h"
 #include "RendererTargets/SemanticImageTarget.h"
 #include "TextureStyles/TextureStyleManager.h"
 
@@ -27,7 +28,15 @@ class FRendererTargetOptions
 {
 public:
 	/** The enum containing all supported rendering targets */
-	enum TargetType { COLOR_IMAGE, DEPTH_IMAGE, NORMAL_IMAGE, OPTICAL_FLOW_IMAGE, SEMANTIC_IMAGE, COUNT };
+	enum TargetType {
+		COLOR_IMAGE,
+		DEPTH_IMAGE,
+		NORMAL_IMAGE,
+		OPTICAL_FLOW_IMAGE,
+		SEMANTIC_IMAGE,
+		CUSTOM_PP_MATERIAL,
+		COUNT
+	};
 
 	FRendererTargetOptions();
 

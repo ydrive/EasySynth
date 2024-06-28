@@ -42,6 +42,7 @@ bool FRendererTargetOptions::AnyOptionSelected() const
 void FRendererTargetOptions::SetCustomPPMaterialAssetData(const FAssetData& CustomPPMaterialAssetData)
 {
 	CustomPostProcessMaterialAssetData = CustomPPMaterialAssetData;
+	SetSelectedTarget(TargetType::CUSTOM_PP_MATERIAL, CustomPPMaterialAssetData.IsValid());
 }
 
 void FRendererTargetOptions::GetSelectedTargets(
@@ -76,14 +77,15 @@ TSharedPtr<FRendererTarget> FRendererTargetOptions::RendererTarget(
 	const EImageFormat OutputFormat = OutputFormats[TargetType];
 	switch (TargetType)
 	{
-	case COLOR_IMAGE: return MakeShared<FColorImageTarget>(
-		TextureStyleManager, OutputFormat, Cast<UMaterial>(CustomPostProcessMaterialAssetData.GetAsset())); break;
+	case COLOR_IMAGE: return MakeShared<FColorImageTarget>(TextureStyleManager, OutputFormat); break;
 	case DEPTH_IMAGE: return MakeShared<FDepthImageTarget>(
 		TextureStyleManager, OutputFormat, DepthRangeMetersValue); break;
 	case NORMAL_IMAGE: return MakeShared<FNormalImageTarget>(TextureStyleManager, OutputFormat); break;
 	case OPTICAL_FLOW_IMAGE: return MakeShared<FOpticalFlowImageTarget>(
 		TextureStyleManager, OutputFormat, OpticalFlowScaleValue); break;
 	case SEMANTIC_IMAGE: return MakeShared<FSemanticImageTarget>(TextureStyleManager, OutputFormat); break;
+	case CUSTOM_PP_MATERIAL: return MakeShared<FCustomPPMaterialTarget>(
+		TextureStyleManager, OutputFormat, Cast<UMaterial>(CustomPostProcessMaterialAssetData.GetAsset())); break;
 	default: return nullptr;
 	}
 }

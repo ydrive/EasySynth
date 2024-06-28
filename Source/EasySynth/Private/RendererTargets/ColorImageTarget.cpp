@@ -38,16 +38,7 @@ bool FColorImageTarget::PrepareSequence(ULevelSequence* LevelSequence)
 		}
 
 		Camera->PostProcessSettings.WeightedBlendables.Array.Empty();
-		if (CustomPPMaterial == nullptr)
-		{
-			// If no custom post process material is provided, use the default one
-			Camera->PostProcessSettings.WeightedBlendables.Array.Add(FWeightedBlendable(1.0f, PostProcessMaterial));
-		}
-		else
-		{
-			// If a non-null custom post process material is provided, use it instead of the default one
-			Camera->PostProcessSettings.WeightedBlendables.Array.Add(FWeightedBlendable(1.0f, CustomPPMaterial));
-		}
+		Camera->PostProcessSettings.WeightedBlendables.Array.Add(FWeightedBlendable(1.0f, PostProcessMaterial));
 	}
 
 	return true;
