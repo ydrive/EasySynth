@@ -240,6 +240,42 @@ TSharedRef<SDockTab> FWidgetManager::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 			.Padding(2)
 			[
 				SNew(STextBlock)
+				.Text(LOCTEXT("CustomPPMaterialSectionTitle", "Optional custom PP material render target"))
+			]
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(SHorizontalBox)
+				+SHorizontalBox::Slot()
+				.Padding(2)
+				[
+					SNew(SObjectPropertyEntryBox)
+					.AllowedClass(UMaterial::StaticClass())
+					.ObjectPath_Raw(this, &FWidgetManager::GetCustomPPMaterialPath)
+					.OnObjectChanged_Raw(this, &FWidgetManager::OnCustomPPMaterialSelected)
+					.AllowClear(true)
+					.DisplayUseSelected(true)
+					.DisplayBrowse(true)
+				]
+				+SHorizontalBox::Slot()
+				[
+					SNew(SComboBox<TSharedPtr<FString>>)
+					.OptionsSource(&OutputFormatNames)
+					.ContentPadding(2)
+					.OnGenerateWidget_Lambda(
+						[](TSharedPtr<FString> StringItem)
+						{ return SNew(STextBlock).Text(FText::FromString(*StringItem)); })
+					.OnSelectionChanged_Raw(this, &FWidgetManager::OnOutputFormatSelectionChanged, FRendererTargetOptions::CUSTOM_PP_MATERIAL)
+					[
+						SNew(STextBlock)
+						.Text_Raw(this, &FWidgetManager::SelectedOutputFormat, FRendererTargetOptions::CUSTOM_PP_MATERIAL)
+					]
+				]
+			]
+			+SScrollBox::Slot()
+			.Padding(2)
+			[
+				SNew(STextBlock)
 				.Text(LOCTEXT("OutputWidthText", "Output image width [px]"))
 			]
 			+SScrollBox::Slot()
@@ -443,6 +479,21 @@ FText FWidgetManager::SelectedOutputFormat(const FRendererTargetOptions::TargetT
 	}
 }
 
+void FWidgetManager::OnCustomPPMaterialSelected(const FAssetData& AssetData)
+{
+	SequenceRendererTargets.SetCustomPPMaterialAssetData(AssetData);
+}
+
+FString FWidgetManager::GetCustomPPMaterialPath() const
+{
+	const auto& CustomPPMaterialAssetData = SequenceRendererTargets.CustomPPMaterial();
+	if (CustomPPMaterialAssetData.IsValid())
+	{
+		return CustomPPMaterialAssetData.ObjectPath.ToString();
+	}
+	return "";
+}
+
 bool FWidgetManager::GetIsRenderImagesEnabled() const
 {
 	return
@@ -522,10 +573,8 @@ void FWidgetManager::LoadWidgetOptionStates()
 	// Try to load
 	UWidgetStateAsset* WidgetStateAsset = LoadObject<UWidgetStateAsset>(nullptr, *FPathUtils::WidgetStateAssetPath());
 
-
 	if (WidgetStateAsset != nullptr)
 	{
-
 		// Initialize the widget members using loaded options
 		LevelSequenceAssetData = FAssetData(WidgetStateAsset->LevelSequenceAssetPath.TryLoad());
 		SequenceRendererTargets.SetExportCameraPoses(WidgetStateAsset->bCameraPosesSelected);
@@ -549,6 +598,10 @@ void FWidgetManager::LoadWidgetOptionStates()
 		SequenceRendererTargets.SetOutputFormat(
 			FRendererTargetOptions::SEMANTIC_IMAGE,
 			static_cast<EImageFormat>(WidgetStateAsset->bSemanticImagesOutputFormat));
+		SequenceRendererTargets.SetCustomPPMaterialAssetData(WidgetStateAsset->CustomPPMaterialAssetPath.TryLoad());
+		SequenceRendererTargets.SetOutputFormat(
+			FRendererTargetOptions::CUSTOM_PP_MATERIAL,
+			static_cast<EImageFormat>(WidgetStateAsset->bCustomPPMaterialOutputFormat));
 		OutputImageResolution = WidgetStateAsset->OutputImageResolution;
 		SequenceRendererTargets.SetDepthRangeMeters(WidgetStateAsset->DepthRange);
 		SequenceRendererTargets.SetOpticalFlowScale(WidgetStateAsset->OpticalFlowScale);
@@ -599,6 +652,9 @@ void FWidgetManager::SaveWidgetOptionStates()
 		SequenceRendererTargets.OutputFormat(FRendererTargetOptions::OPTICAL_FLOW_IMAGE));
 	WidgetStateAsset->bSemanticImagesOutputFormat = static_cast<int8>(
 		SequenceRendererTargets.OutputFormat(FRendererTargetOptions::SEMANTIC_IMAGE));
+	WidgetStateAsset->CustomPPMaterialAssetPath = SequenceRendererTargets.CustomPPMaterial().ToSoftObjectPath();
+	WidgetStateAsset->bCustomPPMaterialOutputFormat = static_cast<int8>(
+		SequenceRendererTargets.OutputFormat(FRendererTargetOptions::CUSTOM_PP_MATERIAL));
 	WidgetStateAsset->OutputImageResolution = OutputImageResolution;
 	WidgetStateAsset->DepthRange = SequenceRendererTargets.DepthRangeMeters();
 	WidgetStateAsset->OpticalFlowScale = SequenceRendererTargets.OpticalFlowScale();

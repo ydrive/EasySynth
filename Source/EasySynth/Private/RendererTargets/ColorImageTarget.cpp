@@ -36,6 +36,7 @@ bool FColorImageTarget::PrepareSequence(ULevelSequence* LevelSequence)
 			UE_LOG(LogEasySynth, Error, TEXT("%s: Found camera is null"), *FString(__FUNCTION__))
 			return false;
 		}
+
 		Camera->PostProcessSettings.WeightedBlendables.Array.Empty();
 		Camera->PostProcessSettings.WeightedBlendables.Array.Add(FWeightedBlendable(1.0f, PostProcessMaterial));
 	}

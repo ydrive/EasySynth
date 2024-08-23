@@ -63,9 +63,17 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
 	bool bSemanticImagesSelected;
 
-	/** Output format for rendering images */
+	/** Output format for semantic images */
 	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
 	int8 bSemanticImagesOutputFormat;
+
+	/** Selected custom PP material asset */
+	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
+	FSoftObjectPath CustomPPMaterialAssetPath;
+
+	/** Output format for custom PP material images */
+	UPROPERTY(EditAnywhere, Category = "Rendering Targets")
+	int8 bCustomPPMaterialOutputFormat;
 
 	/** Selected depth threashold range */
 	UPROPERTY(EditAnywhere, Category = "Additional parameters")

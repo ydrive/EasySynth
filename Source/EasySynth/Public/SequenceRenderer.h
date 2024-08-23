@@ -4,11 +4,12 @@
 
 #include "CoreMinimal.h"
 
-#include "RendererTargets/RendererTarget.h"
 #include "RendererTargets/ColorImageTarget.h"
+#include "RendererTargets/CustomPPMaterialTarget.h"
 #include "RendererTargets/DepthImageTarget.h"
 #include "RendererTargets/NormalImageTarget.h"
 #include "RendererTargets/OpticalFlowImageTarget.h"
+#include "RendererTargets/RendererTarget.h"
 #include "RendererTargets/SemanticImageTarget.h"
 #include "TextureStyles/TextureStyleManager.h"
 
@@ -27,7 +28,15 @@ class FRendererTargetOptions
 {
 public:
 	/** The enum containing all supported rendering targets */
-	enum TargetType { COLOR_IMAGE, DEPTH_IMAGE, NORMAL_IMAGE, OPTICAL_FLOW_IMAGE, SEMANTIC_IMAGE, COUNT };
+	enum TargetType {
+		COLOR_IMAGE,
+		DEPTH_IMAGE,
+		NORMAL_IMAGE,
+		OPTICAL_FLOW_IMAGE,
+		SEMANTIC_IMAGE,
+		CUSTOM_PP_MATERIAL,
+		COUNT
+	};
 
 	FRendererTargetOptions();
 
@@ -52,11 +61,17 @@ public:
 	/** Return should camera poses be exported */
 	bool ExportCameraPoses() const { return bExportCameraPoses; }
 
-	/** DepthRangeMetersValue getter */
+	/** DepthRangeMetersValue setter */
 	void SetDepthRangeMeters(const float DepthRangeMeters) { DepthRangeMetersValue = DepthRangeMeters; }
 
-	/** DepthRangeMetersValue setter */
+	/** DepthRangeMetersValue getter */
 	float DepthRangeMeters() const { return DepthRangeMetersValue; }
+
+	/** CustomPostProcessMaterialAssetData setter */
+	void SetCustomPPMaterialAssetData(const FAssetData& CustomPPMaterialAssetData);
+
+	/** CustomPostProcessMaterialAssetData getter */
+	const FAssetData& CustomPPMaterial() const { return CustomPostProcessMaterialAssetData; }
 
 	/** OpticalFlowScaleValue getter */
 	void SetOpticalFlowScale(const float OpticalFlowScale) { OpticalFlowScaleValue = OpticalFlowScale; }
@@ -87,6 +102,9 @@ private:
 	 * Larger values provide the longer range, but also the lower granularity
 	*/
 	float DepthRangeMetersValue;
+
+	/** Currently selected custom post process material asset data */
+	FAssetData CustomPostProcessMaterialAssetData;
 
 	/**
 	 * Multiplying coefficient for optical flow
