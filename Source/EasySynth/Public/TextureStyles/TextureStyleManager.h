@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 
+#include "Materials/MaterialInstanceConstant.h"
+
 #include "TextureStyleManager.generated.h"
 
 class AActor;
 class UMaterial;
 
 struct FSemanticClass;
-class UMaterialInstanceConstant;
 class UTextureBackupManager;
 class UTextureMappingAsset;
 

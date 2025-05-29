@@ -9,6 +9,8 @@
 #include "Sections/MovieSceneCameraCutSection.h"
 #include "Subsystems/AssetEditorSubsystem.h"
 
+#include "EasySynth.h"
+
 
 bool FSequencerWrapper::OpenSequence(ULevelSequence* LevelSequence)
 {

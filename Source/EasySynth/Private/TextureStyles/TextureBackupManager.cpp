@@ -4,6 +4,8 @@
 
 #include "LandscapeProxy.h"
 
+#include "EasySynth.h"
+
 
 void UTextureBackupManager::AddAndPaint(
 	AActor* Actor,

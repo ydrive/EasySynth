@@ -9,6 +9,7 @@
 #include "Sections/MovieSceneCameraCutSection.h"
 #include "Subsystems/AssetEditorSubsystem.h"
 
+#include "EasySynth.h"
 #include "SequencerWrapper.h"
 
 

@@ -2,6 +2,8 @@
 
 #include "Widgets/WidgetManager.h"
 
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "EditorAssetLibrary.h"
 #include "LevelSequence.h"
 #include "PropertyCustomizationHelpers.h"
 #include "Widgets/Docking/SDockTab.h"
@@ -11,6 +13,7 @@
 #include "Widgets/Layout/SSeparator.h"
 #include "Widgets/Text/STextBlock.h"
 
+#include "EasySynth.h"
 #include "Widgets/WidgetStateAsset.h"
 
 

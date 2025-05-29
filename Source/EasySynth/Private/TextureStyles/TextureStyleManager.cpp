@@ -10,8 +10,8 @@
 #include "FileHelpers.h"
 #include "HAL/FileManagerGeneric.h"
 #include "Kismet/GameplayStatics.h"
-#include "Materials/MaterialInstanceConstant.h"
 
+#include "EasySynth.h"
 #include "PathUtils.h"
 #include "TextureStyles/TextureBackupManager.h"
 #include "TextureStyles/TextureMappingAsset.h"

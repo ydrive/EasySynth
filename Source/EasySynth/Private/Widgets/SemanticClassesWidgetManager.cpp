@@ -7,6 +7,9 @@
 #include "Widgets/Colors/SColorPicker.h"
 #include "Widgets/Layout/SUniformGridPanel.h"
 
+#include "EasySynth.h"
+#include "TextureStyles\TextureMappingAsset.h"
+
 
 #define LOCTEXT_NAMESPACE "FSemanticClassesWidgetManager"
 

@@ -3,11 +3,14 @@
 #include "SequenceRenderer.h"
 
 #include "CineCameraComponent.h"
+#include "ISequencer.h"
 #include "MoviePipelineImageSequenceOutput.h"
 #include "MoviePipelineOutputSetting.h"
 #include "MoviePipelineQueueSubsystem.h"
 #include "MovieRenderPipelineSettings.h"
+#include "Sections/MovieSceneCameraCutSection.h"
 
+#include "EasySynth.h"
 #include "EXROutput/MoviePipelineEXROutputLocal.h"
 #include "PathUtils.h"
 #include "RendererTargets/CameraPoseExporter.h"
