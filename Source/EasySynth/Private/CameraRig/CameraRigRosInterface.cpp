@@ -49,7 +49,7 @@ FReply FCameraRigRosInterface::OnImportCameraRigClicked()
 	auto DisplayError = [](const FText& Message) {
 		const FText MessageBoxTitle = LOCTEXT("InvalidJsonMessageBoxTitle", "Failed to load camera rig");
 		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *Message.ToString())
-		FMessageDialog::Open(EAppMsgType::Ok, Message, &MessageBoxTitle);
+		FMessageDialog::Open(EAppMsgType::Ok, Message, MessageBoxTitle);
 	};
 
 

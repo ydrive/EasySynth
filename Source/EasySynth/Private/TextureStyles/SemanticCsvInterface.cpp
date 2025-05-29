@@ -2,8 +2,11 @@
 
 #include "TextureStyles/SemanticCsvInterface.h"
 
+#include "DesktopPlatformModule.h"
+#include "IDesktopPlatform.h"
 #include "Serialization/Csv/CsvParser.h"
 
+#include "EasySynth.h"
 #include "TextureStyles/TextureMappingAsset.h"
 #include "TextureStyles/TextureStyleManager.h"
 

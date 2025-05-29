@@ -3,8 +3,9 @@
 #include "RendererTargets/SemanticImageTarget.h"
 
 #include "Camera/CameraComponent.h"
-
 #include "LevelSequence.h"
+
+#include "EasySynth.h"
 #include "TextureStyles/TextureStyleManager.h"
 
 

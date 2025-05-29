@@ -4,6 +4,7 @@
 
 #include "Camera/CameraComponent.h"
 
+#include "EasySynth.h"
 #include "LevelSequence.h"
 #include "TextureStyles/TextureStyleManager.h"
 

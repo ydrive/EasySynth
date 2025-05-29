@@ -3,9 +3,10 @@
 #include "RendererTargets/DepthImageTarget.h"
 
 #include "Camera/CameraComponent.h"
+#include "LevelSequence.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
-#include "LevelSequence.h"
+#include "EasySynth.h"
 #include "TextureStyles/TextureStyleManager.h"
 
 

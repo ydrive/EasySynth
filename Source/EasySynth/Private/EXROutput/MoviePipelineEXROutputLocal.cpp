@@ -234,7 +234,7 @@ bool FEXRImageWriteTaskLocal::WriteToDisk()
 #if WITH_EDITOR
 			catch (const IEX_NAMESPACE::BaseExc& Exception)
 			{
-				UE_LOG(LogMovieRenderPipelineIO, Error, TEXT("Caught exception: %s"), Exception.message().c_str());
+				UE_LOG(LogMovieRenderPipelineIO, Error, TEXT("Caught exception: %hs"), Exception.message().c_str());
 			}
 #endif
 		}
