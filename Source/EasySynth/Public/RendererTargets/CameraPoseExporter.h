@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 
+#include "LevelSequence.h"
+
 #include "SequencerWrapper.h"
 
 class UCameraComponent;
-class ULevelSequence;
 
 
 /**

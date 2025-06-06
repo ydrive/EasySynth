@@ -507,11 +507,10 @@ bool FWidgetManager::GetIsRenderImagesEnabled() const
 
 FReply FWidgetManager::OnRenderImagesClicked()
 {
-	ULevelSequence* LevelSequence = Cast<ULevelSequence>(LevelSequenceAssetData.GetAsset());
 	// Make a copy of the SequenceRendererTargets to avoid
 	// them being changed through the UI during rendering
 	if (!SequenceRenderer->RenderSequence(
-		LevelSequence,
+		LevelSequenceAssetData,
 		SequenceRendererTargets,
 		OutputImageResolution,
 		OutputDirectory))
