@@ -109,7 +109,7 @@ USequenceRenderer::USequenceRenderer() :
 }
 
 bool USequenceRenderer::RenderSequence(
-	ULevelSequence* LevelSequence,
+	const FAssetData& LevelSequenceAssetData,
 	const FRendererTargetOptions RenderingTargets,
 	const FIntPoint OutputImageResolution,
 	const FString& OutputDirectory)
@@ -131,7 +131,8 @@ bool USequenceRenderer::RenderSequence(
 	}
 
 	// Check if LevelSequence is valid
-	RenderingSequence = LevelSequence;
+	RenderingSequencePath = LevelSequenceAssetData.GetSoftObjectPath();
+	RenderingSequence = Cast<ULevelSequence>(LevelSequenceAssetData.GetAsset());
 	if (RenderingSequence == nullptr)
 	{
 		ErrorMessage = "Provided level sequence is null";
@@ -154,7 +155,7 @@ bool USequenceRenderer::RenderSequence(
 
 	// Find the sequencer source actor
 	FSequencerWrapper SequencerWrapper;
-	if (!SequencerWrapper.OpenSequence(LevelSequence))
+	if (!SequencerWrapper.OpenSequence(RenderingSequence))
 	{
 		ErrorMessage = "Sequencer wrapper opening failed";
 		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), *ErrorMessage)
@@ -495,7 +496,7 @@ bool USequenceRenderer::PrepareJobQueue(UMoviePipelineQueueSubsystem* MoviePipel
 	NewJob->Modify();
 	NewJob->Map = FSoftObjectPath(GEditor->GetEditorWorldContext().World());
 	NewJob->Author = FPlatformProcess::UserName(false);
-	NewJob->SetSequence(RenderingSequence);
+	NewJob->SetSequence(RenderingSequencePath);
 	NewJob->JobName = NewJob->Sequence.GetAssetName();
 
 	// The SetConfiguration method creates and assigns the copy of the provided config

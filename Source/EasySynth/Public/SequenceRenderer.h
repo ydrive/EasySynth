@@ -137,7 +137,7 @@ public:
 
 	/** Runs sequence rendering, returns false if rendering could not start */
 	bool RenderSequence(
-		ULevelSequence* LevelSequence,
+		const FAssetData& LevelSequenceAssetData,
 		const FRendererTargetOptions RenderingTargets,
 		const FIntPoint OutputImageResolution,
 		const FString& OutputDirectory);
@@ -179,6 +179,9 @@ private:
 	/** Default movie pipeline config file provided with the plugin content */
 	UPROPERTY()
 	UMoviePipelinePrimaryConfig* EasySynthMoviePipelineConfig;
+
+	/** Soft object path to the user-created level sequence */
+	FSoftObjectPath RenderingSequencePath;
 
 	/** Points to the user-created level sequence */
 	UPROPERTY()

@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
-	"Version": 7,
-	"VersionName": "5.0.0",
-	"EngineVersion" : "5.4",
+	"Version": 8,
+	"VersionName": "6.0.0",
+	"EngineVersion" : "5.5",
 	"FriendlyName": "EasySynth",
 	"Description": "An Unreal Engine plugin for easy creation of image datasets",
 	"Category": "Other",
