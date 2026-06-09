@@ -290,7 +290,7 @@ static FString GetChannelName(const FString& InLayerName, const int32 InChannelI
 
 	if (InLayerName.Len() > 0)
 	{
-		return FString::Printf(TEXT("%s.%s"), *InLayerName, ChannelNames[InChannelIndex]);
+		return FString::Printf(TEXT("%s.%hs"), *InLayerName, ChannelNames[InChannelIndex]);
 	}
 	else
 	{
