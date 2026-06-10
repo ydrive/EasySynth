@@ -3,12 +3,19 @@
 #include "Widgets/SemanticClassesWidgetManager.h"
 
 #include "Interfaces/IMainFrameModule.h"
+#include "Misc/MessageDialog.h"
+#include "Styling/AppStyle.h"
+#include "Styling/CoreStyle.h"
 #include "Widgets/Colors/SColorBlock.h"
 #include "Widgets/Colors/SColorPicker.h"
-#include "Widgets/Layout/SUniformGridPanel.h"
+#include "Widgets/Layout/SBorder.h"
+#include "Widgets/Layout/SBox.h"
+#include "Widgets/Layout/SScrollBox.h"
+#include "Widgets/Layout/SSeparator.h"
 
 #include "EasySynth.h"
 #include "TextureStyles/TextureMappingAsset.h"
+#include "TextureStyles/TextureStyleManager.h"
 
 
 #define LOCTEXT_NAMESPACE "FSemanticClassesWidgetManager"
@@ -37,61 +44,148 @@ FReply FSemanticClassesWidgetManager::OnManageSemanticClassesClicked()
 	// Crate the window
 	TSharedRef<SWindow> Window = SNew(SWindow)
 		.Title(LOCTEXT("ManageSemanticClassesWindowTitle", "Manage Semantic Classes"))
-		.SizingRule(ESizingRule::Autosized)
+		.SizingRule(ESizingRule::UserSized)
+		.ClientSize(FVector2D(460.0f, 520.0f))
 		.SupportsMaximize(false)
 		.SupportsMinimize(false)
 		.Content()
 		[
 			SNew(SVerticalBox)
+
+			// Section heading for the existing classes
 			+ SVerticalBox::Slot()
-			.Padding(3)
+			.AutoHeight()
+			.Padding(10.0f, 10.0f, 10.0f, 4.0f)
 			[
 				SNew(STextBlock)
 				.Text(LOCTEXT("EditOrRemoveSectionTitle", "Edit or remove semantic classes"))
+				.Font(FCoreStyle::GetDefaultFontStyle("Bold", 10))
 			]
+
+			// Column headers for the class list
 			+ SVerticalBox::Slot()
 			.AutoHeight()
+			.Padding(12.0f, 0.0f, 12.0f, 2.0f)
 			[
-				Box
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.FillWidth(1.0f)
+				.VAlign(VAlign_Center)
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("NameColumnHeader", "Name"))
+				]
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.Padding(8.0f, 0.0f)
+				.VAlign(VAlign_Center)
+				[
+					SNew(SBox)
+					.WidthOverride(40.0f)
+					[
+						SNew(STextBlock)
+						.Text(LOCTEXT("ColorColumnHeader", "Color"))
+					]
+				]
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				[
+					SNew(SBox)
+					.WidthOverride(70.0f)
+				]
 			]
+
+			// Scrollable list of existing classes, so the window never grows past its bounds
 			+ SVerticalBox::Slot()
-			.Padding(3)
+			.FillHeight(1.0f)
+			.Padding(10.0f, 0.0f)
+			[
+				SNew(SBorder)
+				.BorderImage(FAppStyle::GetBrush("ToolPanel.GroupBorder"))
+				.Padding(4.0f)
+				[
+					SNew(SScrollBox)
+					+ SScrollBox::Slot()
+					[
+						Box
+					]
+				]
+			]
+
+			// Section heading for adding a new class
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(10.0f, 10.0f, 10.0f, 4.0f)
 			[
 				SNew(STextBlock)
 				.Text(LOCTEXT("AddNewSemanticClassSectionTitle", "Add new semantic class"))
+				.Font(FCoreStyle::GetDefaultFontStyle("Bold", 10))
 			]
+
+			// Inline row for entering a new class name, color and confirming
 			+ SVerticalBox::Slot()
-			.Padding(3)
+			.AutoHeight()
+			.Padding(12.0f, 0.0f, 12.0f, 6.0f)
 			[
-				SNew(SEditableTextBox)
-				.Text_Lambda([&](){ return NewClassName; })
-				.OnTextChanged_Lambda([&](const FText& NewText){ NewClassName = NewText; })
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.FillWidth(1.0f)
+				.VAlign(VAlign_Center)
+				[
+					SNew(SEditableTextBox)
+					.Text_Lambda([&](){ return NewClassName; })
+					.HintText(LOCTEXT("NewClassNameHint", "Class name"))
+					.OnTextChanged_Lambda([&](const FText& NewText){ NewClassName = NewText; })
+				]
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.Padding(8.0f, 0.0f)
+				.VAlign(VAlign_Center)
+				[
+					SNew(SColorBlock)
+					.Color_Lambda([&](){ return NewClassColor; })
+					.ShowBackgroundForAlpha(false)
+					.AlphaDisplayMode(EColorBlockAlphaDisplayMode::Ignore)
+					.OnMouseButtonDown_Raw(this, &FSemanticClassesWidgetManager::OnNewClassColorClicked)
+					.Size(FVector2D(40.0f, 20.0f))
+				]
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.VAlign(VAlign_Center)
+				[
+					SNew(SBox)
+					.WidthOverride(70.0f)
+					[
+						SNew(SButton)
+						.HAlign(HAlign_Center)
+						.Text(LOCTEXT("AddNewClassButtonText", "Add"))
+						.OnClicked_Raw(this, &FSemanticClassesWidgetManager::OnAddNewClassClicked)
+					]
+				]
 			]
+
+			// Separator above the dialog actions
 			+ SVerticalBox::Slot()
-			.Padding(3)
+			.AutoHeight()
+			.Padding(10.0f, 4.0f)
 			[
-				SNew(SColorBlock)
-				.Color_Lambda([&](){ return NewClassColor; })
-				.ShowBackgroundForAlpha(false)
-				.AlphaDisplayMode(EColorBlockAlphaDisplayMode::Ignore)
-				.OnMouseButtonDown_Raw(this, &FSemanticClassesWidgetManager::OnNewClassColorClicked)
-				.Size(FVector2D(35.0f, 17.0f))
+				SNew(SSeparator)
 			]
+
+			// Done button
 			+ SVerticalBox::Slot()
-			.Padding(3)
-			[
-				SNew(SButton)
-				.Text(LOCTEXT("AddNewClassButtonText", "Add new class"))
-				.OnClicked_Raw(this, &FSemanticClassesWidgetManager::OnAddNewClassClicked)
-			]
-			+ SVerticalBox::Slot()
+			.AutoHeight()
 			.HAlign(HAlign_Right)
-			.Padding(2)
+			.Padding(10.0f, 4.0f, 10.0f, 10.0f)
 			[
-				SNew(SButton)
-				.HAlign(HAlign_Center)
-				.Text(LOCTEXT("DoneButtonText", "Done"))
-				.OnClicked_Raw(this, &FSemanticClassesWidgetManager::OnDoneClicked)
+				SNew(SBox)
+				.WidthOverride(90.0f)
+				[
+					SNew(SButton)
+					.HAlign(HAlign_Center)
+					.Text(LOCTEXT("DoneButtonText", "Done"))
+					.OnClicked_Raw(this, &FSemanticClassesWidgetManager::OnDoneClicked)
+				]
 			]
 		];
 	WidgetWindow = Window;
@@ -124,12 +218,27 @@ FReply FSemanticClassesWidgetManager::OnUpdateClassColorClicked(
 	const FPointerEvent& MouseEvent,
 	const FString ClassName)
 {
-	CurrentlyEditedClass = ClassName;
-
 	if (MouseEvent.GetEffectingButton() != EKeys::LeftMouseButton)
 	{
 		return FReply::Handled();
 	}
+
+	// Changing an existing class color while the semantic texture style is active immediately
+	// repaints the affected actors, which is unstable and crashes the editor. Require the user
+	// to switch the mesh texture style back to the original color view before editing colors.
+	if (TextureStyleManager != nullptr &&
+		TextureStyleManager->SelectedTextureStyle() == ETextureStyle::SEMANTIC)
+	{
+		FMessageDialog::Open(
+			EAppMsgType::Ok,
+			LOCTEXT(
+				"CannotEditColorInSemanticMode",
+				"Semantic class colors cannot be changed while the semantic texture style is active.\n\n"
+				"Switch the mesh texture style back to the original color view, then change the color."));
+		return FReply::Handled();
+	}
+
+	CurrentlyEditedClass = ClassName;
 
 	FColorPickerArgs PickerArgs;
 	{
@@ -264,33 +373,54 @@ void FSemanticClassesWidgetManager::RefreshSemanticClasses()
 	for (int i = 0; i < SemanticClasses.Num(); i++)
 	{
 		const FSemanticClass* SemanticClass = SemanticClasses[i];
+
+		// The first class is the default background class, which must not be edited or removed
+		const bool bIsEditable = i > 0;
+
 		ClassesBox.Pin()->AddSlot()
-		.Padding(6)
+		.AutoHeight()
+		.Padding(2.0f)
 		[
-			SNew(SVerticalBox)
-			.IsEnabled_Lambda([i](){ return i > 0; })
-			+ SVerticalBox::Slot()
-			.Padding(2)
+			SNew(SHorizontalBox)
+			.IsEnabled(bIsEditable)
+
+			// Class name
+			+ SHorizontalBox::Slot()
+			.FillWidth(1.0f)
+			.VAlign(VAlign_Center)
 			[
 				SNew(SEditableTextBox)
 				.Text_Lambda([SemanticClass](){ return FText::FromString(SemanticClass->Name); })
 				.OnTextCommitted_Raw(this, &FSemanticClassesWidgetManager::OnClassNameChanged, SemanticClass->Name)
 			]
-			+ SVerticalBox::Slot()
-			.Padding(2)
+
+			// Class color
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.Padding(8.0f, 0.0f)
+			.VAlign(VAlign_Center)
 			[
 				SNew(SColorBlock)
 				.Color_Lambda([SemanticClass](){ return SemanticClass->Color; })
 				.ShowBackgroundForAlpha(false)
 				.AlphaDisplayMode(EColorBlockAlphaDisplayMode::Ignore)
 				.OnMouseButtonDown_Raw(this, &FSemanticClassesWidgetManager::OnUpdateClassColorClicked, SemanticClass->Name)
+				.Size(FVector2D(40.0f, 20.0f))
 			]
-			+ SVerticalBox::Slot()
-			.Padding(2)
+
+			// Delete button
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.VAlign(VAlign_Center)
 			[
-				SNew(SButton)
-				.Text(LOCTEXT("DeleteClassButtonText", "Delete"))
-				.OnClicked_Raw(this, &FSemanticClassesWidgetManager::OnDeleteClassClicked, SemanticClass->Name)
+				SNew(SBox)
+				.WidthOverride(70.0f)
+				[
+					SNew(SButton)
+					.HAlign(HAlign_Center)
+					.Text(LOCTEXT("DeleteClassButtonText", "Delete"))
+					.OnClicked_Raw(this, &FSemanticClassesWidgetManager::OnDeleteClassClicked, SemanticClass->Name)
+				]
 			]
 		];
 	}
