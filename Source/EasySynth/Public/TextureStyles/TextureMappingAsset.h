@@ -25,7 +25,7 @@ struct FSemanticClass
 
 	/** Reference to the plain color material instance */
 	UPROPERTY(EditAnywhere, Category = "Semantic Class Material")
-	UMaterialInstanceConstant* PlainColorMaterialInstance;
+	UMaterialInstanceConstant* PlainColorMaterialInstance = nullptr;
 };
 
 
