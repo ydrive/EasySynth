@@ -6,6 +6,11 @@ utilizing torch and CUDA.
 """
 
 import argparse
+import os
+
+# OpenCV 4.5.2+ ships with the OpenEXR codec disabled, which makes reading .exr
+# images fail unless it is explicitly enabled before cv2 is imported
+os.environ.setdefault("OPENCV_IO_ENABLE_OPENEXR", "1")
 
 import cv2
 import numpy as np
@@ -31,6 +36,10 @@ def load_optical_flow(optical_flow_image_path: str, use_cuda: bool) -> torch.Ten
     Loads optical flow from an .exr image and returns it as a tensor with shape (2, h, w).
     """
     of_image = cv2.imread(optical_flow_image_path, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
+    if of_image is None:
+        raise RuntimeError(
+            f"Could not read the optical flow image '{optical_flow_image_path}', "
+            "make sure the file exists and that the installed OpenCV build supports OpenEXR")
     h, w, _ = of_image.shape
     # Convert image to HSV, where H is angle and S is intensity
     of_image = cv2.cvtColor(of_image, cv2.COLOR_BGR2HSV)

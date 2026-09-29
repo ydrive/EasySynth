@@ -278,6 +278,11 @@ Our implementation was inspired by the [ProfFan's](https://github.com/ProfFan) [
 
 Following is an example Python code for loading optical flow from an `.exr` image and applying it to the appropriate image from a sequence, to produce its successor:
 ``` Python
+import os
+
+# OpenCV 4.5.2+ requires the OpenEXR codec to be enabled before cv2 is imported
+os.environ.setdefault('OPENCV_IO_ENABLE_OPENEXR', '1')
+
 import cv2
 import numpy as np
 
