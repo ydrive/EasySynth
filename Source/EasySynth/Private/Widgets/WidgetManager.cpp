@@ -519,7 +519,7 @@ FReply FWidgetManager::OnRenderImagesClicked()
 		FMessageDialog::Open(
 			EAppMsgType::Ok,
 			FText::FromString(SequenceRenderer->GetErrorMessage()),
-			&MessageBoxTitle);
+			MessageBoxTitle);
 	}
 
 	// Save the current widget options
@@ -558,7 +558,7 @@ void FWidgetManager::OnRenderingFinished(bool bSuccess)
 		FMessageDialog::Open(
 			EAppMsgType::Ok,
 			LOCTEXT("SuccessfulRenderingMessageBoxText", "Rendering finished successfully"),
-			&MessageBoxTitle);
+			MessageBoxTitle);
 	}
 	else
 	{
@@ -566,7 +566,7 @@ void FWidgetManager::OnRenderingFinished(bool bSuccess)
 		FMessageDialog::Open(
 			EAppMsgType::Ok,
 			FText::FromString(SequenceRenderer->GetErrorMessage()),
-			&MessageBoxTitle);
+			MessageBoxTitle);
 	}
 }
 

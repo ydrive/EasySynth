@@ -54,7 +54,7 @@ FReply FSemanticCsvInterface::OnImportSemanticClassesClicked(UTextureStyleManage
 	{
 		const FText MessageBoxTitle = LOCTEXT("OverrideConfirmationMessageBoxTitle", "Importing semantic classes");
 		const FText MessageBoxMessage = LOCTEXT("OverrideConfirmationMessageBoxMessage", "Are you sure that you want to override existing semantic classes?");
-		if (FMessageDialog::Open(EAppMsgType::YesNo, MessageBoxMessage, &MessageBoxTitle) == EAppReturnType::No)
+		if (FMessageDialog::Open(EAppMsgType::YesNo, MessageBoxMessage, MessageBoxTitle) == EAppReturnType::No)
 		{
 			return FReply::Handled();
 		}
@@ -76,7 +76,7 @@ FReply FSemanticCsvInterface::OnImportSemanticClassesClicked(UTextureStyleManage
 			FMessageDialog::Open(
 				EAppMsgType::Ok,
 				LOCTEXT("InvalidCsvMessageBoxText", "Expected line format \"name, R, G, B\""),
-				&MessageBoxTitle);
+				MessageBoxTitle);
 			return FReply::Handled();
 		}
 		UE_LOG(LogEasySynth, Warning, TEXT("%s: %s"), *FString(__FUNCTION__), Row[0])
